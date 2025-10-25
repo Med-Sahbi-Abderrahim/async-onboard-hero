@@ -176,6 +176,16 @@ export function ClientFormRenderer({
         })
         .eq("id", form.id);
 
+      // Send confirmation email
+      try {
+        await supabase.functions.invoke('send-submission-confirmation', {
+          body: { submissionId: submissionId }
+        });
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+        // Don't block submission if email fails
+      }
+
       onSubmitted();
     } catch (error: any) {
       console.error("Submission error:", error);

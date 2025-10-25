@@ -18,6 +18,7 @@ import Forms from "./pages/Forms";
 import CreateForm from "./pages/CreateForm";
 import Submissions from "./pages/Submissions";
 import Settings from "./pages/Settings";
+import ReminderSettings from "./pages/ReminderSettings";
 import NotFound from "./pages/NotFound";
 import ClientFormPage from "./pages/ClientFormPage";
 
@@ -104,6 +105,16 @@ const App = () => (
                 <ProtectedRoute>
                   <DashboardLayout>
                     <Settings />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reminders"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <ReminderSettings />
                   </DashboardLayout>
                 </ProtectedRoute>
               }
