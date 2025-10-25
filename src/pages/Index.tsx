@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Clock, Database, FileText, Sparkles, Upload, Zap, ArrowRight } from "lucide-react";
@@ -28,12 +29,16 @@ const Index = () => {
               </a>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm">
-                Sign In
-              </Button>
-              <Button variant="hero" size="default">
-                Get Started
-              </Button>
+              <Link to="/login">
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/signup">
+                <Button variant="hero" size="default">
+                  Get Started
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -55,13 +60,17 @@ const Index = () => {
               Get the information you need without the back-and-forth.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button variant="hero" size="xl" className="w-full sm:w-auto">
-                Get Started Free
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button variant="outline" size="xl" className="w-full sm:w-auto">
-                Sign In
-              </Button>
+              <Link to="/signup" className="w-full sm:w-auto">
+                <Button variant="hero" size="xl" className="w-full">
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/login" className="w-full sm:w-auto">
+                <Button variant="outline" size="xl" className="w-full">
+                  Sign In
+                </Button>
+              </Link>
             </div>
             <p className="mt-6 text-sm text-muted-foreground">
               No credit card required. Free to start. Cancel anytime.
@@ -346,9 +355,11 @@ const Index = () => {
                     <span className="text-sm">Priority support</span>
                   </div>
                 </div>
-                <Button variant="hero" size="lg" className="w-full">
-                  Start Free Trial
-                </Button>
+                <Link to="/signup" className="w-full">
+                  <Button variant="hero" size="lg" className="w-full">
+                    Start Free Trial
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
@@ -366,13 +377,17 @@ const Index = () => {
               Join hundreds of agencies streamlining their client intake process with Async.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button variant="hero" size="xl" className="w-full sm:w-auto">
-                Get Started Free
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button variant="outline" size="xl" className="w-full sm:w-auto">
-                Sign In
-              </Button>
+              <Link to="/signup" className="w-full sm:w-auto">
+                <Button variant="hero" size="xl" className="w-full">
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/login" className="w-full sm:w-auto">
+                <Button variant="outline" size="xl" className="w-full">
+                  Sign In
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
