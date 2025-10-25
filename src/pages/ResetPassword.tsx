@@ -7,18 +7,18 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
 
-const signupSchema = z.object({
-  fullName: z.string().min(2, "Full name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
+const resetPasswordSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
-  agreeToTerms: z.boolean().refine((val) => val === true, "You must agree to the terms"),
+  confirmPassword: z.string().min(8, "Password must be at least 8 characters"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
-type SignupFormValues = z.infer<typeof signupSchema>;
+type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
 
 const getPasswordStrength = (password: string): { strength: string; color: string } => {
   if (password.length === 0) return { strength: "", color: "" };
@@ -35,113 +35,80 @@ const getPasswordStrength = (password: string): { strength: string; color: strin
   return { strength: "Strong", color: "text-green-500" };
 };
 
-export default function Signup() {
+export default function ResetPassword() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ strength: "", color: "" });
+  const [hasValidToken, setHasValidToken] = useState(false);
 
-  // Redirect if already logged in
   useEffect(() => {
-    const checkUser = async () => {
+    // Check if we have a valid reset token
+    const checkToken = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/dashboard");
+        setHasValidToken(true);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Invalid or expired reset link",
+          description: "Please request a new password reset link.",
+        });
+        navigate("/forgot-password");
       }
     };
-    checkUser();
+    checkToken();
   }, [navigate]);
 
-  const form = useForm<SignupFormValues>({
-    resolver: zodResolver(signupSchema),
+  const form = useForm<ResetPasswordFormValues>({
+    resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
       password: "",
-      agreeToTerms: false,
+      confirmPassword: "",
     },
   });
 
-  const onSubmit = async (values: SignupFormValues) => {
+  const onSubmit = async (values: ResetPasswordFormValues) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: values.email,
+      const { error } = await supabase.auth.updateUser({
         password: values.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: {
-            full_name: values.fullName,
-          },
-        },
       });
 
-      if (error) {
-        // Handle specific errors
-        if (error.message.includes("already registered")) {
-          toast({
-            variant: "destructive",
-            title: "Email already registered",
-            description: (
-              <span>
-                This email is already in use.{" "}
-                <Link to="/login" className="underline font-medium">
-                  Log in instead
-                </Link>
-              </span>
-            ),
-          });
-        } else if (error.message.includes("Invalid email")) {
-          toast({
-            variant: "destructive",
-            title: "Invalid email format",
-            description: "Please enter a valid email address (e.g., user@example.com)",
-          });
-        } else if (error.message.includes("Password")) {
-          toast({
-            variant: "destructive",
-            title: "Password too weak",
-            description: "Password must be at least 8 characters and include numbers and symbols",
-          });
-        } else {
-          throw error;
-        }
-        return;
-      }
+      if (error) throw error;
 
-      // Check if email confirmation is required
-      if (data.user && !data.session) {
-        toast({
-          title: "Check your email!",
-          description: "We've sent you a confirmation link. Please verify your email to continue.",
-        });
-      } else {
-        // Auto-logged in
-        toast({
-          title: "Account created!",
-          description: "Welcome to Async!",
-        });
-        navigate("/dashboard");
-      }
+      toast({
+        title: "Password updated!",
+        description: "Your password has been successfully changed. Redirecting to login...",
+      });
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Signup failed",
-        description: error.message || "An error occurred during signup",
+        title: "Reset failed",
+        description: error.message || "Failed to reset password",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
+  if (!hasValidToken) {
+    return null;
+  }
+
   return (
     <div className="flex min-h-screen">
       {/* Left side - Gradient */}
       <div className="hidden lg:flex lg:w-1/2 gradient-auth items-center justify-center p-12">
         <div className="max-w-md text-white">
-          <h1 className="text-4xl font-bold mb-6">Welcome to Async</h1>
+          <h1 className="text-4xl font-bold mb-6">Reset your password</h1>
           <p className="text-lg opacity-90">
-            AI-Powered Client Onboarding for modern agencies. Stop chasing clients and start working faster.
+            Choose a strong password to keep your account secure.
           </p>
         </div>
       </div>
@@ -150,46 +117,20 @@ export default function Signup() {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-foreground mb-2">Create your account</h2>
-            <p className="text-muted-foreground">Get started with Async today</p>
+            <h2 className="text-3xl font-bold text-foreground mb-2">Create new password</h2>
+            <p className="text-muted-foreground">
+              Enter your new password below
+            </p>
           </div>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="fullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="john@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>New Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
@@ -222,41 +163,46 @@ export default function Signup() {
 
               <FormField
                 control={form.control}
-                name="agreeToTerms"
+                name="confirmPassword"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      <div className="relative">
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          {...field}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="text-sm font-normal">
-                        I agree to the Terms of Service and Privacy Policy
-                      </FormLabel>
-                      <FormMessage />
-                    </div>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading || !form.formState.isValid}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating account...
+                    Resetting password...
                   </>
                 ) : (
-                  "Sign up"
+                  "Reset password"
                 )}
               </Button>
             </form>
           </Form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
+            Remember your password?{" "}
             <Link to="/login" className="text-primary font-medium hover:underline">
               Log in
             </Link>
