@@ -15,16 +15,28 @@ const Index = () => {
               <span className="text-xl font-bold">Async</span>
             </div>
             <div className="hidden items-center gap-8 md:flex">
-              <a href="#problem" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+              <a
+                href="#problem"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
                 Problem
               </a>
-              <a href="#solution" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+              <a
+                href="#solution"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
                 Solution
               </a>
-              <a href="#how-it-works" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+              <a
+                href="#how-it-works"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
                 How It Works
               </a>
-              <a href="#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+              <a
+                href="#pricing"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
                 Pricing
               </a>
             </div>
@@ -56,8 +68,8 @@ const Index = () => {
               Stop Chasing Clients for Onboarding Information
             </h1>
             <p className="mb-10 text-lg text-muted-foreground sm:text-xl md:text-2xl text-balance">
-              Async automates client intake with branded forms, file uploads, and smart follow-ups. 
-              Get the information you need without the back-and-forth.
+              Async automates client intake with branded forms, file uploads, and smart follow-ups. Get the information
+              you need without the back-and-forth.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link to="/signup" className="w-full sm:w-auto">
@@ -136,7 +148,8 @@ const Index = () => {
               One Link. Complete Onboarding.
             </h2>
             <p className="mb-16 text-lg text-muted-foreground sm:text-xl text-balance">
-              Send clients a single branded link. They fill out forms, upload files, and you get everything organized instantly.
+              Send clients a single branded link. They fill out forms, upload files, and you get everything organized
+              instantly.
             </p>
           </div>
           <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -146,9 +159,7 @@ const Index = () => {
                   <FileText className="h-8 w-8 text-primary" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">Custom Intake Forms</h3>
-                <p className="text-sm text-muted-foreground">
-                  Build branded forms tailored to your workflow
-                </p>
+                <p className="text-sm text-muted-foreground">Build branded forms tailored to your workflow</p>
               </CardContent>
             </Card>
             <Card className="shadow-soft transition-all duration-300 hover:shadow-medium">
@@ -157,9 +168,7 @@ const Index = () => {
                   <Upload className="h-8 w-8 text-primary" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">Smart File Uploads</h3>
-                <p className="text-sm text-muted-foreground">
-                  Collect files with automatic organization
-                </p>
+                <p className="text-sm text-muted-foreground">Collect files with automatic organization</p>
               </CardContent>
             </Card>
             <Card className="shadow-soft transition-all duration-300 hover:shadow-medium">
@@ -168,9 +177,7 @@ const Index = () => {
                   <Zap className="h-8 w-8 text-primary" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">Automated Follow-ups</h3>
-                <p className="text-sm text-muted-foreground">
-                  Gentle reminders without manual work
-                </p>
+                <p className="text-sm text-muted-foreground">Gentle reminders without manual work</p>
               </CardContent>
             </Card>
             <Card className="shadow-soft transition-all duration-300 hover:shadow-medium">
@@ -179,9 +186,7 @@ const Index = () => {
                   <Sparkles className="h-8 w-8 text-primary" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">AI Client Summaries</h3>
-                <p className="text-sm text-muted-foreground">
-                  Instant insights from client responses
-                </p>
+                <p className="text-sm text-muted-foreground">Instant insights from client responses</p>
               </CardContent>
             </Card>
           </div>
@@ -257,7 +262,8 @@ const Index = () => {
             <Card className="shadow-soft">
               <CardContent className="p-8">
                 <p className="mb-6 text-muted-foreground">
-                  "Async cut our onboarding time from 2 weeks to 2 days. It's like having a dedicated operations person."
+                  "Async cut our onboarding time from 2 weeks to 2 days. It's like having a dedicated operations
+                  person."
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
@@ -322,7 +328,9 @@ const Index = () => {
               <CardContent className="p-8">
                 <div className="mb-6 text-center">
                   <div className="mb-2 text-sm font-medium text-primary">Starting at</div>
-                  <div className="mb-2 text-5xl font-bold">$29<span className="text-2xl text-muted-foreground">/month</span></div>
+                  <div className="mb-2 text-5xl font-bold">
+                    $29<span className="text-2xl text-muted-foreground">/month</span>
+                  </div>
                   <div className="text-sm text-muted-foreground">Free plan available</div>
                 </div>
                 <div className="mb-8 space-y-4">
@@ -405,9 +413,15 @@ const Index = () => {
               © 2025 Async. All rights reserved. Built for agencies that move fast.
             </p>
             <div className="flex gap-6 text-sm text-muted-foreground">
-              <a href="#" className="transition-colors hover:text-primary">Privacy</a>
-              <a href="#" className="transition-colors hover:text-primary">Terms</a>
-              <a href="#" className="transition-colors hover:text-primary">Contact</a>
+              <a href="#" className="transition-colors hover:text-primary">
+                Privacy
+              </a>
+              <a href="#" className="transition-colors hover:text-primary">
+                Terms
+              </a>
+              <a href="#" className="transition-colors hover:text-primary">
+                Contact
+              </a>
             </div>
           </div>
         </div>
