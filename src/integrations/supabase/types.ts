@@ -535,6 +535,7 @@ export type Database = {
       }
       intake_forms: {
         Row: {
+          confirmation_email_enabled: boolean | null
           created_at: string
           created_by: string
           custom_branding: Json
@@ -544,6 +545,8 @@ export type Database = {
           id: string
           organization_id: string
           published_at: string | null
+          reminder_delay_hours: number | null
+          reminder_enabled: boolean | null
           settings: Json
           slug: string
           status: Database["public"]["Enums"]["form_status"]
@@ -553,6 +556,7 @@ export type Database = {
           view_count: number
         }
         Insert: {
+          confirmation_email_enabled?: boolean | null
           created_at?: string
           created_by: string
           custom_branding?: Json
@@ -562,6 +566,8 @@ export type Database = {
           id?: string
           organization_id: string
           published_at?: string | null
+          reminder_delay_hours?: number | null
+          reminder_enabled?: boolean | null
           settings?: Json
           slug: string
           status?: Database["public"]["Enums"]["form_status"]
@@ -571,6 +577,7 @@ export type Database = {
           view_count?: number
         }
         Update: {
+          confirmation_email_enabled?: boolean | null
           created_at?: string
           created_by?: string
           custom_branding?: Json
@@ -580,6 +587,8 @@ export type Database = {
           id?: string
           organization_id?: string
           published_at?: string | null
+          reminder_delay_hours?: number | null
+          reminder_enabled?: boolean | null
           settings?: Json
           slug?: string
           status?: Database["public"]["Enums"]["form_status"]
@@ -722,6 +731,70 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      reminder_logs: {
+        Row: {
+          client_id: string
+          created_at: string
+          email_status: string
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          organization_id: string
+          reminder_type: string
+          retry_count: number
+          sent_at: string
+          submission_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          email_status?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id: string
+          reminder_type: string
+          retry_count?: number
+          sent_at?: string
+          submission_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          email_status?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string
+          reminder_type?: string
+          retry_count?: number
+          sent_at?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminder_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminder_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminder_logs_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "form_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       submission_files: {
         Row: {
@@ -887,6 +960,20 @@ export type Database = {
       calculate_submission_completion: {
         Args: { form_fields: Json; submission_responses: Json }
         Returns: number
+      }
+      get_submissions_needing_reminders: {
+        Args: never
+        Returns: {
+          client_email: string
+          client_full_name: string
+          client_id: string
+          form_slug: string
+          form_title: string
+          hours_since_update: number
+          organization_id: string
+          reminder_delay_hours: number
+          submission_id: string
+        }[]
       }
       get_user_organizations: { Args: { p_user_id: string }; Returns: string[] }
       has_organization_role: {
