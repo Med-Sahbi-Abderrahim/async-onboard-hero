@@ -888,12 +888,12 @@ export type Database = {
         Args: { form_fields: Json; submission_responses: Json }
         Returns: number
       }
-      get_user_organizations: { Args: { user_id: string }; Returns: string[] }
+      get_user_organizations: { Args: { p_user_id: string }; Returns: string[] }
       has_organization_role: {
         Args: {
-          org_id: string
+          p_org_id: string
+          p_user_id: string
           required_role: Database["public"]["Enums"]["user_role"]
-          user_id: string
         }
         Returns: boolean
       }
@@ -902,7 +902,7 @@ export type Database = {
         Returns: undefined
       }
       is_organization_member: {
-        Args: { org_id: string; user_id: string }
+        Args: { p_org_id: string; p_user_id: string }
         Returns: boolean
       }
     }
