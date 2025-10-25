@@ -1,0 +1,126 @@
+import { useState, useEffect } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { ClientFormRenderer } from "@/components/client-form/ClientFormRenderer";
+import { ClientFormAuth } from "@/components/client-form/ClientFormAuth";
+import { ClientFormSuccess } from "@/components/client-form/ClientFormSuccess";
+import { Loader2 } from "lucide-react";
+
+export default function ClientFormPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
+
+  const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [form, setForm] = useState<any>(null);
+  const [client, setClient] = useState<any>(null);
+  const [submission, setSubmission] = useState<any>(null);
+
+  useEffect(() => {
+    loadFormAndAuth();
+  }, [slug, token]);
+
+  const loadFormAndAuth = async () => {
+    try {
+      // Load form by slug
+      const { data: formData, error: formError } = await supabase
+        .from("intake_forms")
+        .select("*")
+        .eq("slug", slug)
+        .eq("status", "active")
+        .single();
+
+      if (formError || !formData) {
+        console.error("Form not found", formError);
+        setLoading(false);
+        return;
+      }
+
+      setForm(formData);
+
+      // Check if token is provided and valid
+      if (token) {
+        const { data: clientData, error: clientError } = await supabase
+          .from("clients")
+          .select("*")
+          .eq("access_token", token)
+          .gte("access_token_expires_at", new Date().toISOString())
+          .single();
+
+        if (clientData && !clientError) {
+          setClient(clientData);
+          setAuthenticated(true);
+
+          // Check for existing submission
+          const { data: existingSubmission } = await supabase
+            .from("form_submissions")
+            .select("*")
+            .eq("intake_form_id", formData.id)
+            .eq("client_id", clientData.id)
+            .eq("status", "pending")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+
+          if (existingSubmission) {
+            setSubmission(existingSubmission);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error loading form:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAuthenticated = (clientData: any, submissionData?: any) => {
+    setClient(clientData);
+    setAuthenticated(true);
+    if (submissionData) {
+      setSubmission(submissionData);
+    }
+  };
+
+  const handleSubmitted = () => {
+    setSubmitted(true);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!form) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-2">Form Not Found</h1>
+          <p className="text-muted-foreground">This form is not available.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (submitted) {
+    return <ClientFormSuccess form={form} />;
+  }
+
+  if (!authenticated) {
+    return <ClientFormAuth form={form} onAuthenticated={handleAuthenticated} />;
+  }
+
+  return (
+    <ClientFormRenderer
+      form={form}
+      client={client}
+      existingSubmission={submission}
+      onSubmitted={handleSubmitted}
+    />
+  );
+}

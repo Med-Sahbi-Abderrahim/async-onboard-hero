@@ -19,6 +19,7 @@ import CreateForm from "./pages/CreateForm";
 import Submissions from "./pages/Submissions";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import ClientFormPage from "./pages/ClientFormPage";
 
 const queryClient = new QueryClient();
 
@@ -107,6 +108,9 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            
+            {/* Public client-facing form route */}
+            <Route path="/forms/:slug/submit" element={<ClientFormPage />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
