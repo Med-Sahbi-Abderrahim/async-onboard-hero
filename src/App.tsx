@@ -13,6 +13,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
+import ClientDetail from "./pages/ClientDetail";
 import Forms from "./pages/Forms";
 import Submissions from "./pages/Submissions";
 import Settings from "./pages/Settings";
@@ -51,6 +52,16 @@ const App = () => (
                 <ProtectedRoute>
                   <DashboardLayout>
                     <Clients />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/clients/:id"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <ClientDetail />
                   </DashboardLayout>
                 </ProtectedRoute>
               }
