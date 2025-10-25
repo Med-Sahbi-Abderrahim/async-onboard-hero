@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
 import ClientDetail from "./pages/ClientDetail";
 import Forms from "./pages/Forms";
+import CreateForm from "./pages/CreateForm";
 import Submissions from "./pages/Submissions";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -72,6 +73,16 @@ const App = () => (
                 <ProtectedRoute>
                   <DashboardLayout>
                     <Forms />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/forms/create"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <CreateForm />
                   </DashboardLayout>
                 </ProtectedRoute>
               }
