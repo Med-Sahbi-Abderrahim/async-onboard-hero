@@ -21,6 +21,8 @@ const routeTitles: Record<string, string> = {
   '/forms': 'Forms',
   '/submissions': 'Submissions',
   '/settings': 'Settings',
+  '/billing': 'Billing',
+  '/reminders': 'Reminders',
   '/settings/profile': 'My Profile',
   '/settings/organization': 'Organization Settings',
 };
@@ -99,6 +101,9 @@ export function Header() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/settings/organization')}>
                 Organization Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/billing')}>
+                Billing & Subscription
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleSignOut}>
