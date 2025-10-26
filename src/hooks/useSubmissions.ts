@@ -58,16 +58,15 @@ export function useSubmissions(options: UseSubmissionsOptions = {}) {
   }, []);
 
   // Fetch submissions
-  useEffect(() => {
+  const fetchSubmissions = async () => {
     if (!organizationId) return;
+    
+    setLoading(true);
 
-    const fetchSubmissions = async () => {
-      setLoading(true);
-
-      let query = supabase
-        .from("form_submissions")
-        .select(
-          `
+    let query = supabase
+      .from("form_submissions")
+      .select(
+        `
           id,
           organization_id,
           intake_form_id,
@@ -88,41 +87,42 @@ export function useSubmissions(options: UseSubmissionsOptions = {}) {
             slug
           )
         `,
-          { count: "exact" }
-        )
-        .eq("organization_id", organizationId)
-        .order("created_at", { ascending: false });
+        { count: "exact" }
+      )
+      .eq("organization_id", organizationId)
+      .order("created_at", { ascending: false });
 
-      // Apply status filter
-      if (statusFilter && statusFilter !== "all") {
-        query = query.eq("status", statusFilter as any);
-      }
+    // Apply status filter
+    if (statusFilter && statusFilter !== "all") {
+      query = query.eq("status", statusFilter as any);
+    }
 
-      // Apply search filter
-      if (searchQuery) {
-        // Note: This is a simple search. For production, consider full-text search
-        query = query.or(
-          `client.email.ilike.%${searchQuery}%,client.full_name.ilike.%${searchQuery}%,client.company_name.ilike.%${searchQuery}%`
-        );
-      }
+    // Apply search filter
+    if (searchQuery) {
+      // Note: This is a simple search. For production, consider full-text search
+      query = query.or(
+        `client.email.ilike.%${searchQuery}%,client.full_name.ilike.%${searchQuery}%,client.company_name.ilike.%${searchQuery}%`
+      );
+    }
 
-      // Apply pagination
-      const from = (page - 1) * pageSize;
-      const to = from + pageSize - 1;
-      query = query.range(from, to);
+    // Apply pagination
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+    query = query.range(from, to);
 
-      const { data, error, count } = await query;
+    const { data, error, count } = await query;
 
-      if (error) {
-        console.error("Error fetching submissions:", error);
-      } else if (data) {
-        setSubmissions(data as any);
-        setTotalCount(count || 0);
-      }
+    if (error) {
+      console.error("Error fetching submissions:", error);
+    } else if (data) {
+      setSubmissions(data as any);
+      setTotalCount(count || 0);
+    }
 
-      setLoading(false);
-    };
+    setLoading(false);
+  };
 
+  useEffect(() => {
     fetchSubmissions();
   }, [organizationId, searchQuery, statusFilter, page, pageSize]);
 
@@ -204,5 +204,6 @@ export function useSubmissions(options: UseSubmissionsOptions = {}) {
     loading,
     totalCount,
     totalPages: Math.ceil(totalCount / pageSize),
+    refresh: fetchSubmissions,
   };
 }

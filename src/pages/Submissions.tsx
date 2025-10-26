@@ -2,19 +2,24 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, FileDown, FileUp } from "lucide-react";
 import { useSubmissions, Submission } from "@/hooks/useSubmissions";
 import { SubmissionsTable } from "@/components/submissions/SubmissionsTable";
 import { SubmissionDetails } from "@/components/submissions/SubmissionDetails";
+import { ImportSubmissionsModal } from "@/components/submissions/ImportSubmissionsModal";
+import { useToast } from "@/hooks/use-toast";
+import * as XLSX from 'xlsx';
 
 export default function Submissions() {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
-  const { submissions, loading, totalCount, totalPages } = useSubmissions({
+  const { submissions, loading, totalCount, totalPages, refresh } = useSubmissions({
     searchQuery,
     statusFilter,
     page,
@@ -31,11 +36,95 @@ export default function Submissions() {
     setSelectedSubmission(null);
   };
 
+  const handleExportToExcel = () => {
+    if (submissions.length === 0) {
+      toast({
+        title: 'No data to export',
+        description: 'There are no submissions to export',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      // Prepare data for export
+      const exportData = submissions.map((submission) => ({
+        'Submission ID': submission.id,
+        'Client Name': submission.client?.full_name || '',
+        'Client Email': submission.client?.email || '',
+        'Company': submission.client?.company_name || '',
+        'Form': submission.intake_form?.title || '',
+        'Status': submission.status,
+        'Completion': `${submission.completion_percentage}%`,
+        'Submitted': submission.submitted_at
+          ? new Date(submission.submitted_at).toLocaleDateString()
+          : 'Not submitted',
+        'Created': new Date(submission.created_at).toLocaleDateString(),
+        // Add response fields
+        ...submission.responses,
+      }));
+
+      // Create workbook and worksheet
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Submissions');
+
+      // Auto-size columns
+      const maxWidth = 50;
+      const columnWidths = Object.keys(exportData[0] || {}).map((key) => ({
+        wch: Math.min(
+          maxWidth,
+          Math.max(
+            key.length,
+            ...exportData.map((row) => String(row[key as keyof typeof row] || '').length)
+          )
+        ),
+      }));
+      worksheet['!cols'] = columnWidths;
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `submissions-export-${timestamp}.xlsx`;
+
+      // Download file
+      XLSX.writeFile(workbook, filename);
+
+      toast({
+        title: 'Export successful',
+        description: `Exported ${submissions.length} submissions to ${filename}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Export failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleImportComplete = () => {
+    setImportModalOpen(false);
+    refresh();
+    setPage(1);
+  };
+
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold">Submissions</h2>
-        <p className="text-muted-foreground mt-2">View and manage form submissions.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold">Submissions</h2>
+          <p className="text-muted-foreground mt-2">View and manage form submissions.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+            <FileUp className="mr-2 h-4 w-4" />
+            Import
+          </Button>
+          <Button variant="outline" onClick={handleExportToExcel} disabled={loading || submissions.length === 0}>
+            <FileDown className="mr-2 h-4 w-4" />
+            Export to Excel
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -112,6 +201,13 @@ export default function Submissions() {
         submission={selectedSubmission}
         open={detailsOpen}
         onClose={handleCloseDetails}
+      />
+
+      {/* Import Modal */}
+      <ImportSubmissionsModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        onImportComplete={handleImportComplete}
       />
     </div>
   );
