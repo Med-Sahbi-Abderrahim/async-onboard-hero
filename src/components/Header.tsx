@@ -59,7 +59,13 @@ export function Header() {
 
         <div className="ml-auto flex items-center gap-4">
           {/* Notification Bell */}
-          <Button variant="ghost" size="icon" className="relative">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative"
+            onClick={() => navigate('/submissions')}
+            title="View notifications and submissions"
+          >
             <Bell className="h-5 w-5" />
             <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive"></span>
           </Button>

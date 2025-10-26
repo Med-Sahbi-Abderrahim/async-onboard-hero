@@ -1,5 +1,5 @@
 import { LayoutDashboard, Users, FileText, Inbox, Settings } from 'lucide-react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   Sidebar,
   SidebarContent,
@@ -24,6 +24,7 @@ const items = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isCollapsed = state === 'collapsed';
 
@@ -73,7 +74,12 @@ export function AppSidebar() {
                 <p className="text-sm text-white/80 mb-3">
                   Unlock unlimited forms and advanced features
                 </p>
-                <Button variant="secondary" size="sm" className="w-full">
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  className="w-full"
+                  onClick={() => navigate('/settings')}
+                >
                   Upgrade Now
                 </Button>
               </CardContent>

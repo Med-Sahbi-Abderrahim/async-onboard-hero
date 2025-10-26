@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, FileText, Inbox, UserPlus, FilePlus, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const { profile } = useUser();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalClients: 0,
     activeForms: 0,
@@ -95,7 +97,7 @@ export default function Dashboard() {
             <p className="text-muted-foreground mb-6">
               Invite your first client to begin collecting submissions.
             </p>
-            <Button>
+            <Button onClick={() => navigate('/clients')}>
               <UserPlus className="mr-2 h-4 w-4" />
               Invite Client
             </Button>
@@ -145,15 +147,15 @@ export default function Dashboard() {
               <CardDescription>Get started with common tasks</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-3">
-              <Button>
+              <Button onClick={() => navigate('/clients')}>
                 <UserPlus className="mr-2 h-4 w-4" />
                 Invite Client
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" onClick={() => navigate('/forms/create')}>
                 <FilePlus className="mr-2 h-4 w-4" />
                 Create Form
               </Button>
-              <Button variant="outline">
+              <Button variant="outline" onClick={() => navigate('/submissions')}>
                 <Eye className="mr-2 h-4 w-4" />
                 View Submissions
               </Button>
