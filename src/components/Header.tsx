@@ -21,10 +21,13 @@ const routeTitles: Record<string, string> = {
   '/forms': 'Forms',
   '/submissions': 'Submissions',
   '/settings': 'Settings',
+  '/settings/profile': 'Settings',
+  '/settings/organization': 'Settings',
+  '/settings/team': 'Settings',
+  '/settings/notifications': 'Settings',
+  '/settings/api-keys': 'Settings',
   '/billing': 'Billing',
   '/reminders': 'Reminders',
-  '/settings/profile': 'My Profile',
-  '/settings/organization': 'Organization Settings',
 };
 
 export function Header() {

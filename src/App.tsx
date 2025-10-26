@@ -22,6 +22,12 @@ import Billing from "./pages/Billing";
 import ReminderSettings from "./pages/ReminderSettings";
 import NotFound from "./pages/NotFound";
 import ClientFormPage from "./pages/ClientFormPage";
+import { SettingsLayout } from "./components/settings/SettingsLayout";
+import { ProfileSettings } from "./components/settings/ProfileSettings";
+import { OrganizationSettings } from "./components/settings/OrganizationSettings";
+import { TeamSettings } from "./components/settings/TeamSettings";
+import { NotificationSettings } from "./components/settings/NotificationSettings";
+import { ApiKeysSettings } from "./components/settings/ApiKeysSettings";
 
 const queryClient = new QueryClient();
 
@@ -105,7 +111,69 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <DashboardLayout>
-                    <Settings />
+                    <SettingsLayout>
+                      <Settings />
+                    </SettingsLayout>
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/profile"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <SettingsLayout>
+                      <ProfileSettings />
+                    </SettingsLayout>
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/organization"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <SettingsLayout>
+                      <OrganizationSettings />
+                    </SettingsLayout>
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/team"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <SettingsLayout>
+                      <TeamSettings />
+                    </SettingsLayout>
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/notifications"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <SettingsLayout>
+                      <NotificationSettings />
+                    </SettingsLayout>
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/api-keys"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <SettingsLayout>
+                      <ApiKeysSettings />
+                    </SettingsLayout>
                   </DashboardLayout>
                 </ProtectedRoute>
               }

@@ -7,6 +7,7 @@ interface UserProfile {
   email: string;
   full_name: string;
   avatar_url?: string;
+  preferences?: any;
 }
 
 interface UserContextType {
@@ -14,6 +15,7 @@ interface UserContextType {
   session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
+  refreshProfile: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -23,6 +25,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const refreshProfile = async () => {
+    if (!session?.user) return;
+    
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', session.user.id)
+      .single();
+    
+    if (data) {
+      setProfile(data);
+    }
+  };
 
   useEffect(() => {
     // Set up auth state listener
@@ -76,7 +92,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, session, profile, loading }}>
+    <UserContext.Provider value={{ user, session, profile, loading, refreshProfile }}>
       {children}
     </UserContext.Provider>
   );
