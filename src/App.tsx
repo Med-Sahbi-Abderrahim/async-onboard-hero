@@ -28,6 +28,7 @@ import { OrganizationSettings } from "./components/settings/OrganizationSettings
 import { TeamSettings } from "./components/settings/TeamSettings";
 import { NotificationSettings } from "./components/settings/NotificationSettings";
 import { ApiKeysSettings } from "./components/settings/ApiKeysSettings";
+import AuthCallback from "./pages/AuthCallback";
 
 const queryClient = new QueryClient();
 
@@ -44,7 +45,9 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            
+            {/* callback after email confirmation*/}
+            <Route path="/auth/callback" element={<AuthCallback />} />
+
             {/* Protected Routes with Dashboard Layout */}
             <Route
               path="/dashboard"
