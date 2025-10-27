@@ -4,11 +4,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Eye, Trash2, ExternalLink } from "lucide-react";
+import { Plus, MoreVertical, Edit, Trash2, ExternalLink, Eye } from "lucide-react";
 import { format } from "date-fns";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface IntakeForm {
   id: string;
@@ -27,6 +43,9 @@ export default function Forms() {
   const { toast } = useToast();
   const [forms, setForms] = useState<IntakeForm[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [formToDelete, setFormToDelete] = useState<IntakeForm | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -52,6 +71,7 @@ export default function Forms() {
         .from("intake_forms")
         .select("id, title, description, status, submission_count, view_count, created_at, slug")
         .eq("organization_id", orgMember.organization_id)
+        .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -66,6 +86,106 @@ export default function Forms() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePublishForm = async (form: IntakeForm) => {
+    try {
+      const { error } = await supabase
+        .from("intake_forms")
+        .update({ 
+          status: "active",
+          published_at: new Date().toISOString()
+        })
+        .eq("id", form.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Form published successfully",
+      });
+
+      fetchForms();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUnpublishForm = async (form: IntakeForm) => {
+    try {
+      const { error } = await supabase
+        .from("intake_forms")
+        .update({ status: "draft" })
+        .eq("id", form.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Form unpublished successfully",
+      });
+
+      fetchForms();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const confirmDelete = (form: IntakeForm) => {
+    setFormToDelete(form);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteForm = async () => {
+    if (!formToDelete) return;
+
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("intake_forms")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", formToDelete.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Form deleted successfully",
+      });
+
+      setDeleteDialogOpen(false);
+      setFormToDelete(null);
+      fetchForms();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+        return <Badge className="bg-green-500">Active</Badge>;
+      case "draft":
+        return <Badge variant="secondary">Draft</Badge>;
+      case "archived":
+        return <Badge variant="outline">Archived</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
     }
   };
 
@@ -118,31 +238,52 @@ export default function Forms() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={form.status === "published" ? "default" : "secondary"}>
-                        {form.status}
-                      </Badge>
-                    </TableCell>
+                    <TableCell>{getStatusBadge(form.status)}</TableCell>
                     <TableCell>{form.submission_count}</TableCell>
                     <TableCell>{form.view_count}</TableCell>
                     <TableCell>{format(new Date(form.created_at), "MMM d, yyyy")}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => navigate(`/forms/${form.id}`)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => window.open(`/f/${form.slug}`, "_blank")}
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => navigate(`/forms/${form.id}`)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => navigate(`/forms/${form.id}/edit`)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit Form
+                          </DropdownMenuItem>
+                          {form.status === "active" ? (
+                            <DropdownMenuItem onClick={() => handleUnpublishForm(form)}>
+                              Unpublish
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={() => handlePublishForm(form)}>
+                              Publish
+                            </DropdownMenuItem>
+                          )}
+                          {form.status === "active" && (
+                            <DropdownMenuItem
+                              onClick={() => window.open(`/forms/${form.slug}/submit`, "_blank")}
+                            >
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Open Form
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem
+                            onClick={() => confirmDelete(form)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -151,6 +292,23 @@ export default function Forms() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete "{formToDelete?.title}". This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteForm} disabled={deleting}>
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
