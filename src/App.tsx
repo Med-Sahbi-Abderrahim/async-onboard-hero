@@ -29,6 +29,8 @@ import { TeamSettings } from "./components/settings/TeamSettings";
 import { NotificationSettings } from "./components/settings/NotificationSettings";
 import { ApiKeysSettings } from "./components/settings/ApiKeysSettings";
 import AuthCallback from "./pages/AuthCallback";
+import FormDetail from "./pages/FormDetail";
+import EditForm from "./pages/EditForm";
 
 const queryClient = new QueryClient();
 
@@ -95,6 +97,26 @@ const App = () => (
                 <ProtectedRoute>
                   <DashboardLayout>
                     <CreateForm />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/forms/:id"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <FormDetail />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/forms/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <EditForm />
                   </DashboardLayout>
                 </ProtectedRoute>
               }
