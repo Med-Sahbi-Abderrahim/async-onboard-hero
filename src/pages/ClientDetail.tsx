@@ -257,16 +257,17 @@ export default function ClientDetail() {
       if (error) throw error;
 
       toast({
-        title: 'Success',
-        description: 'Client deleted successfully',
+        title: "Success",
+        description: `"${client?.full_name || 'Client'}" has been deleted successfully.`,
       });
 
       navigate('/clients');
     } catch (error: any) {
+      console.error('Delete client error:', error);
       toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
+        title: "Failed to delete client",
+        description: "You don't have permission to delete this client or an error occurred. Please try again.",
+        variant: "destructive",
       });
     }
   };

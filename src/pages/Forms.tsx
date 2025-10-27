@@ -159,16 +159,17 @@ export default function Forms() {
 
       toast({
         title: "Success",
-        description: "Form deleted successfully",
+        description: `"${formToDelete.title}" has been deleted successfully.`,
       });
 
       setDeleteDialogOpen(false);
       setFormToDelete(null);
       fetchForms();
     } catch (error: any) {
+      console.error('Delete form error:', error);
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Failed to delete form",
+        description: "You don't have permission to delete this form or an error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
