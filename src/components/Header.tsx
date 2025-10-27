@@ -1,4 +1,3 @@
-import { Bell } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { NotificationsDropdown } from '@/components/NotificationsDropdown';
 import { useUser } from '@/contexts/UserContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -62,18 +62,8 @@ export function Header() {
         
         <h1 className="text-2xl font-semibold">{pageTitle}</h1>
 
-        <div className="ml-auto flex items-center gap-4">
-          {/* Notification Bell */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="relative"
-            onClick={() => navigate('/submissions')}
-            title="View notifications and submissions"
-          >
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive"></span>
-          </Button>
+        <div className="ml-auto flex items-center gap-2">
+          <NotificationsDropdown />
 
           {/* User Menu */}
           <DropdownMenu>

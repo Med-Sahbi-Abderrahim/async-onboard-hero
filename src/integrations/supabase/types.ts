@@ -614,6 +614,53 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          metadata: Json | null
+          organization_id: string
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          metadata?: Json | null
+          organization_id: string
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          metadata?: Json | null
+          organization_id?: string
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -960,6 +1007,16 @@ export type Database = {
       calculate_submission_completion: {
         Args: { form_fields: Json; submission_responses: Json }
         Returns: number
+      }
+      create_notification_for_org: {
+        Args: {
+          p_message: string
+          p_metadata?: Json
+          p_organization_id: string
+          p_title: string
+          p_type: string
+        }
+        Returns: undefined
       }
       get_submissions_needing_reminders: {
         Args: never
