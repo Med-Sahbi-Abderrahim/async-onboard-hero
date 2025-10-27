@@ -7,10 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CreateClientModal } from '@/components/CreateClientModal';
 import { ShareLinkModal } from '@/components/ShareLinkModal';
+import { ImportClientsModal } from '@/components/clients/ImportClientsModal';
 import { useNavigate } from 'react-router-dom';
-import { Search, UserPlus } from 'lucide-react';
+import { Search, UserPlus, FileDown, FileUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import * as XLSX from 'xlsx';
 
 interface Client {
   id: string;
@@ -23,6 +25,7 @@ interface Client {
   created_at: string;
   access_token: string;
   access_token_expires_at: string | null;
+  tags?: string[];
 }
 
 export default function Clients() {
@@ -35,8 +38,10 @@ export default function Clients() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [newClient, setNewClient] = useState<Client | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [organizationId, setOrganizationId] = useState<string>('');
   const itemsPerPage = 20;
 
   useEffect(() => {
@@ -61,6 +66,8 @@ export default function Clients() {
 
       if (!memberData) return;
 
+      setOrganizationId(memberData.organization_id);
+
       const { data, error } = await supabase
         .from('clients')
         .select('*')
@@ -79,6 +86,71 @@ export default function Clients() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportToExcel = () => {
+    if (filteredClients.length === 0) {
+      toast({
+        title: "No data to export",
+        description: "There are no clients to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Prepare data for export
+      const exportData = filteredClients.map((client) => ({
+        "Full Name": client.full_name || "",
+        Email: client.email,
+        Phone: client.phone || "",
+        Company: client.company_name || "",
+        Status: client.status,
+        Tags: client.tags?.join(", ") || "",
+        "Last Activity": client.last_activity_at
+          ? new Date(client.last_activity_at).toLocaleString()
+          : "Never",
+        "Created At": new Date(client.created_at).toLocaleString(),
+      }));
+
+      // Create worksheet
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Auto-size columns
+      const maxWidth = 50;
+      const colWidths = Object.keys(exportData[0] || {}).map((key) => ({
+        wch: Math.min(
+          Math.max(
+            key.length,
+            ...exportData.map((row) => String(row[key as keyof typeof row] || "").length)
+          ),
+          maxWidth
+        ),
+      }));
+      worksheet["!cols"] = colWidths;
+
+      // Create workbook
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Clients");
+
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().split("T")[0];
+      const filename = `clients_export_${timestamp}.xlsx`;
+
+      // Download file
+      XLSX.writeFile(workbook, filename);
+
+      toast({
+        title: "Export successful",
+        description: `Exported ${filteredClients.length} clients to ${filename}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Export failed",
+        description: error.message || "Failed to export clients",
+        variant: "destructive",
+      });
     }
   };
 
@@ -139,10 +211,20 @@ export default function Clients() {
           <h2 className="text-3xl font-bold">Clients</h2>
           <p className="text-muted-foreground mt-2">Manage and invite your clients</p>
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)} size="lg">
-          <UserPlus className="mr-2 h-4 w-4" />
-          Invite Client
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
+            <FileUp className="mr-2 h-4 w-4" />
+            Import
+          </Button>
+          <Button variant="outline" onClick={handleExportToExcel} disabled={clients.length === 0}>
+            <FileDown className="mr-2 h-4 w-4" />
+            Export
+          </Button>
+          <Button onClick={() => setIsCreateModalOpen(true)}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Invite Client
+          </Button>
+        </div>
       </div>
 
       <div className="relative">
@@ -245,6 +327,14 @@ export default function Clients() {
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
         onClientCreated={handleClientCreated}
+      />
+
+      <ImportClientsModal
+        open={isImportModalOpen}
+        onOpenChange={setIsImportModalOpen}
+        organizationId={organizationId}
+        userId={user?.id || ''}
+        onImportComplete={fetchClients}
       />
 
       {newClient && (
