@@ -1,24 +1,13 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useUser } from "@/contexts/UserContext";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import {
-  ArrowLeft,
-  Edit,
-  Trash2,
-  ExternalLink,
-  Copy,
-  Eye,
-  FileText,
-  Calendar,
-  Users,
-  Loader2,
-} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/contexts/UserContext";
+import { ArrowLeft, Edit, ExternalLink, Eye, Copy, Trash2, BarChart3, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import {
   AlertDialog,
@@ -34,8 +23,8 @@ import {
 export default function FormDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useUser();
   const { toast } = useToast();
+  const { user } = useUser();
   const [form, setForm] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -43,11 +32,11 @@ export default function FormDetail() {
 
   useEffect(() => {
     if (user && id) {
-      fetchForm();
+      loadForm();
     }
   }, [user, id]);
 
-  const fetchForm = async () => {
+  const loadForm = async () => {
     try {
       const { data: orgMember } = await supabase
         .from("organization_members")
@@ -79,22 +68,70 @@ export default function FormDetail() {
     }
   };
 
-  const handleCopyLink = () => {
-    const formUrl = `${window.location.origin}/forms/${form.slug}/submit`;
-    navigator.clipboard.writeText(formUrl);
-    toast({
-      title: "Copied!",
-      description: "Form link copied to clipboard",
-    });
+  const handlePublishForm = async () => {
+    if (!form) return;
+
+    try {
+      const { error } = await supabase
+        .from("intake_forms")
+        .update({ 
+          status: "active",
+          published_at: new Date().toISOString()
+        })
+        .eq("id", form.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Form published successfully",
+      });
+
+      loadForm();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDelete = async () => {
+  const handleUnpublishForm = async () => {
+    if (!form) return;
+
+    try {
+      const { error } = await supabase
+        .from("intake_forms")
+        .update({ status: "draft" })
+        .eq("id", form.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Form unpublished successfully",
+      });
+
+      loadForm();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteForm = async () => {
+    if (!form) return;
+
     setDeleting(true);
     try {
       const { error } = await supabase
         .from("intake_forms")
         .update({ deleted_at: new Date().toISOString() })
-        .eq("id", id);
+        .eq("id", form.id);
 
       if (error) throw error;
 
@@ -102,6 +139,7 @@ export default function FormDetail() {
         title: "Success",
         description: "Form deleted successfully",
       });
+
       navigate("/forms");
     } catch (error: any) {
       toast({
@@ -114,33 +152,35 @@ export default function FormDetail() {
     }
   };
 
-  const handleToggleStatus = async () => {
+  const handleCopyLink = async () => {
+    if (!form) return;
+    
+    const formUrl = `${window.location.origin}/forms/${form.slug}/submit`;
     try {
-      const newStatus = form.status === "active" ? "draft" : "active";
-      const updates: any = { status: newStatus };
-      
-      if (newStatus === "active") {
-        updates.published_at = new Date().toISOString();
-      }
-
-      const { error } = await supabase
-        .from("intake_forms")
-        .update(updates)
-        .eq("id", id);
-
-      if (error) throw error;
-
+      await navigator.clipboard.writeText(formUrl);
       toast({
         title: "Success",
-        description: `Form ${newStatus === "active" ? "published" : "unpublished"} successfully`,
+        description: "Form link copied to clipboard",
       });
-      fetchForm();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: "Failed to copy link",
         variant: "destructive",
       });
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+        return <Badge className="bg-green-500">Active</Badge>;
+      case "draft":
+        return <Badge variant="secondary">Draft</Badge>;
+      case "archived":
+        return <Badge variant="outline">Archived</Badge>;
+      default:
+        return <Badge>{status}</Badge>;
     }
   };
 
@@ -152,199 +192,149 @@ export default function FormDetail() {
     );
   }
 
-  if (!form) return null;
+  if (!form) {
+    return null;
+  }
 
   const formUrl = `${window.location.origin}/forms/${form.slug}/submit`;
-  const statusColors = {
-    active: "bg-green-500",
-    draft: "bg-gray-500",
-    archived: "bg-yellow-500",
-  };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/forms")}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/forms")}
+          >
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">{form.title}</h1>
-            <p className="text-muted-foreground mt-1">
-              {form.description || "No description provided"}
-            </p>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold">{form.title}</h1>
+              {getStatusBadge(form.status)}
+            </div>
+            {form.description && (
+              <p className="text-muted-foreground mt-1">{form.description}</p>
+            )}
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate(`/forms/${id}/edit`)}>
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/forms/${form.id}/edit`)}
+          >
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </Button>
-          <Button
-            variant={form.status === "active" ? "outline" : "default"}
-            onClick={handleToggleStatus}
-          >
-            {form.status === "active" ? "Unpublish" : "Publish"}
-          </Button>
+          {form.status === "active" ? (
+            <>
+              <Button variant="outline" onClick={handleCopyLink}>
+                <Copy className="h-4 w-4 mr-2" />
+                Copy Link
+              </Button>
+              <Button onClick={() => window.open(formUrl, "_blank")}>
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Open Form
+              </Button>
+            </>
+          ) : (
+            <Button onClick={handlePublishForm}>Publish Form</Button>
+          )}
         </div>
       </div>
 
-      {/* Status & Stats Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Form Information</CardTitle>
-            <Badge className={statusColors[form.status as keyof typeof statusColors]}>
-              {form.status}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <FileText className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Submissions</p>
-                <p className="text-2xl font-bold">{form.submission_count}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Eye className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Views</p>
-                <p className="text-2xl font-bold">{form.view_count}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Calendar className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Created</p>
-                <p className="text-sm font-medium">
-                  {format(new Date(form.created_at), "MMM d, yyyy")}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {form.published_at && (
-            <div className="text-sm text-muted-foreground">
-              Published: {format(new Date(form.published_at), "MMM d, yyyy 'at' h:mm a")}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Form URL Card */}
-      {form.status === "active" && (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Public Form Link</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={formUrl}
-                readOnly
-                className="flex-1 px-3 py-2 bg-muted rounded-md font-mono text-sm"
-              />
-              <Button variant="outline" size="icon" onClick={handleCopyLink}>
-                <Copy className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => window.open(formUrl, "_blank")}
-              >
-                <ExternalLink className="h-4 w-4" />
-              </Button>
+          <CardContent>
+            <div className="text-2xl font-bold">{form.view_count}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Submissions</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{form.submission_count}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {form.view_count > 0
+                ? `${((form.submission_count / form.view_count) * 100).toFixed(1)}%`
+                : "0%"}
             </div>
           </CardContent>
         </Card>
-      )}
+      </div>
 
-      {/* Form Fields Preview */}
       <Card>
         <CardHeader>
-          <CardTitle>Form Fields ({form.fields?.length || 0})</CardTitle>
+          <CardTitle>Form Information</CardTitle>
         </CardHeader>
-        <CardContent>
-          {!form.fields || form.fields.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">No fields configured</p>
-          ) : (
-            <div className="space-y-2">
-              {form.fields.map((field: any, index: number) => (
-                <div
-                  key={field.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-muted-foreground">
-                      {index + 1}
-                    </span>
-                    <div>
-                      <p className="font-medium">{field.label}</p>
-                      <p className="text-sm text-muted-foreground capitalize">
-                        {field.type}
-                        {field.required && (
-                          <span className="text-destructive ml-1">*</span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant="outline">{field.type}</Badge>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Settings Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Settings</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Send Reminders</span>
-            <Badge variant={form.settings?.send_reminders ? "default" : "secondary"}>
-              {form.settings?.send_reminders ? "Enabled" : "Disabled"}
-            </Badge>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm">Public Access</span>
-            <Badge variant={form.settings?.is_public ? "default" : "secondary"}>
-              {form.settings?.is_public ? "Public" : "Private"}
-            </Badge>
-          </div>
-          {form.settings?.redirect_url && (
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-sm text-muted-foreground">Redirect URL:</span>
-              <p className="text-sm font-mono">{form.settings.redirect_url}</p>
+              <p className="text-sm text-muted-foreground">Created</p>
+              <p className="font-medium">
+                {format(new Date(form.created_at), "MMM d, yyyy 'at' h:mm a")}
+              </p>
             </div>
-          )}
+            {form.published_at && (
+              <div>
+                <p className="text-sm text-muted-foreground">Published</p>
+                <p className="font-medium">
+                  {format(new Date(form.published_at), "MMM d, yyyy 'at' h:mm a")}
+                </p>
+              </div>
+            )}
+            <div>
+              <p className="text-sm text-muted-foreground">Form Fields</p>
+              <p className="font-medium">{form.fields?.length || 0} fields</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Form Slug</p>
+              <p className="font-medium font-mono text-sm">{form.slug}</p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Danger Zone */}
-      <Card className="border-destructive">
+      <Card className="border-destructive/50">
         <CardHeader>
           <CardTitle className="text-destructive">Danger Zone</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {form.status === "active" && (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Unpublish Form</p>
+                <p className="text-sm text-muted-foreground">
+                  Make this form unavailable for new submissions
+                </p>
+              </div>
+              <Button variant="outline" onClick={handleUnpublishForm}>
+                Unpublish
+              </Button>
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium">Delete this form</p>
+              <p className="font-medium">Delete Form</p>
               <p className="text-sm text-muted-foreground">
-                Once deleted, this form and all its submissions will be permanently removed.
+                Permanently delete this form and all its submissions
               </p>
             </div>
             <Button
@@ -352,30 +342,24 @@ export default function FormDetail() {
               onClick={() => setDeleteDialogOpen(true)}
             >
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete Form
+              Delete
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete "{form.title}" and all associated submissions.
-              This action cannot be undone.
+              This will permanently delete "{form.title}" and all its submissions. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={deleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {deleting ? "Deleting..." : "Delete Form"}
+            <AlertDialogAction onClick={handleDeleteForm} disabled={deleting}>
+              {deleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

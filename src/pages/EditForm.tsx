@@ -76,9 +76,9 @@ export default function EditForm() {
       // Populate form with existing data
       setTitle(data.title);
       setDescription(data.description || "");
-      setFields(data.fields || []);
-      setBranding(data.custom_branding || branding);
-      setSettings(data.settings || settings);
+      setFields((data.fields as unknown as FormField[]) || []);
+      setBranding((data.custom_branding as unknown as typeof branding) || branding);
+      setSettings((data.settings as unknown as typeof settings) || settings);
     } catch (error: any) {
       toast({
         title: "Error",
