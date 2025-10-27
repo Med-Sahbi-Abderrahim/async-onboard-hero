@@ -25,6 +25,15 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const resendApiKey = Deno.env.get('RESEND_API_KEY') || 'PLACEHOLDER_KEY';
@@ -32,6 +41,34 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const resend = new Resend(resendApiKey);
 
+    // Extract user from JWT token
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`User ${user.id} triggered reminder check`);
+
+    // Verify user has admin/owner role in at least one organization
+    const { data: userOrgs, error: orgsError } = await supabase
+      .from('organization_members')
+      .select('organization_id, role')
+      .eq('user_id', user.id)
+      .in('role', ['owner', 'admin']);
+
+    if (orgsError || !userOrgs || userOrgs.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden - requires admin or owner role' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const allowedOrgIds = userOrgs.map(org => org.organization_id);
     console.log('Starting form reminder job...');
 
     // Get all submissions needing reminders
@@ -50,11 +87,24 @@ serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+    
+    // Filter to only organizations the user has access to
+    const filteredSubmissions = submissions.filter(sub => 
+      allowedOrgIds.includes(sub.organization_id)
+    );
+    
+    console.log(`Found ${filteredSubmissions.length} submissions needing reminders (filtered to user's organizations)`);
 
-    console.log(`Found ${submissions.length} submissions needing reminders`);
+    if (filteredSubmissions.length === 0) {
+      console.log('No submissions need reminders at this time');
+      return new Response(
+        JSON.stringify({ message: 'No reminders sent', count: 0 }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const results = await Promise.allSettled(
-      submissions.map(async (submission) => {
+      filteredSubmissions.map(async (submission) => {
         const formUrl = `${supabaseUrl.replace('xcvupdkdrrqjrgjzvhoy.supabase.co', 'lovable.app')}/forms/${submission.form_slug}/submit`;
         
         try {
@@ -131,7 +181,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         message: 'Reminder job completed',
-        total: submissions.length,
+        total: filteredSubmissions.length,
         successful: successCount,
         failed: failureCount,
       }),

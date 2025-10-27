@@ -17,6 +17,15 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { submissionId }: ConfirmationRequest = await req.json();
 
     if (!submissionId) {
@@ -32,6 +41,17 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const resend = new Resend(resendApiKey);
+
+    // Extract user from JWT token
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     console.log(`Sending confirmation for submission ${submissionId}`);
 
@@ -69,6 +89,21 @@ serve(async (req) => {
     }
 
     const { clients, intake_forms } = submission as any;
+
+    // Verify user has access to this organization
+    const { data: membership, error: memberError } = await supabase
+      .from('organization_members')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('organization_id', submission.organization_id)
+      .single();
+
+    if (memberError || !membership) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden - not a member of this organization' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Check if confirmation emails are enabled for this form
     if (!intake_forms?.confirmation_email_enabled) {

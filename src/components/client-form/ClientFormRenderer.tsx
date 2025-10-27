@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Loader2, Save } from "lucide-react";
 import { ClientFormField } from "./ClientFormField";
 import { useFormAutosave } from "@/hooks/useFormAutosave";
+import { z } from 'zod';
 
 interface ClientFormRendererProps {
   form: any;
@@ -59,15 +60,44 @@ export function ClientFormRenderer({
   });
 
   const validateField = (field: any, value: any): string | null => {
+    // Required field check
     if (field.required && (!value || value === "")) {
       return `${field.label} is required`;
     }
 
-    if (field.type === "email" && value) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(value)) {
-        return "Please enter a valid email address";
+    if (!value) return null;
+
+    // Type-specific validation with proper schemas
+    try {
+      switch (field.type) {
+        case "email":
+          z.string().email().max(255).parse(value);
+          break;
+        case "phone":
+          z.string().regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number format").parse(value);
+          break;
+        case "url":
+          z.string().url().max(500).parse(value);
+          break;
+        case "number":
+          const numValue = Number(value);
+          if (isNaN(numValue)) return "Please enter a valid number";
+          z.number().min(-1000000).max(1000000).parse(numValue);
+          break;
+        case "text":
+        case "textarea":
+          const maxLength = field.type === "textarea" ? 5000 : 500;
+          z.string().max(maxLength, `Maximum ${maxLength} characters allowed`).parse(value);
+          break;
+        case "date":
+          z.string().datetime().or(z.string().date()).parse(value);
+          break;
       }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return error.errors[0].message;
+      }
+      return "Invalid value";
     }
 
     return null;
