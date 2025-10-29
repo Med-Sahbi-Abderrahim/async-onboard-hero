@@ -17,6 +17,7 @@ interface SubmissionToRemind {
   form_slug: string;
   hours_since_update: number;
   reminder_delay_hours: number;
+  reminder_interval: number;
 }
 
 serve(async (req) => {
@@ -177,6 +178,7 @@ serve(async (req) => {
             metadata: {
               email_id: emailData?.id,
               hours_since_update: submission.hours_since_update,
+              reminder_interval: submission.reminder_interval.toString(),
             },
           });
 

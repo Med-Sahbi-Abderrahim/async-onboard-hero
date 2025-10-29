@@ -1064,6 +1064,7 @@ export type Database = {
           hours_since_update: number
           organization_id: string
           reminder_delay_hours: number
+          reminder_interval: number
           submission_id: string
         }[]
       }
