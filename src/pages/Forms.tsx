@@ -37,6 +37,15 @@ interface IntakeForm {
   slug: string;
 }
 
+(async () => {
+  const { error } = await supabase
+    .from("intake_forms")
+    .update({ title: "new title", organization_id: "YOUR_ORG_ID_HERE" })
+    .eq("id", "62ee64c4-25d2-448d-a985-df09b39179c7");
+
+  console.log("Update error:", error);
+})();
+
 export default function Forms() {
   const navigate = useNavigate();
   const { user } = useUser();
@@ -93,9 +102,9 @@ export default function Forms() {
     try {
       const { error } = await supabase
         .from("intake_forms")
-        .update({ 
+        .update({
           status: "active",
-          published_at: new Date().toISOString()
+          published_at: new Date().toISOString(),
         })
         .eq("id", form.id);
 
@@ -118,10 +127,7 @@ export default function Forms() {
 
   const handleUnpublishForm = async (form: IntakeForm) => {
     try {
-      const { error } = await supabase
-        .from("intake_forms")
-        .update({ status: "draft" })
-        .eq("id", form.id);
+      const { error } = await supabase.from("intake_forms").update({ status: "draft" }).eq("id", form.id);
 
       if (error) throw error;
 
@@ -166,7 +172,7 @@ export default function Forms() {
       setFormToDelete(null);
       fetchForms();
     } catch (error: any) {
-      console.error('Delete form error:', error);
+      console.error("Delete form error:", error);
       toast({
         title: "Failed to delete form",
         description: "You don't have permission to delete this form or an error occurred. Please try again.",
@@ -233,9 +239,7 @@ export default function Forms() {
                       <div>
                         <div className="font-medium">{form.title}</div>
                         {form.description && (
-                          <div className="text-sm text-muted-foreground line-clamp-1">
-                            {form.description}
-                          </div>
+                          <div className="text-sm text-muted-foreground line-clamp-1">{form.description}</div>
                         )}
                       </div>
                     </TableCell>
@@ -260,26 +264,17 @@ export default function Forms() {
                             Edit Form
                           </DropdownMenuItem>
                           {form.status === "active" ? (
-                            <DropdownMenuItem onClick={() => handleUnpublishForm(form)}>
-                              Unpublish
-                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleUnpublishForm(form)}>Unpublish</DropdownMenuItem>
                           ) : (
-                            <DropdownMenuItem onClick={() => handlePublishForm(form)}>
-                              Publish
-                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handlePublishForm(form)}>Publish</DropdownMenuItem>
                           )}
                           {form.status === "active" && (
-                            <DropdownMenuItem
-                              onClick={() => window.open(`/forms/${form.slug}/submit`, "_blank")}
-                            >
+                            <DropdownMenuItem onClick={() => window.open(`/forms/${form.slug}/submit`, "_blank")}>
                               <ExternalLink className="h-4 w-4 mr-2" />
                               Open Form
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem
-                            onClick={() => confirmDelete(form)}
-                            className="text-destructive"
-                          >
+                          <DropdownMenuItem onClick={() => confirmDelete(form)} className="text-destructive">
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete
                           </DropdownMenuItem>
