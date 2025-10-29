@@ -6,24 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Users, FileText, Inbox, UserPlus, FilePlus, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function DebugAuth() {
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      console.log("👤 User:", userData);
-      console.log("⚠️ Error:", userError);
-
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      console.log("🪪 Session:", sessionData);
-      console.log("⚠️ Session error:", sessionError);
-    };
-
-    checkAuth();
-  }, []);
-
-  return <div>🧪 Debugging auth… open your console (F12 → Console tab)</div>;
-}
-
 export default function Dashboard() {
   const { profile } = useUser();
   const navigate = useNavigate();
