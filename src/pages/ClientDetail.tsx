@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useUser } from '@/contexts/UserContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useUser } from "@/contexts/UserContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import {
   ChevronRight,
   Copy,
@@ -24,8 +24,8 @@ import {
   Calendar,
   Loader2,
   Check,
-} from 'lucide-react';
-import { format, formatDistanceToNow } from 'date-fns';
+} from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -33,12 +33,12 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { Switch } from '@/components/ui/switch';
+} from "@/components/ui/breadcrumb";
+import { Switch } from "@/components/ui/switch";
 
 const editClientSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  full_name: z.string().min(1, 'Full name is required'),
+  email: z.string().email("Invalid email address"),
+  full_name: z.string().min(1, "Full name is required"),
   company_name: z.string().optional(),
   phone: z.string().optional(),
   tags: z.string().optional(),
@@ -78,20 +78,20 @@ export default function ClientDetail() {
     try {
       // Get user's organization
       const { data: memberData } = await supabase
-        .from('organization_members')
-        .select('organization_id')
-        .eq('user_id', user.id)
+        .from("organization_members")
+        .select("organization_id")
+        .eq("user_id", user.id)
         .single();
 
       if (!memberData) return;
 
       // Fetch client
       const { data: clientData, error: clientError } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('id', id)
-        .eq('organization_id', memberData.organization_id)
-        .is('deleted_at', null)
+        .from("clients")
+        .select("*")
+        .eq("id", id)
+        .eq("organization_id", memberData.organization_id)
+        .is("deleted_at", null)
         .single();
 
       if (clientError) throw clientError;
@@ -99,16 +99,18 @@ export default function ClientDetail() {
 
       // Fetch submissions
       const { data: submissionsData, error: submissionsError } = await supabase
-        .from('form_submissions')
-        .select(`
+        .from("form_submissions")
+        .select(
+          `
           *,
           intake_forms:intake_form_id (
             title
           )
-        `)
-        .eq('client_id', id)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false });
+        `,
+        )
+        .eq("client_id", id)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
 
       if (submissionsError) throw submissionsError;
       setSubmissions(submissionsData || []);
@@ -117,17 +119,17 @@ export default function ClientDetail() {
       reset({
         email: clientData.email,
         full_name: clientData.full_name,
-        company_name: clientData.company_name || '',
-        phone: clientData.phone || '',
-        tags: clientData.tags?.join(', ') || '',
+        company_name: clientData.company_name || "",
+        phone: clientData.phone || "",
+        tags: clientData.tags?.join(", ") || "",
       });
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
-      navigate('/clients');
+      navigate("/clients");
     } finally {
       setLoading(false);
     }
@@ -136,22 +138,22 @@ export default function ClientDetail() {
   const handleStatusToggle = async (isActive: boolean) => {
     try {
       const { error } = await supabase
-        .from('clients')
-        .update({ status: isActive ? 'active' : 'archived' })
-        .eq('id', id);
+        .from("clients")
+        .update({ status: isActive ? "active" : "archived" })
+        .eq("id", id);
 
       if (error) throw error;
 
-      setClient({ ...client, status: isActive ? 'active' : 'archived' });
+      setClient({ ...client, status: isActive ? "active" : "archived" });
       toast({
-        title: 'Success',
-        description: `Client ${isActive ? 'activated' : 'archived'}`,
+        title: "Success",
+        description: `Client ${isActive ? "activated" : "archived"}`,
       });
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
   };
@@ -162,15 +164,15 @@ export default function ClientDetail() {
       await navigator.clipboard.writeText(magicLink);
       setCopied(true);
       toast({
-        title: 'Copied!',
-        description: 'Magic link copied to clipboard',
+        title: "Copied!",
+        description: "Magic link copied to clipboard",
       });
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to copy link',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to copy link",
+        variant: "destructive",
       });
     }
   };
@@ -182,25 +184,25 @@ export default function ClientDetail() {
       expiresAt.setDate(expiresAt.getDate() + 90);
 
       const { error } = await supabase
-        .from('clients')
+        .from("clients")
         .update({
           access_token: newToken,
           access_token_expires_at: expiresAt.toISOString(),
         })
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) throw error;
 
       setClient({ ...client, access_token: newToken, access_token_expires_at: expiresAt.toISOString() });
       toast({
-        title: 'Success',
-        description: 'New magic link generated',
+        title: "Success",
+        description: "New magic link generated",
       });
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
   };
@@ -209,11 +211,14 @@ export default function ClientDetail() {
     setIsSubmitting(true);
     try {
       const tagsArray = data.tags
-        ? data.tags.split(',').map((tag) => tag.trim()).filter(Boolean)
+        ? data.tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter(Boolean)
         : [];
 
       const { error } = await supabase
-        .from('clients')
+        .from("clients")
         .update({
           email: data.email,
           full_name: data.full_name,
@@ -221,22 +226,22 @@ export default function ClientDetail() {
           phone: data.phone || null,
           tags: tagsArray,
         })
-        .eq('id', id);
+        .eq("id", id);
 
       if (error) throw error;
 
       toast({
-        title: 'Success',
-        description: 'Client updated successfully',
+        title: "Success",
+        description: "Client updated successfully",
       });
 
       setIsEditModalOpen(false);
       fetchClientData();
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -244,26 +249,23 @@ export default function ClientDetail() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this client? This action cannot be undone.')) {
+    if (!confirm("Are you sure you want to delete this client? This action cannot be undone.")) {
       return;
     }
 
     try {
-      const { error } = await supabase
-        .from('clients')
-        delete()
-        .eq('id', id);
+      const { error } = await supabase.from("clients").delete().eq("id", id);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: `"${client?.full_name || 'Client'}" has been deleted successfully.`,
+        description: `"${client?.full_name || "Client"}" has been deleted successfully.`,
       });
 
-      navigate('/clients');
+      navigate("/clients");
     } catch (error: any) {
-      console.error('Delete client error:', error);
+      console.error("Delete client error:", error);
       toast({
         title: "Failed to delete client",
         description: "You don't have permission to delete this client or an error occurred. Please try again.",
@@ -274,9 +276,9 @@ export default function ClientDetail() {
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
+      .split(" ")
       .map((n) => n[0])
-      .join('')
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
@@ -319,9 +321,7 @@ export default function ClientDetail() {
               <div>
                 <CardTitle className="text-2xl">{client.full_name}</CardTitle>
                 <div className="flex items-center gap-2 mt-2">
-                  <Badge variant={client.status === 'active' ? 'default' : 'secondary'}>
-                    {client.status}
-                  </Badge>
+                  <Badge variant={client.status === "active" ? "default" : "secondary"}>{client.status}</Badge>
                   {client.tags?.map((tag: string) => (
                     <Badge key={tag} variant="outline">
                       {tag}
@@ -332,13 +332,9 @@ export default function ClientDetail() {
             </div>
             <div className="flex items-center gap-2">
               <Label htmlFor="status-toggle" className="text-sm">
-                {client.status === 'active' ? 'Active' : 'Archived'}
+                {client.status === "active" ? "Active" : "Archived"}
               </Label>
-              <Switch
-                id="status-toggle"
-                checked={client.status === 'active'}
-                onCheckedChange={handleStatusToggle}
-              />
+              <Switch id="status-toggle" checked={client.status === "active"} onCheckedChange={handleStatusToggle} />
             </div>
           </div>
         </CardHeader>
@@ -362,7 +358,7 @@ export default function ClientDetail() {
             )}
             <div className="flex items-center gap-2 text-muted-foreground">
               <Calendar className="h-4 w-4" />
-              <span>Created {format(new Date(client.created_at), 'MMM dd, yyyy')}</span>
+              <span>Created {format(new Date(client.created_at), "MMM dd, yyyy")}</span>
             </div>
           </div>
 
@@ -401,7 +397,7 @@ export default function ClientDetail() {
             <p className="text-xs text-muted-foreground">
               {client.access_token_expires_at
                 ? `Expires ${formatDistanceToNow(new Date(client.access_token_expires_at), { addSuffix: true })}`
-                : 'Link expires in 90 days'}
+                : "Link expires in 90 days"}
             </p>
           </div>
 
@@ -428,9 +424,9 @@ export default function ClientDetail() {
                   onClick={() => navigate(`/submissions/${submission.id}`)}
                 >
                   <div>
-                    <div className="font-medium">{submission.intake_forms?.title || 'Untitled Form'}</div>
+                    <div className="font-medium">{submission.intake_forms?.title || "Untitled Form"}</div>
                     <div className="text-sm text-muted-foreground">
-                      Submitted {format(new Date(submission.created_at), 'MMM dd, yyyy')}
+                      Submitted {format(new Date(submission.created_at), "MMM dd, yyyy")}
                     </div>
                   </div>
                   <Badge>{submission.status}</Badge>
@@ -450,29 +446,29 @@ export default function ClientDetail() {
           <form onSubmit={handleSubmit(onEditSubmit)} className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email *</Label>
-              <Input id="email" type="email" {...register('email')} disabled={isSubmitting} />
+              <Input id="email" type="email" {...register("email")} disabled={isSubmitting} />
               {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="full_name">Full Name *</Label>
-              <Input id="full_name" {...register('full_name')} disabled={isSubmitting} />
+              <Input id="full_name" {...register("full_name")} disabled={isSubmitting} />
               {errors.full_name && <p className="text-sm text-destructive">{errors.full_name.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="company_name">Company Name</Label>
-              <Input id="company_name" {...register('company_name')} disabled={isSubmitting} />
+              <Input id="company_name" {...register("company_name")} disabled={isSubmitting} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" type="tel" {...register('phone')} disabled={isSubmitting} />
+              <Input id="phone" type="tel" {...register("phone")} disabled={isSubmitting} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="tags">Tags</Label>
-              <Input id="tags" {...register('tags')} disabled={isSubmitting} />
+              <Input id="tags" {...register("tags")} disabled={isSubmitting} />
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
