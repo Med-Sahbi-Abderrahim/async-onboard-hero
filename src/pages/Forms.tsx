@@ -37,15 +37,6 @@ interface IntakeForm {
   slug: string;
 }
 
-(async () => {
-  const { error } = await supabase
-    .from("intake_forms")
-    .update({ title: "new title", organization_id: "YOUR_ORG_ID_HERE" })
-    .eq("id", "62ee64c4-25d2-448d-a985-df09b39179c7");
-
-  console.log("Update error:", error);
-})();
-
 export default function Forms() {
   const navigate = useNavigate();
   const { user } = useUser();
@@ -156,10 +147,7 @@ export default function Forms() {
 
     setDeleting(true);
     try {
-      const { error } = await supabase
-        .from("intake_forms")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", formToDelete.id);
+      const { error } = await supabase.from("intake_forms").delete().eq("id", formToDelete.id);
 
       if (error) throw error;
 
