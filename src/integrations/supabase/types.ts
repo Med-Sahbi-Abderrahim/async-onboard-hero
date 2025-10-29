@@ -1013,7 +1013,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           email: string
-          full_name: string
+          full_name?: string
           id: string
           last_seen_at?: string | null
           onboarding_completed?: boolean
@@ -1052,6 +1052,10 @@ export type Database = {
           p_type: string
         }
         Returns: undefined
+      }
+      delete_user_and_org: {
+        Args: { user_id_to_delete: string }
+        Returns: string
       }
       get_submissions_needing_reminders: {
         Args: never
