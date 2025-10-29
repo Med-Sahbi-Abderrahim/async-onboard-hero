@@ -35,7 +35,7 @@ import EditForm from "./pages/EditForm";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export default function DebugAuth() {
+function DebugAuth() {
   useEffect(() => {
     const checkAuth = async () => {
       const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -52,6 +52,9 @@ export default function DebugAuth() {
 
   return <div>🧪 Debugging auth… open your console (F12 → Console tab)</div>;
 }
+
+// For Lovable, just reference DebugAuth inside the page or UI component
+DebugAuth();
 
 const queryClient = new QueryClient();
 
