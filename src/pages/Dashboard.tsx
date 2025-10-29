@@ -6,6 +6,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Users, FileText, Inbox, UserPlus, FilePlus, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+export default function DebugAuth() {
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      console.log("👤 User:", userData);
+      console.log("⚠️ Error:", userError);
+
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      console.log("🪪 Session:", sessionData);
+      console.log("⚠️ Session error:", sessionError);
+    };
+
+    checkAuth();
+  }, []);
+
+  return <div>🧪 Debugging auth… open your console (F12 → Console tab)</div>;
+}
+
 export default function Dashboard() {
   const { profile } = useUser();
   const navigate = useNavigate();
@@ -21,37 +42,37 @@ export default function Dashboard() {
       try {
         // Get user's organizations
         const { data: orgData } = await supabase
-          .from('organization_members')
-          .select('organization_id')
-          .eq('user_id', profile?.id);
+          .from("organization_members")
+          .select("organization_id")
+          .eq("user_id", profile?.id);
 
         if (!orgData || orgData.length === 0) {
           setLoading(false);
           return;
         }
 
-        const orgIds = orgData.map(o => o.organization_id);
+        const orgIds = orgData.map((o) => o.organization_id);
 
         // Fetch stats in parallel
         const [clientsResult, formsResult, submissionsResult] = await Promise.all([
           supabase
-            .from('clients')
-            .select('id', { count: 'exact', head: true })
-            .in('organization_id', orgIds)
-            .is('deleted_at', null),
-          
+            .from("clients")
+            .select("id", { count: "exact", head: true })
+            .in("organization_id", orgIds)
+            .is("deleted_at", null),
+
           supabase
-            .from('intake_forms')
-            .select('id', { count: 'exact', head: true })
-            .in('organization_id', orgIds)
-            .eq('status', 'active')
-            .is('deleted_at', null),
-          
+            .from("intake_forms")
+            .select("id", { count: "exact", head: true })
+            .in("organization_id", orgIds)
+            .eq("status", "active")
+            .is("deleted_at", null),
+
           supabase
-            .from('form_submissions')
-            .select('id', { count: 'exact', head: true })
-            .in('organization_id', orgIds)
-            .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
+            .from("form_submissions")
+            .select("id", { count: "exact", head: true })
+            .in("organization_id", orgIds)
+            .gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
         ]);
 
         setStats({
@@ -60,7 +81,7 @@ export default function Dashboard() {
           submissionsThisMonth: submissionsResult.count || 0,
         });
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        console.error("Error fetching stats:", error);
       } finally {
         setLoading(false);
       }
@@ -79,9 +100,7 @@ export default function Dashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Welcome back, {profile?.full_name}!</CardTitle>
-          <CardDescription>
-            Here's what's happening with your account today.
-          </CardDescription>
+          <CardDescription>Here's what's happening with your account today.</CardDescription>
         </CardHeader>
       </Card>
 
@@ -94,10 +113,8 @@ export default function Dashboard() {
         <Card>
           <CardContent className="py-12 text-center">
             <h3 className="text-xl font-semibold mb-2">Let's get started!</h3>
-            <p className="text-muted-foreground mb-6">
-              Invite your first client to begin collecting submissions.
-            </p>
-            <Button onClick={() => navigate('/clients')}>
+            <p className="text-muted-foreground mb-6">Invite your first client to begin collecting submissions.</p>
+            <Button onClick={() => navigate("/clients")}>
               <UserPlus className="mr-2 h-4 w-4" />
               Invite Client
             </Button>
@@ -135,7 +152,9 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.submissionsThisMonth}</div>
-                <p className="text-xs text-muted-foreground">New submissions in {new Date().toLocaleDateString('en-US', { month: 'long' })}</p>
+                <p className="text-xs text-muted-foreground">
+                  New submissions in {new Date().toLocaleDateString("en-US", { month: "long" })}
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -147,15 +166,15 @@ export default function Dashboard() {
               <CardDescription>Get started with common tasks</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-3">
-              <Button onClick={() => navigate('/clients')}>
+              <Button onClick={() => navigate("/clients")}>
                 <UserPlus className="mr-2 h-4 w-4" />
                 Invite Client
               </Button>
-              <Button variant="outline" onClick={() => navigate('/forms/create')}>
+              <Button variant="outline" onClick={() => navigate("/forms/create")}>
                 <FilePlus className="mr-2 h-4 w-4" />
                 Create Form
               </Button>
-              <Button variant="outline" onClick={() => navigate('/submissions')}>
+              <Button variant="outline" onClick={() => navigate("/submissions")}>
                 <Eye className="mr-2 h-4 w-4" />
                 View Submissions
               </Button>
