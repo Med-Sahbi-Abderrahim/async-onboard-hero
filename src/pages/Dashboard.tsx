@@ -6,9 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Users, FileText, Inbox, UserPlus, FilePlus, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-
 export default function DebugAuth() {
   useEffect(() => {
     const checkAuth = async () => {
