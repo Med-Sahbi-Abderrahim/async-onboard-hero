@@ -110,24 +110,56 @@ serve(async (req) => {
         try {
           // Send email reminder
           const { data: emailData, error: emailError } = await resend.emails.send({
-            from: 'Form Reminder <onboarding@resend.dev>',
+            from: 'Async Intake <onboarding@resend.dev>',
             to: [submission.client_email],
             subject: `Reminder: Complete your ${submission.form_title}`,
             html: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2>Hi ${submission.client_full_name || 'there'},</h2>
-                <p>This is a friendly reminder that you have a form in progress that needs to be completed.</p>
-                <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                  <h3 style="margin-top: 0;">${submission.form_title}</h3>
-                  <p style="color: #666;">You started this form ${Math.round(submission.hours_since_update)} hours ago.</p>
-                </div>
-                <a href="${formUrl}" style="display: inline-block; background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
-                  Continue Form
-                </a>
-                <p style="color: #888; font-size: 14px; margin-top: 30px;">
-                  If you have any questions, please don't hesitate to reach out.
-                </p>
-              </div>
+              <!DOCTYPE html>
+              <html>
+                <head>
+                  <meta charset="utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                  <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                      <td style="padding: 40px 20px;">
+                        <table role="presentation" style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                          <tr>
+                            <td style="padding: 40px;">
+                              <h2 style="margin: 0 0 20px; color: #111827; font-size: 24px; font-weight: 600;">Hi ${submission.client_full_name || 'there'},</h2>
+                              <p style="margin: 0 0 24px; color: #4b5563; font-size: 16px; line-height: 1.5;">This is a friendly reminder that you have a form in progress that needs to be completed.</p>
+                              
+                              <div style="background: #f3f4f6; padding: 24px; border-radius: 8px; margin: 24px 0;">
+                                <h3 style="margin: 0 0 12px; color: #111827; font-size: 18px; font-weight: 600;">${submission.form_title}</h3>
+                                <p style="margin: 0; color: #6b7280; font-size: 14px;">You started this form ${Math.round(submission.hours_since_update)} hours ago.</p>
+                              </div>
+                              
+                              <table role="presentation" style="margin: 32px 0;">
+                                <tr>
+                                  <td style="border-radius: 6px; background: #4F46E5;">
+                                    <a href="${formUrl}" style="display: inline-block; padding: 14px 32px; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px;">Complete Form</a>
+                                  </td>
+                                </tr>
+                              </table>
+                              
+                              <p style="margin: 32px 0 0; color: #9ca3af; font-size: 14px; line-height: 1.5;">If you have any questions, please don't hesitate to reach out.</p>
+                            </td>
+                          </tr>
+                        </table>
+                        
+                        <table role="presentation" style="max-width: 600px; margin: 20px auto 0;">
+                          <tr>
+                            <td style="text-align: center; padding: 0 20px;">
+                              <p style="margin: 0; color: #9ca3af; font-size: 12px;">Sent by Async Intake</p>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </body>
+              </html>
             `,
           });
 
