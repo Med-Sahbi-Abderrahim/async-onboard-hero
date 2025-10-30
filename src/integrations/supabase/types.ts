@@ -783,18 +783,21 @@ export type Database = {
           full_name: string | null
           id: string
           organization_id: string | null
+          preferences: Json | null
         }
         Insert: {
           created_at?: string | null
           full_name?: string | null
           id: string
           organization_id?: string | null
+          preferences?: Json | null
         }
         Update: {
           created_at?: string | null
           full_name?: string | null
           id?: string
           organization_id?: string | null
+          preferences?: Json | null
         }
         Relationships: [
           {
