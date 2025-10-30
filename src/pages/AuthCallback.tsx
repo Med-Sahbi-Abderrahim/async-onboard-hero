@@ -21,7 +21,9 @@ export default function AuthCallback() {
           console.error("Auth error:", error, errorDescription);
           toast({
             title: "Authentication Error",
-            description: errorDescription || "An error occurred during authentication",
+            description: errorDescription === "Email link is invalid or has expired" 
+              ? "Your link has expired. Please request a new one."
+              : errorDescription || "An error occurred during authentication",
             variant: "destructive",
           });
           navigate("/login", { replace: true });
@@ -34,8 +36,10 @@ export default function AuthCallback() {
         if (sessionError) {
           console.error("Error getting session:", sessionError);
           toast({
-            title: "Session Error",
-            description: "Failed to retrieve your session. Please try again.",
+            title: "Session Error", 
+            description: sessionError.message === "Invalid Refresh Token: Already Used"
+              ? "Your link has expired. Please request a new one."
+              : "Failed to retrieve your session. Please try again.",
             variant: "destructive",
           });
           navigate("/login", { replace: true });

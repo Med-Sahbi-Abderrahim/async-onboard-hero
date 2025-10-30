@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { getAuthRedirectUrl } from "@/lib/auth-utils";
 
 export default function ClientIntake() {
   const { token } = useParams();
@@ -57,7 +58,7 @@ export default function ClientIntake() {
         const { error: magicLinkError } = await supabase.auth.signInWithOtp({
           email: client.email,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: getAuthRedirectUrl("/auth/callback"),
           },
         });
 

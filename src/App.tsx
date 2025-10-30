@@ -253,6 +253,7 @@ const App = () => (
 
             {/* Client Portal Routes */}
             <Route path="/client-portal" element={<ClientPortal />} />
+            <Route path="/portal" element={<ClientPortal />} /> {/* Alias for /client-portal */}
             <Route path="/client-portal/files" element={<ClientPortalFiles />} />
             <Route path="/client-portal/contracts" element={<ClientPortalContracts />} />
             <Route path="/client-portal/billing" element={<ClientPortalBilling />} />

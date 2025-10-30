@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
+import { getAuthRedirectUrl } from "@/lib/auth-utils";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -43,7 +44,7 @@ export default function ForgotPassword() {
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-        redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
+        redirectTo: getAuthRedirectUrl("/auth/callback?type=recovery"),
       });
 
       if (error) throw error;
