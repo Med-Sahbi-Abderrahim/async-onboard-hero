@@ -582,7 +582,11 @@ export type Database = {
           logo_url: string | null
           name: string | null
           slug: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_status: string | null
           subscription_tier: string | null
+          trial_ends_at: string | null
         }
         Insert: {
           brand_color?: string | null
@@ -592,7 +596,11 @@ export type Database = {
           logo_url?: string | null
           name?: string | null
           slug?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
           subscription_tier?: string | null
+          trial_ends_at?: string | null
         }
         Update: {
           brand_color?: string | null
@@ -602,7 +610,11 @@ export type Database = {
           logo_url?: string | null
           name?: string | null
           slug?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
           subscription_tier?: string | null
+          trial_ends_at?: string | null
         }
         Relationships: []
       }
