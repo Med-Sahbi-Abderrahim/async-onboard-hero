@@ -28,6 +28,7 @@ import ClientPortalContracts from "./pages/ClientPortalContracts";
 import ClientPortalBilling from "./pages/ClientPortalBilling";
 import ClientPortalMeetings from "./pages/ClientPortalMeetings";
 import ClientPortalFeedback from "./pages/ClientPortalFeedback";
+import ClientIntake from "./pages/ClientIntake";
 import { SettingsLayout } from "./components/settings/SettingsLayout";
 import { ProfileSettings } from "./components/settings/ProfileSettings";
 import { OrganizationSettings } from "./components/settings/OrganizationSettings";
@@ -246,6 +247,9 @@ const App = () => (
 
             {/* Public client-facing form route */}
             <Route path="/forms/:slug/submit" element={<ClientFormPage />} />
+
+            {/* Client intake route (validates token and sends magic link) */}
+            <Route path="/intake/:token" element={<ClientIntake />} />
 
             {/* Client Portal Routes */}
             <Route path="/client-portal" element={<ClientPortal />} />
