@@ -575,19 +575,34 @@ export type Database = {
       }
       organizations: {
         Row: {
+          brand_color: string | null
           created_at: string | null
           id: string
+          is_personal: boolean | null
+          logo_url: string | null
           name: string | null
+          slug: string | null
+          subscription_tier: string | null
         }
         Insert: {
+          brand_color?: string | null
           created_at?: string | null
           id?: string
+          is_personal?: boolean | null
+          logo_url?: string | null
           name?: string | null
+          slug?: string | null
+          subscription_tier?: string | null
         }
         Update: {
+          brand_color?: string | null
           created_at?: string | null
           id?: string
+          is_personal?: boolean | null
+          logo_url?: string | null
           name?: string | null
+          slug?: string | null
+          subscription_tier?: string | null
         }
         Relationships: []
       }
@@ -779,23 +794,32 @@ export type Database = {
       }
       users: {
         Row: {
+          avatar_url: string | null
           created_at: string | null
+          email: string | null
           full_name: string | null
           id: string
+          last_seen_at: string | null
           organization_id: string | null
           preferences: Json | null
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string | null
+          email?: string | null
           full_name?: string | null
           id: string
+          last_seen_at?: string | null
           organization_id?: string | null
           preferences?: Json | null
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string | null
+          email?: string | null
           full_name?: string | null
           id?: string
+          last_seen_at?: string | null
           organization_id?: string | null
           preferences?: Json | null
         }
