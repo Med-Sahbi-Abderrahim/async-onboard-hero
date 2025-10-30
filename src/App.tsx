@@ -22,6 +22,12 @@ import Billing from "./pages/Billing";
 import ReminderSettings from "./pages/ReminderSettings";
 import NotFound from "./pages/NotFound";
 import ClientFormPage from "./pages/ClientFormPage";
+import ClientPortal from "./pages/ClientPortal";
+import ClientPortalFiles from "./pages/ClientPortalFiles";
+import ClientPortalContracts from "./pages/ClientPortalContracts";
+import ClientPortalBilling from "./pages/ClientPortalBilling";
+import ClientPortalMeetings from "./pages/ClientPortalMeetings";
+import ClientPortalFeedback from "./pages/ClientPortalFeedback";
 import { SettingsLayout } from "./components/settings/SettingsLayout";
 import { ProfileSettings } from "./components/settings/ProfileSettings";
 import { OrganizationSettings } from "./components/settings/OrganizationSettings";
@@ -240,6 +246,14 @@ const App = () => (
 
             {/* Public client-facing form route */}
             <Route path="/forms/:slug/submit" element={<ClientFormPage />} />
+
+            {/* Client Portal Routes */}
+            <Route path="/client-portal" element={<ClientPortal />} />
+            <Route path="/client-portal/files" element={<ClientPortalFiles />} />
+            <Route path="/client-portal/contracts" element={<ClientPortalContracts />} />
+            <Route path="/client-portal/billing" element={<ClientPortalBilling />} />
+            <Route path="/client-portal/meetings" element={<ClientPortalMeetings />} />
+            <Route path="/client-portal/feedback" element={<ClientPortalFeedback />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

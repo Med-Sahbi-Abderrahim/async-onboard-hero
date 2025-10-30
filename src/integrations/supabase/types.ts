@@ -240,6 +240,105 @@ export type Database = {
         }
         Relationships: []
       }
+      client_feedback: {
+        Row: {
+          client_id: string
+          created_at: string
+          deleted_at: string | null
+          id: string
+          message: string
+          organization_id: string
+          rating: number
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          message: string
+          organization_id: string
+          rating: number
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          message?: string
+          organization_id?: string
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_feedback_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_feedback_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_files: {
+        Row: {
+          client_id: string
+          created_at: string
+          deleted_at: string | null
+          file_name: string
+          file_size: number
+          file_type: string
+          id: string
+          organization_id: string
+          storage_path: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          deleted_at?: string | null
+          file_name: string
+          file_size: number
+          file_type: string
+          id?: string
+          organization_id: string
+          storage_path: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          organization_id?: string
+          storage_path?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_files_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_files_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           access_token: string | null
@@ -256,6 +355,8 @@ export type Database = {
           metadata: Json
           organization_id: string
           phone: string | null
+          project_status: string | null
+          project_title: string | null
           status: Database["public"]["Enums"]["client_status"]
           tags: string[] | null
           updated_at: string
@@ -275,6 +376,8 @@ export type Database = {
           metadata?: Json
           organization_id: string
           phone?: string | null
+          project_status?: string | null
+          project_title?: string | null
           status?: Database["public"]["Enums"]["client_status"]
           tags?: string[] | null
           updated_at?: string
@@ -294,11 +397,70 @@ export type Database = {
           metadata?: Json
           organization_id?: string
           phone?: string | null
+          project_status?: string | null
+          project_title?: string | null
           status?: Database["public"]["Enums"]["client_status"]
           tags?: string[] | null
           updated_at?: string
         }
         Relationships: []
+      }
+      contracts: {
+        Row: {
+          client_id: string
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          file_path: string | null
+          id: string
+          organization_id: string
+          signed_at: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          organization_id: string
+          signed_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          file_path?: string | null
+          id?: string
+          organization_id?: string
+          signed_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       email_templates: {
         Row: {
@@ -497,6 +659,129 @@ export type Database = {
           view_count?: number
         }
         Relationships: []
+      }
+      invoices: {
+        Row: {
+          amount_cents: number
+          client_id: string
+          created_at: string
+          currency: string
+          deleted_at: string | null
+          description: string | null
+          due_date: string
+          id: string
+          invoice_number: string
+          organization_id: string
+          paid_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          client_id: string
+          created_at?: string
+          currency?: string
+          deleted_at?: string | null
+          description?: string | null
+          due_date: string
+          id?: string
+          invoice_number: string
+          organization_id: string
+          paid_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          client_id?: string
+          created_at?: string
+          currency?: string
+          deleted_at?: string | null
+          description?: string | null
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          organization_id?: string
+          paid_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meetings: {
+        Row: {
+          client_id: string
+          created_at: string
+          deleted_at: string | null
+          duration_minutes: number | null
+          id: string
+          meeting_link: string | null
+          notes: string | null
+          organization_id: string
+          scheduled_at: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          deleted_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          meeting_link?: string | null
+          notes?: string | null
+          organization_id: string
+          scheduled_at: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          meeting_link?: string | null
+          notes?: string | null
+          organization_id?: string
+          scheduled_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetings_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
