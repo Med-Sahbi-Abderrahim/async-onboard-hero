@@ -43,14 +43,23 @@ export default function AuthCallback() {
         }
 
         if (session) {
-          // Update last_seen_at
-          try {
-            await supabase
-              .from('users')
-              .update({ last_seen_at: new Date().toISOString() })
-              .eq('id', session.user.id);
-          } catch (error) {
-            console.error("Error updating last_seen_at:", error);
+          // Check if user is a client
+          const { data: clientData } = await supabase
+            .from('clients')
+            .select('id, email')
+            .eq('email', session.user.email)
+            .maybeSingle();
+
+          // Update last_seen_at for regular users
+          if (!clientData) {
+            try {
+              await supabase
+                .from('users')
+                .update({ last_seen_at: new Date().toISOString() })
+                .eq('id', session.user.id);
+            } catch (error) {
+              console.error("Error updating last_seen_at:", error);
+            }
           }
 
           // Handle different auth types
@@ -61,8 +70,15 @@ export default function AuthCallback() {
               description: "Please set your new password",
             });
             navigate("/reset-password", { replace: true });
+          } else if (clientData) {
+            // Client magic link - redirect to client portal
+            toast({
+              title: "Welcome!",
+              description: "Accessing your client portal...",
+            });
+            navigate("/client-portal", { replace: true });
           } else {
-            // Email confirmation or magic link - redirect to dashboard
+            // Organization member - redirect to dashboard
             toast({
               title: "Welcome!",
               description: "Your email has been verified successfully",

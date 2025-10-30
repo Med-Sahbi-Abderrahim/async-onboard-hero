@@ -23,13 +23,21 @@ export default function ClientPortal() {
         return;
       }
 
+      // Find client by email (since auth user ID may not match client ID)
       const { data, error } = await supabase
         .from("clients")
         .select("*")
-        .eq("id", user.id)
-        .single();
+        .eq("email", user.email)
+        .maybeSingle();
 
       if (error) throw error;
+      
+      if (!data) {
+        console.error("No client record found for this user");
+        setLoading(false);
+        return;
+      }
+      
       setClient(data);
     } catch (error) {
       console.error("Error loading client:", error);
