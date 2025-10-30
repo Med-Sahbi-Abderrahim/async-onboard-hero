@@ -32,12 +32,12 @@ export function NotificationSettings() {
 
   useEffect(() => {
     if (profile?.preferences) {
-      setPreferences({
-        ...preferences,
+      setPreferences(prev => ({
+        ...prev,
         ...profile.preferences,
-      });
-      setLoading(false);
+      }));
     }
+    setLoading(false);
   }, [profile]);
 
   const handleToggle = async (key: keyof NotificationPreferences, value: boolean) => {
