@@ -26,32 +26,42 @@ export function getAuthRedirectUrl(path: string = "/auth/callback"): string {
  * Get the public/published URL for generating shareable client links.
  * This ensures clients always receive public URLs, never private preview URLs.
  * 
- * - In Lovable preview: Returns the published lovableproject.com URL
- * - In local/production: Returns current origin
+ * IMPORTANT: Set VITE_PUBLIC_URL environment variable to your published app URL
+ * Example: VITE_PUBLIC_URL=https://your-app.lovable.app
+ * 
+ * - If VITE_PUBLIC_URL is set: Always use that
+ * - If on published lovable.app (no preview--): Use current origin
+ * - If on preview or lovableproject.com: Warn and use current origin as fallback
  */
 export function getPublicUrl(path: string = ""): string {
+  // Always prefer the environment variable if set
+  const envPublicUrl = import.meta.env.VITE_PUBLIC_URL;
+  if (envPublicUrl) {
+    return `${envPublicUrl}${path}`;
+  }
+  
   const origin = window.location.origin;
   
-  // Detect if we're in a Lovable preview or project environment
+  // Check if we're on a private preview environment
   const isPreview = origin.includes("preview--");
-  const isLovableProject = origin.includes(".lovableproject.com") || origin.includes(".lovable.app");
+  const isLovableProject = origin.includes(".lovableproject.com");
   
-  if (isPreview || isLovableProject) {
-    // Extract project ID from URLs like:
-    // preview--async-onboard-hero-gac49.lovable.app
-    // 7aed3308-34c5-4d2f-88c2-c2b8ba45092d.lovableproject.com
-    
-    // For preview URLs, convert to published URL
-    if (isPreview) {
-      const publishedOrigin = origin.replace("preview--", "");
-      return `${publishedOrigin}${path}`;
-    }
-    
-    // For lovableproject.com URLs, they're already public
+  // If on a published lovable.app URL (no preview--), use it
+  const isPublishedLovable = origin.includes(".lovable.app") && !isPreview;
+  if (isPublishedLovable) {
     return `${origin}${path}`;
   }
   
-  // For local development or custom domains, use current origin
+  // If we're on a preview/dev environment without VITE_PUBLIC_URL set, warn
+  if (isPreview || isLovableProject) {
+    console.warn(
+      '⚠️ Generating client link from preview environment. ' +
+      'Set VITE_PUBLIC_URL to your published app URL to avoid "Access Denied" errors. ' +
+      'Example: VITE_PUBLIC_URL=https://your-app.lovable.app'
+    );
+  }
+  
+  // Fallback to current origin (may cause issues in preview)
   return `${origin}${path}`;
 }
 
