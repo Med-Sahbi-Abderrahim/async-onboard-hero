@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Check, Copy, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow, addDays } from 'date-fns';
+import { getClientMagicLink } from '@/lib/auth-utils';
 
 interface ShareLinkModalProps {
   open: boolean;
@@ -20,7 +21,7 @@ export function ShareLinkModal({ open, onOpenChange, client }: ShareLinkModalPro
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
-  const magicLink = `${window.location.origin}/intake/${client.access_token}`;
+  const magicLink = getClientMagicLink(client.access_token);
 
   const handleCopy = async () => {
     try {

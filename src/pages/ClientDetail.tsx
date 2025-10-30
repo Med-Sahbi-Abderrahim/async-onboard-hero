@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { getClientMagicLink } from "@/lib/auth-utils";
 import {
   ChevronRight,
   Copy,
@@ -159,7 +160,7 @@ export default function ClientDetail() {
   };
 
   const handleCopyLink = async () => {
-    const magicLink = `${window.location.origin}/intake/${client.access_token}`;
+    const magicLink = getClientMagicLink(client.access_token);
     try {
       await navigator.clipboard.writeText(magicLink);
       setCopied(true);
@@ -293,7 +294,7 @@ export default function ClientDetail() {
 
   if (!client) return null;
 
-  const magicLink = `${window.location.origin}/intake/${client.access_token}`;
+  const magicLink = getClientMagicLink(client.access_token);
 
   return (
     <div className="space-y-6">
