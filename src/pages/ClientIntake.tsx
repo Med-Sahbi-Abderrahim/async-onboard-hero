@@ -55,10 +55,15 @@ export default function ClientIntake() {
         }
 
         // Send magic link to client's email
+        // CRITICAL: Use the public URL (not preview URL) so clients can access it
+        const publicCallbackUrl = import.meta.env.VITE_PUBLIC_URL 
+          ? `${import.meta.env.VITE_PUBLIC_URL}/auth/callback`
+          : `${window.location.origin}/auth/callback`;
+        
         const { error: magicLinkError } = await supabase.auth.signInWithOtp({
           email: client.email,
           options: {
-            emailRedirectTo: getAuthRedirectUrl("/auth/callback"),
+            emailRedirectTo: publicCallbackUrl,
           },
         });
 
