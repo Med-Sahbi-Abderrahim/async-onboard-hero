@@ -17,27 +17,43 @@ export default function ClientPortal() {
 
   const loadClientData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate("/login");
-        return;
-      }
-
-      // Find client by email (since auth user ID may not match client ID)
-      const { data, error } = await supabase
-        .from("clients")
-        .select("*")
-        .eq("email", user.email)
-        .maybeSingle();
-
-      if (error) throw error;
+      // Check for client token in localStorage
+      const clientToken = localStorage.getItem("client_token");
+      const clientEmail = localStorage.getItem("client_email");
       
-      if (!data) {
-        console.error("No client record found for this user");
+      if (!clientToken || !clientEmail) {
         setLoading(false);
         return;
       }
-      
+
+      // Fetch client by token
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*")
+        .eq("access_token", clientToken)
+        .eq("email", clientEmail)
+        .is("deleted_at", null)
+        .maybeSingle();
+
+      if (error || !data) {
+        console.error("Error loading client:", error);
+        localStorage.removeItem("client_token");
+        localStorage.removeItem("client_email");
+        setLoading(false);
+        return;
+      }
+
+      // Check if token is expired
+      if (data.access_token_expires_at) {
+        const expiresAt = new Date(data.access_token_expires_at);
+        if (expiresAt < new Date()) {
+          localStorage.removeItem("client_token");
+          localStorage.removeItem("client_email");
+          setLoading(false);
+          return;
+        }
+      }
+
       setClient(data);
     } catch (error) {
       console.error("Error loading client:", error);

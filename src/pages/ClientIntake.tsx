@@ -58,27 +58,17 @@ export default function ClientIntake() {
           }
         }
 
-        // Send magic link to client's email
-        // Use current origin for callback (ensures it works in all environments)
-        const callbackUrl = `${window.location.origin}/auth/callback`;
-        
-        console.log("Sending magic link to:", client.email, "with callback:", callbackUrl);
-        
-        const { error: magicLinkError } = await supabase.auth.signInWithOtp({
-          email: client.email,
-          options: {
-            emailRedirectTo: callbackUrl,
-          },
-        });
-
-        if (magicLinkError) throw magicLinkError;
+        // Store client session in localStorage (simple token-based auth for clients)
+        localStorage.setItem("client_token", token);
+        localStorage.setItem("client_email", client.email);
 
         toast({
-          title: "Check Your Email",
-          description: "We've sent you a secure login link. Please check your email to access your portal.",
+          title: "Welcome!",
+          description: "Accessing your client portal...",
         });
 
-        navigate("/", { replace: true });
+        // Redirect directly to client portal
+        navigate("/client-portal", { replace: true });
       } catch (error) {
         console.error("Token validation error:", error);
         toast({
