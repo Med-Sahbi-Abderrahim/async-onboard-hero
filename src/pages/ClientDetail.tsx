@@ -160,7 +160,20 @@ export default function ClientDetail() {
   };
 
   const handleCopyLink = async () => {
+    // Ensure client has an access token
+    if (!client.access_token) {
+      toast({
+        title: "Error",
+        description: "Client doesn't have an access token. Please generate a new link.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const magicLink = getClientMagicLink(client.access_token);
+    console.log("Generated magic link:", magicLink);
+    console.log("Using access token:", client.access_token);
+    
     try {
       await navigator.clipboard.writeText(magicLink);
       setCopied(true);

@@ -22,6 +22,8 @@ export default function ClientIntake() {
       }
 
       try {
+        console.log("Validating access token:", token);
+        
         // Find client by access token
         const { data: client, error: clientError } = await supabase
           .from("clients")
@@ -29,6 +31,8 @@ export default function ClientIntake() {
           .eq("access_token", token)
           .is("deleted_at", null)
           .maybeSingle();
+        
+        console.log("Client lookup result:", { client, error: clientError });
 
         if (clientError || !client) {
           toast({
