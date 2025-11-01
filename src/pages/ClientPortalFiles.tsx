@@ -145,58 +145,75 @@ export default function ClientPortalFiles() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/client-portal")}>
+        <div className="flex items-center gap-4 animate-slide-up">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/client-portal")} className="hover:scale-110 transition-transform">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-3xl font-bold">Files</h1>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold">Files</h1>
+            <p className="text-sm text-muted-foreground">Upload and manage your documents</p>
+          </div>
         </div>
 
-        <Card>
+        <Card className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10 hover:shadow-medium transition-all" style={{ animationDelay: '0.1s' }}>
           <CardHeader>
-            <CardTitle>Upload Files</CardTitle>
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl gradient-primary p-2.5 shadow-soft">
+                <Upload className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <CardTitle className="text-xl">Upload Files</CardTitle>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <div className="flex items-center gap-4">
               <Input
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png,.docx"
                 onChange={handleUpload}
                 disabled={uploading}
-                className="flex-1"
+                className="flex-1 border-primary/20 focus:border-primary transition-colors"
               />
-              {uploading && <span className="text-sm text-muted-foreground">Uploading...</span>}
+              {uploading && <span className="text-sm text-primary animate-pulse">Uploading...</span>}
             </div>
-            <p className="text-sm text-muted-foreground mt-2">Accepted formats: PDF, JPG, PNG, DOCX</p>
+            <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG, DOCX (max 10MB)</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10" style={{ animationDelay: '0.2s' }}>
           <CardHeader>
-            <CardTitle>Your Files</CardTitle>
+            <CardTitle className="text-xl">Your Files</CardTitle>
           </CardHeader>
           <CardContent>
             {files.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>No files uploaded yet</p>
+              <div className="text-center py-12 text-muted-foreground animate-fade-in">
+                <div className="rounded-full bg-primary/10 w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                  <FileText className="h-10 w-10 text-primary/50" />
+                </div>
+                <p className="text-lg font-medium mb-1">No files uploaded yet</p>
+                <p className="text-sm">Upload your first document to get started</p>
               </div>
             ) : (
-              <div className="space-y-2">
-                {files.map((file) => (
-                  <div key={file.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent">
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-8 w-8 text-primary" />
+              <div className="space-y-3">
+                {files.map((file, index) => (
+                  <div 
+                    key={file.id} 
+                    className="flex items-center justify-between p-4 border border-primary/10 rounded-xl hover:shadow-medium hover:scale-[1.01] transition-all duration-200 bg-background/50 group"
+                    style={{ animationDelay: `${0.3 + index * 0.05}s` }}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="rounded-lg bg-primary/10 p-2.5 group-hover:bg-primary/20 transition-colors">
+                        <FileText className="h-7 w-7 text-primary" />
+                      </div>
                       <div>
-                        <p className="font-medium">{file.file_name}</p>
+                        <p className="font-semibold text-base">{file.file_name}</p>
                         <p className="text-sm text-muted-foreground">
                           {formatFileSize(file.file_size)} • {new Date(file.created_at).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="icon" onClick={() => downloadFile(file)}>
+                    <Button variant="outline" size="icon" onClick={() => downloadFile(file)} className="hover:scale-110 transition-transform">
                       <Download className="h-4 w-4" />
                     </Button>
                   </div>

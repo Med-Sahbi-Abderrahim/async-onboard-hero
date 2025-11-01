@@ -95,47 +95,43 @@ export default function ClientPortal() {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8 animate-fade-in">
+    <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
       <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
-        {/* Header */}
-        <Card className="animate-slide-up">
-          <CardHeader>
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-4">
-                <div className="rounded-2xl bg-primary/10 p-3">
-                  <Building className="h-10 w-10 text-primary" />
-                </div>
-                <div>
-                  <CardTitle className="text-3xl md:text-4xl">{client.full_name}</CardTitle>
-                  <CardDescription className="text-base md:text-lg">{client.project_title || "Your Project"}</CardDescription>
-                </div>
-              </div>
-              <Badge className={statusColors[client.project_status as keyof typeof statusColors]}>
-                {client.project_status?.toUpperCase()}
-              </Badge>
-            </div>
-          </CardHeader>
-        </Card>
+        {/* Hero Header Section */}
+        <div className="text-center space-y-3 py-8 animate-slide-up">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl gradient-primary shadow-glow mb-4">
+            <Building className="h-10 w-10 text-primary-foreground" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+            {client.full_name}
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+            Your secure workspace for {client.project_title || "projects"} and communication
+          </p>
+          <Badge className={`${statusColors[client.project_status as keyof typeof statusColors]} text-sm px-4 py-1.5 shadow-soft`}>
+            {client.project_status?.toUpperCase()}
+          </Badge>
+        </div>
 
         {/* Quick Links */}
         <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
-          <h2 className="text-2xl md:text-3xl font-semibold mb-4">Quick Access</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-center">Quick Access</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {quickLinks.map((link, index) => (
               <Card 
                 key={link.path} 
-                className="hover:shadow-strong cursor-pointer transition-all duration-200 hover:scale-[1.02] group" 
+                className="hover:shadow-strong cursor-pointer transition-all duration-300 hover:scale-[1.03] hover:-translate-y-1 group bg-card/80 backdrop-blur-sm border-primary/10" 
                 onClick={() => navigate(link.path)}
                 style={{ animationDelay: `${0.15 + index * 0.05}s` }}
               >
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-xl bg-primary/10 p-3 group-hover:bg-primary/20 transition-colors">
-                      <link.icon className="h-7 w-7 text-primary" />
+                <CardHeader className="space-y-4">
+                  <div className="flex flex-col items-center text-center gap-4">
+                    <div className="rounded-2xl gradient-primary p-4 group-hover:shadow-glow transition-all duration-300 group-hover:scale-110">
+                      <link.icon className="h-9 w-9 text-primary-foreground" />
                     </div>
-                    <div>
-                      <CardTitle className="text-lg">{link.title}</CardTitle>
-                      <CardDescription>{link.description}</CardDescription>
+                    <div className="space-y-1">
+                      <CardTitle className="text-xl font-bold">{link.title}</CardTitle>
+                      <CardDescription className="text-sm">{link.description}</CardDescription>
                     </div>
                   </div>
                 </CardHeader>
@@ -145,32 +141,34 @@ export default function ClientPortal() {
         </div>
 
         {/* Welcome Guide */}
-        <Card className="animate-slide-up" style={{ animationDelay: '0.4s' }}>
+        <Card className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10" style={{ animationDelay: '0.4s' }}>
           <CardHeader>
-            <CardTitle className="text-2xl">Getting Started</CardTitle>
-            <CardDescription className="text-base">Follow these simple steps to get the most out of your portal</CardDescription>
+            <CardTitle className="text-2xl md:text-3xl">Getting Started</CardTitle>
+            <CardDescription className="text-base">Follow these steps to unlock the full potential of your portal</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-5">
-              <div className="flex items-start gap-4 group">
-                <div className="rounded-full gradient-primary text-primary-foreground w-10 h-10 flex items-center justify-center font-bold shadow-soft group-hover:shadow-medium transition-all shrink-0">1</div>
-                <div>
-                  <h3 className="font-semibold text-lg">Upload Your Files</h3>
-                  <p className="text-sm text-muted-foreground">Share documents and assets with your team</p>
+            <div className="space-y-6">
+              <div className="flex items-start gap-5 group cursor-pointer hover-lift p-4 rounded-xl transition-all">
+                <div className="rounded-full gradient-primary text-primary-foreground w-12 h-12 flex items-center justify-center font-bold text-lg shadow-medium group-hover:shadow-glow transition-all shrink-0">1</div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-xl mb-1">Upload Your Files</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">Share documents and assets with your team securely</p>
                 </div>
               </div>
-              <div className="flex items-start gap-4 group">
-                <div className="rounded-full gradient-primary text-primary-foreground w-10 h-10 flex items-center justify-center font-bold shadow-soft group-hover:shadow-medium transition-all shrink-0">2</div>
-                <div>
-                  <h3 className="font-semibold text-lg">Review & Sign Contracts</h3>
-                  <p className="text-sm text-muted-foreground">Complete any pending agreements</p>
+              <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+              <div className="flex items-start gap-5 group cursor-pointer hover-lift p-4 rounded-xl transition-all">
+                <div className="rounded-full gradient-primary text-primary-foreground w-12 h-12 flex items-center justify-center font-bold text-lg shadow-medium group-hover:shadow-glow transition-all shrink-0">2</div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-xl mb-1">Review & Sign Contracts</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">Complete any pending agreements with ease</p>
                 </div>
               </div>
-              <div className="flex items-start gap-4 group">
-                <div className="rounded-full gradient-primary text-primary-foreground w-10 h-10 flex items-center justify-center font-bold shadow-soft group-hover:shadow-medium transition-all shrink-0">3</div>
-                <div>
-                  <h3 className="font-semibold text-lg">Give Feedback</h3>
-                  <p className="text-sm text-muted-foreground">Share your experience and help us improve</p>
+              <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+              <div className="flex items-start gap-5 group cursor-pointer hover-lift p-4 rounded-xl transition-all">
+                <div className="rounded-full gradient-primary text-primary-foreground w-12 h-12 flex items-center justify-center font-bold text-lg shadow-medium group-hover:shadow-glow transition-all shrink-0">3</div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-xl mb-1">Give Feedback</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">Share your experience and help us improve</p>
                 </div>
               </div>
             </div>

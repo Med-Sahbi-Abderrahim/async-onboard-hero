@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, ArrowLeft } from "lucide-react";
+import { CreditCard, ArrowLeft, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function ClientPortalBilling() {
@@ -48,52 +48,66 @@ export default function ClientPortalBilling() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/client-portal")}>
+        <div className="flex items-center gap-4 animate-slide-up">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/client-portal")} className="hover:scale-110 transition-transform">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-3xl font-bold">Billing</h1>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold">Billing</h1>
+            <p className="text-sm text-muted-foreground">View your invoices and payments</p>
+          </div>
         </div>
 
         <div className="space-y-4">
           {invoices.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-8 text-muted-foreground">
-                <CreditCard className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>No invoices available</p>
+            <Card className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10" style={{ animationDelay: '0.1s' }}>
+              <CardContent className="text-center py-12 text-muted-foreground">
+                <div className="rounded-full bg-primary/10 w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                  <CreditCard className="h-10 w-10 text-primary/50" />
+                </div>
+                <p className="text-lg font-medium mb-1">No invoices available</p>
+                <p className="text-sm">Payment information will appear here</p>
               </CardContent>
             </Card>
           ) : (
-            invoices.map((invoice) => (
-              <Card key={invoice.id}>
+            invoices.map((invoice, index) => (
+              <Card key={invoice.id} className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10 hover:shadow-medium transition-all" style={{ animationDelay: `${0.1 + index * 0.05}s` }}>
                 <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle>Invoice #{invoice.invoice_number}</CardTitle>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="rounded-lg bg-primary/10 p-2">
+                          <CreditCard className="h-5 w-5 text-primary" />
+                        </div>
+                        <CardTitle className="text-xl">Invoice #{invoice.invoice_number}</CardTitle>
+                      </div>
                       {invoice.description && (
-                        <p className="text-sm text-muted-foreground mt-2">{invoice.description}</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{invoice.description}</p>
                       )}
                     </div>
-                    <Badge className={statusColors[invoice.status as keyof typeof statusColors]}>
+                    <Badge className={`${statusColors[invoice.status as keyof typeof statusColors]} shadow-soft`}>
                       {invoice.status.toUpperCase()}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-xl bg-primary/5 border border-primary/10">
                     <div>
-                      <p className="text-sm text-muted-foreground">Amount</p>
-                      <p className="text-2xl font-bold">{formatAmount(invoice.amount_cents, invoice.currency)}</p>
+                      <p className="text-sm text-muted-foreground mb-1">Amount</p>
+                      <p className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                        {formatAmount(invoice.amount_cents, invoice.currency)}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Due Date</p>
-                      <p className="text-lg font-semibold">{new Date(invoice.due_date).toLocaleDateString()}</p>
+                      <p className="text-sm text-muted-foreground mb-1">Due Date</p>
+                      <p className="text-xl font-semibold">{new Date(invoice.due_date).toLocaleDateString()}</p>
                     </div>
                   </div>
                   {invoice.paid_at && (
-                    <p className="text-sm text-muted-foreground mt-4">
+                    <p className="text-sm text-muted-foreground mt-4 flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
                       Paid on: {new Date(invoice.paid_at).toLocaleDateString()}
                     </p>
                   )}

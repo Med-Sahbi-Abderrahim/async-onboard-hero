@@ -75,34 +75,42 @@ export default function ClientPortalFeedback() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
       <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/client-portal")}>
+        <div className="flex items-center gap-4 animate-slide-up">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/client-portal")} className="hover:scale-110 transition-transform">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-3xl font-bold">Feedback</h1>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold">Feedback</h1>
+            <p className="text-sm text-muted-foreground">Share your thoughts with us</p>
+          </div>
         </div>
 
-        <Card>
+        <Card className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10 hover:shadow-medium transition-all" style={{ animationDelay: '0.1s' }}>
           <CardHeader>
-            <CardTitle>Share Your Experience</CardTitle>
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl gradient-primary p-2.5 shadow-soft">
+                <Star className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <CardTitle className="text-xl">Share Your Experience</CardTitle>
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
-              <label className="text-sm font-medium mb-2 block">Rating</label>
-              <div className="flex gap-2">
+              <label className="text-sm font-semibold mb-3 block">How would you rate us?</label>
+              <div className="flex gap-3 justify-center p-4 rounded-xl bg-primary/5 border border-primary/10">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     onClick={() => setRating(star)}
-                    className="focus:outline-none transition-colors"
+                    className="focus:outline-none transition-all hover:scale-125"
                   >
                     <Star
-                      className={`h-8 w-8 ${
+                      className={`h-10 w-10 transition-all ${
                         star <= rating
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300"
+                          ? "fill-yellow-400 text-yellow-400 drop-shadow-glow"
+                          : "text-muted-foreground/30 hover:text-muted-foreground/50"
                       }`}
                     />
                   </button>
@@ -111,30 +119,36 @@ export default function ClientPortalFeedback() {
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Your Feedback</label>
+              <label className="text-sm font-semibold mb-2 block">Your Feedback</label>
               <Textarea
                 placeholder="Tell us about your experience..."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={6}
+                className="border-primary/20 focus:border-primary transition-colors"
               />
             </div>
 
-            <Button onClick={handleSubmit} disabled={submitting} className="w-full">
+            <Button onClick={handleSubmit} disabled={submitting} className="w-full hover:scale-105 transition-transform shadow-soft">
               {submitting ? "Submitting..." : "Submit Feedback"}
             </Button>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10 hover:shadow-medium transition-all" style={{ animationDelay: '0.2s' }}>
           <CardHeader>
-            <CardTitle>Love Our Service?</CardTitle>
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-green-500/10 p-2.5 shadow-soft">
+                <ExternalLink className="h-5 w-5 text-green-600" />
+              </div>
+              <CardTitle className="text-xl">Love Our Service?</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground mb-4 leading-relaxed">
               Help others discover us by leaving a review on Google!
             </p>
-            <Button variant="outline" className="w-full" asChild>
+            <Button variant="outline" className="w-full hover:scale-105 transition-transform" asChild>
               <a
                 href="https://www.google.com/search?q=your+business+name"
                 target="_blank"
