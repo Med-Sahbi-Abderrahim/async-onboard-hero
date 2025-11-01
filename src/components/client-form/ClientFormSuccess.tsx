@@ -11,8 +11,8 @@ export function ClientFormSuccess({ form }: ClientFormSuccessProps) {
   const successMessage = settings.success_message || "Thank you for your submission!";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 animate-fade-in">
+      <Card className="w-full max-w-md animate-slide-up">
         {branding.logo_url && (
           <div className="flex justify-center pt-6">
             <img src={branding.logo_url} alt="Logo" className="h-16 object-contain" />
@@ -20,10 +20,10 @@ export function ClientFormSuccess({ form }: ClientFormSuccessProps) {
         )}
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <CheckCircle2 className="h-16 w-16 text-green-500" />
+            <CheckCircle2 className="h-16 w-16 text-green-500 animate-success" />
           </div>
-          <CardTitle>Submission Complete!</CardTitle>
-          <CardDescription>{successMessage}</CardDescription>
+          <CardTitle className="text-3xl">Submission Complete!</CardTitle>
+          <CardDescription className="text-base mt-2">{successMessage}</CardDescription>
         </CardHeader>
         <CardContent className="text-center text-sm text-muted-foreground">
           <p>We've received your information and will be in touch soon.</p>
