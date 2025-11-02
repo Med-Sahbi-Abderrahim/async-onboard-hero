@@ -862,11 +862,16 @@ export type Database = {
         Row: {
           brand_color: string | null
           created_at: string | null
+          features: Json
           id: string
           is_personal: boolean | null
           logo_url: string | null
+          max_portals: number
+          max_storage_gb: number
           name: string | null
+          plan: string
           slug: string | null
+          storage_used_bytes: number
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_status: string | null
@@ -876,11 +881,16 @@ export type Database = {
         Insert: {
           brand_color?: string | null
           created_at?: string | null
+          features?: Json
           id?: string
           is_personal?: boolean | null
           logo_url?: string | null
+          max_portals?: number
+          max_storage_gb?: number
           name?: string | null
+          plan?: string
           slug?: string | null
+          storage_used_bytes?: number
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_status?: string | null
@@ -890,11 +900,16 @@ export type Database = {
         Update: {
           brand_color?: string | null
           created_at?: string | null
+          features?: Json
           id?: string
           is_personal?: boolean | null
           logo_url?: string | null
+          max_portals?: number
+          max_storage_gb?: number
           name?: string | null
+          plan?: string
           slug?: string | null
+          storage_used_bytes?: number
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_status?: string | null
@@ -1138,6 +1153,11 @@ export type Database = {
       calculate_submission_completion: {
         Args: { form_fields: Json; submission_responses: Json }
         Returns: number
+      }
+      can_create_client: { Args: { org_id: string }; Returns: boolean }
+      can_upload_file: {
+        Args: { file_size_bytes: number; org_id: string }
+        Returns: boolean
       }
       create_notification_for_org: {
         Args: {
