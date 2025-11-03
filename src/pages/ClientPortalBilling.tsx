@@ -67,7 +67,7 @@ export default function ClientPortalBilling() {
                 <div className="rounded-full bg-primary/10 w-20 h-20 flex items-center justify-center mx-auto mb-4">
                   <CreditCard className="h-10 w-10 text-primary/50" />
                 </div>
-                <p className="text-lg font-medium mb-1">No invoices available</p>
+                <p className="text-lg font-medium mb-1">No invoices yet</p>
                 <p className="text-sm">Payment information will appear here</p>
               </CardContent>
             </Card>

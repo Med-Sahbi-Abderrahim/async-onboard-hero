@@ -101,7 +101,7 @@ export default function ClientPortalContracts() {
                 <div className="rounded-full bg-primary/10 w-20 h-20 flex items-center justify-center mx-auto mb-4">
                   <FileText className="h-10 w-10 text-primary/50" />
                 </div>
-                <p className="text-lg font-medium mb-1">No contracts available</p>
+                <p className="text-lg font-medium mb-1">No contracts yet</p>
                 <p className="text-sm">New agreements will appear here</p>
               </CardContent>
             </Card>

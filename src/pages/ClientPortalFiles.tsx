@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, Download, ArrowLeft } from "lucide-react";
+import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 
 export default function ClientPortalFiles() {
@@ -13,6 +14,8 @@ export default function ClientPortalFiles() {
   const [files, setFiles] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
   const [clientId, setClientId] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [client, setClient] = useState<any>(null);
 
   useEffect(() => {
     loadClientAndFiles();
@@ -22,15 +25,16 @@ export default function ClientPortalFiles() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: client } = await supabase
+    const { data: clientData } = await supabase
       .from("clients")
       .select("id, organization_id")
       .eq("id", user.id)
       .single();
 
-    if (client) {
-      setClientId(client.id);
-      loadFiles(client.id);
+    if (clientData) {
+      setClient(clientData);
+      setClientId(clientData.id);
+      loadFiles(clientData.id);
     }
   };
 
@@ -49,8 +53,8 @@ export default function ClientPortalFiles() {
     setFiles(data || []);
   };
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || !e.target.files[0] || !clientId) return;
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
 
     const file = e.target.files[0];
     const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
@@ -64,34 +68,34 @@ export default function ClientPortalFiles() {
       return;
     }
 
+    setSelectedFile(file);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedFile || !clientId || !client) return;
+
     setUploading(true);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const filePath = `${user.id}/${Date.now()}_${file.name}`;
+      const filePath = `${user.id}/${Date.now()}_${selectedFile.name}`;
 
       const { error: uploadError } = await supabase.storage
         .from("client-uploads")
-        .upload(filePath, file);
+        .upload(filePath, selectedFile);
 
       if (uploadError) throw uploadError;
-
-      const { data: client } = await supabase
-        .from("clients")
-        .select("organization_id")
-        .eq("id", clientId)
-        .single();
 
       const { error: dbError } = await supabase
         .from("client_files")
         .insert({
           client_id: clientId,
-          organization_id: client?.organization_id,
-          file_name: file.name,
-          file_type: file.type,
-          file_size: file.size,
+          organization_id: client.organization_id,
+          file_name: selectedFile.name,
+          file_type: selectedFile.type,
+          file_size: selectedFile.size,
           storage_path: filePath,
           uploaded_by: user.id,
         });
@@ -99,15 +103,16 @@ export default function ClientPortalFiles() {
       if (dbError) throw dbError;
 
       toast({
-        title: "Success",
-        description: "File uploaded successfully",
+        title: "✅ File uploaded successfully",
+        description: `${selectedFile.name} has been uploaded`,
       });
 
+      setSelectedFile(null);
       loadFiles(clientId);
     } catch (error: any) {
       console.error("Upload error:", error);
       toast({
-        title: "Upload failed",
+        title: "⚠️ Upload failed",
         description: error.message,
         variant: "destructive",
       });
@@ -166,18 +171,45 @@ export default function ClientPortalFiles() {
               <CardTitle className="text-xl">Upload Files</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-4">
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
               <Input
+                id="file-upload"
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png,.docx"
-                onChange={handleUpload}
+                onChange={handleFileSelect}
                 disabled={uploading}
-                className="flex-1 border-primary/20 focus:border-primary transition-colors"
+                className="border-primary/20 focus:border-primary transition-colors"
               />
-              {uploading && <span className="text-sm text-primary animate-pulse">Uploading...</span>}
+              <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG, DOCX (max 10MB)</p>
             </div>
-            <p className="text-xs text-muted-foreground">Accepted formats: PDF, JPG, PNG, DOCX (max 10MB)</p>
+
+            {selectedFile && (
+              <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/10">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <FileText className="h-5 w-5 text-primary flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium truncate">{selectedFile.name}</p>
+                    <p className="text-xs text-muted-foreground">{formatFileSize(selectedFile.size)}</p>
+                  </div>
+                </div>
+                <Button 
+                  onClick={handleSubmit} 
+                  disabled={uploading}
+                  className="ml-3 hover:scale-105 transition-transform"
+                  size="sm"
+                >
+                  {uploading ? (
+                    <>
+                      <Upload className="h-4 w-4 mr-2 animate-pulse" />
+                      Uploading...
+                    </>
+                  ) : (
+                    "Submit"
+                  )}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -191,8 +223,8 @@ export default function ClientPortalFiles() {
                 <div className="rounded-full bg-primary/10 w-20 h-20 flex items-center justify-center mx-auto mb-4">
                   <FileText className="h-10 w-10 text-primary/50" />
                 </div>
-                <p className="text-lg font-medium mb-1">No files uploaded yet</p>
-                <p className="text-sm">Upload your first document to get started</p>
+                <p className="text-lg font-medium mb-1">No files yet</p>
+                <p className="text-sm">Upload your first file above</p>
               </div>
             ) : (
               <div className="space-y-3">

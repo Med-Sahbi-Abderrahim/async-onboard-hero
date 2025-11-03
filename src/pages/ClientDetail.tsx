@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,6 +26,11 @@ import {
   Calendar,
   Loader2,
   Check,
+  Plus,
+  FileText,
+  Video,
+  CreditCard,
+  Download,
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import {
@@ -36,6 +42,10 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Switch } from "@/components/ui/switch";
+import { AddMeetingModal } from "@/components/AddMeetingModal";
+import { AddFileModal } from "@/components/AddFileModal";
+import { AddContractModal } from "@/components/AddContractModal";
+import { AddInvoiceModal } from "@/components/AddInvoiceModal";
 
 const editClientSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -58,6 +68,14 @@ export default function ClientDetail() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [meetings, setMeetings] = useState<any[]>([]);
+  const [files, setFiles] = useState<any[]>([]);
+  const [contracts, setContracts] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [isMeetingModalOpen, setIsMeetingModalOpen] = useState(false);
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
 
   const {
     register,
@@ -115,6 +133,19 @@ export default function ClientDetail() {
 
       if (submissionsError) throw submissionsError;
       setSubmissions(submissionsData || []);
+
+      // Fetch meetings, files, contracts, invoices
+      const [meetingsRes, filesRes, contractsRes, invoicesRes] = await Promise.all([
+        supabase.from("meetings").select("*").eq("client_id", id).is("deleted_at", null).order("scheduled_at", { ascending: false }),
+        supabase.from("client_files").select("*").eq("client_id", id).is("deleted_at", null).order("created_at", { ascending: false }),
+        supabase.from("contracts").select("*").eq("client_id", id).is("deleted_at", null).order("created_at", { ascending: false }),
+        supabase.from("invoices").select("*").eq("client_id", id).is("deleted_at", null).order("due_date", { ascending: false }),
+      ]);
+
+      setMeetings(meetingsRes.data || []);
+      setFiles(filesRes.data || []);
+      setContracts(contractsRes.data || []);
+      setInvoices(invoicesRes.data || []);
 
       // Populate form
       reset({
@@ -424,7 +455,142 @@ export default function ClientDetail() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Submissions</CardTitle>
+          <CardTitle>Client Portal Content</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="files" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="files">Files</TabsTrigger>
+              <TabsTrigger value="meetings">Meetings</TabsTrigger>
+              <TabsTrigger value="contracts">Contracts</TabsTrigger>
+              <TabsTrigger value="billing">Billing</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="files" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-muted-foreground">Manage files for this client</p>
+                <Button size="sm" onClick={() => setIsFileModalOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add File
+                </Button>
+              </div>
+              {files.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No files yet — click Add File to upload one</p>
+              ) : (
+                <div className="space-y-2">
+                  {files.map((file) => (
+                    <div key={file.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-5 w-5 text-primary" />
+                        <div>
+                          <div className="font-medium">{file.file_name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {(file.file_size / 1024 / 1024).toFixed(2)} MB • {format(new Date(file.created_at), "MMM dd, yyyy")}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="meetings" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-muted-foreground">Schedule meetings with this client</p>
+                <Button size="sm" onClick={() => setIsMeetingModalOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Meeting
+                </Button>
+              </div>
+              {meetings.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No meetings yet — click Add Meeting to schedule one</p>
+              ) : (
+                <div className="space-y-2">
+                  {meetings.map((meeting) => (
+                    <div key={meeting.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
+                      <div className="flex items-center gap-3">
+                        <Video className="h-5 w-5 text-primary" />
+                        <div>
+                          <div className="font-medium">{meeting.title}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {format(new Date(meeting.scheduled_at), "MMM dd, yyyy 'at' h:mm a")}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge>{meeting.status}</Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="contracts" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-muted-foreground">Manage contracts for this client</p>
+                <Button size="sm" onClick={() => setIsContractModalOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Contract
+                </Button>
+              </div>
+              {contracts.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No contracts yet — click Add Contract to create one</p>
+              ) : (
+                <div className="space-y-2">
+                  {contracts.map((contract) => (
+                    <div key={contract.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
+                      <div className="flex items-center gap-3">
+                        <FileText className="h-5 w-5 text-primary" />
+                        <div>
+                          <div className="font-medium">{contract.title}</div>
+                          <div className="text-xs text-muted-foreground">
+                            Created {format(new Date(contract.created_at), "MMM dd, yyyy")}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge>{contract.status}</Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="billing" className="space-y-4">
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-muted-foreground">Manage invoices for this client</p>
+                <Button size="sm" onClick={() => setIsInvoiceModalOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Invoice
+                </Button>
+              </div>
+              {invoices.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No invoices yet — click Add Invoice to create one</p>
+              ) : (
+                <div className="space-y-2">
+                  {invoices.map((invoice) => (
+                    <div key={invoice.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
+                      <div className="flex items-center gap-3">
+                        <CreditCard className="h-5 w-5 text-primary" />
+                        <div>
+                          <div className="font-medium">Invoice #{invoice.invoice_number}</div>
+                          <div className="text-xs text-muted-foreground">
+                            Due {format(new Date(invoice.due_date), "MMM dd, yyyy")} • ${(invoice.amount_cents / 100).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge>{invoice.status}</Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Form Submissions</CardTitle>
         </CardHeader>
         <CardContent>
           {submissions.length === 0 ? (
@@ -450,6 +616,38 @@ export default function ClientDetail() {
           )}
         </CardContent>
       </Card>
+
+      <AddMeetingModal
+        open={isMeetingModalOpen}
+        onOpenChange={setIsMeetingModalOpen}
+        clientId={id!}
+        organizationId={client.organization_id}
+        onSuccess={fetchClientData}
+      />
+
+      <AddFileModal
+        open={isFileModalOpen}
+        onOpenChange={setIsFileModalOpen}
+        clientId={id!}
+        organizationId={client.organization_id}
+        onSuccess={fetchClientData}
+      />
+
+      <AddContractModal
+        open={isContractModalOpen}
+        onOpenChange={setIsContractModalOpen}
+        clientId={id!}
+        organizationId={client.organization_id}
+        onSuccess={fetchClientData}
+      />
+
+      <AddInvoiceModal
+        open={isInvoiceModalOpen}
+        onOpenChange={setIsInvoiceModalOpen}
+        clientId={id!}
+        organizationId={client.organization_id}
+        onSuccess={fetchClientData}
+      />
 
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="sm:max-w-[500px]">
