@@ -865,6 +865,8 @@ export type Database = {
           features: Json
           id: string
           is_personal: boolean | null
+          lemonsqueezy_customer_id: string | null
+          lemonsqueezy_subscription_id: string | null
           logo_url: string | null
           max_portals: number
           max_storage_gb: number
@@ -874,6 +876,7 @@ export type Database = {
           storage_used_bytes: number
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
+          subscription_renewal_date: string | null
           subscription_status: string | null
           subscription_tier: string | null
           trial_ends_at: string | null
@@ -884,6 +887,8 @@ export type Database = {
           features?: Json
           id?: string
           is_personal?: boolean | null
+          lemonsqueezy_customer_id?: string | null
+          lemonsqueezy_subscription_id?: string | null
           logo_url?: string | null
           max_portals?: number
           max_storage_gb?: number
@@ -893,6 +898,7 @@ export type Database = {
           storage_used_bytes?: number
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          subscription_renewal_date?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
           trial_ends_at?: string | null
@@ -903,6 +909,8 @@ export type Database = {
           features?: Json
           id?: string
           is_personal?: boolean | null
+          lemonsqueezy_customer_id?: string | null
+          lemonsqueezy_subscription_id?: string | null
           logo_url?: string | null
           max_portals?: number
           max_storage_gb?: number
@@ -912,6 +920,7 @@ export type Database = {
           storage_used_bytes?: number
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
+          subscription_renewal_date?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
           trial_ends_at?: string | null

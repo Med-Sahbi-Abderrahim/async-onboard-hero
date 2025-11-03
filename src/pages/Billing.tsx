@@ -15,6 +15,9 @@ interface Organization {
   max_portals: number;
   max_storage_gb: number;
   storage_used_bytes: number;
+  subscription_status?: string;
+  subscription_renewal_date?: string;
+  lemonsqueezy_subscription_id?: string;
   features: {
     custom_branding: boolean;
     automations: boolean;
@@ -49,7 +52,7 @@ export default function Billing() {
 
       const { data: org, error } = await supabase
         .from("organizations")
-        .select("id, plan, max_portals, max_storage_gb, storage_used_bytes, features")
+        .select("id, plan, max_portals, max_storage_gb, storage_used_bytes, features, subscription_status, subscription_renewal_date, lemonsqueezy_subscription_id")
         .eq("id", membership.organization_id)
         .single();
 
@@ -105,11 +108,32 @@ export default function Billing() {
     }
   };
 
-  const handleUpgrade = () => {
-    toast({
-      title: "Lemon Squeezy Integration Coming Soon",
-      description: "Payment integration will be available soon. Visit the pricing page for more details.",
-    });
+  const handleUpgrade = async () => {
+    try {
+      const plan = organization?.plan === 'free' ? 'starter' : 'pro';
+      
+      const { data, error } = await supabase.functions.invoke('create-lemon-squeezy-checkout', {
+        body: { plan, organizationId: organization?.id }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create checkout session",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleManageBilling = () => {
+    // Open Lemon Squeezy customer portal
+    const customerPortalUrl = `https://app.lemonsqueezy.com/my-orders`;
+    window.open(customerPortalUrl, '_blank');
   };
 
   if (loading) {
@@ -162,14 +186,31 @@ export default function Billing() {
                 </CardTitle>
                 <CardDescription className="text-base mt-1">
                   {getPlanPrice(organization.plan)} / month
+                  {organization.subscription_status && organization.subscription_status !== 'active' && (
+                    <Badge variant="outline" className="ml-2 text-xs">
+                      {organization.subscription_status}
+                    </Badge>
+                  )}
                 </CardDescription>
+                {organization.subscription_renewal_date && organization.subscription_status === 'active' && (
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Renews on {new Date(organization.subscription_renewal_date).toLocaleDateString()}
+                  </p>
+                )}
               </div>
             </div>
-            {organization.plan !== "pro" && (
-              <Button onClick={handleUpgrade} className="shadow-medium">
-                Upgrade Plan
-              </Button>
-            )}
+            <div className="flex gap-2">
+              {organization.plan !== "pro" && (
+                <Button onClick={handleUpgrade} className="shadow-medium">
+                  Upgrade Plan
+                </Button>
+              )}
+              {organization.lemonsqueezy_subscription_id && (
+                <Button onClick={handleManageBilling} variant="outline">
+                  Manage Billing
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -287,18 +328,20 @@ export default function Billing() {
         </Card>
       )}
 
-      {/* Payment Integration Note */}
-      <Card className="border-primary/20 bg-card/80 backdrop-blur-sm animate-slide-up" style={{ animationDelay: "0.3s" }}>
-        <CardHeader>
-          <CardTitle className="text-base">🍋 Lemon Squeezy Integration Coming Soon</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Secure payment processing with Lemon Squeezy will be available soon. 
-            You'll be able to upgrade your plan, manage subscriptions, and access invoices directly from here.
-          </p>
-        </CardContent>
-      </Card>
+      {/* Payment Integration Info */}
+      {!organization.lemonsqueezy_subscription_id && (
+        <Card className="border-primary/20 bg-card/80 backdrop-blur-sm animate-slide-up" style={{ animationDelay: "0.3s" }}>
+          <CardHeader>
+            <CardTitle className="text-base">🍋 Secure Payments with Lemon Squeezy</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Ready to upgrade? Click "Upgrade Plan" to securely checkout via Lemon Squeezy. 
+              You'll be able to manage your subscription, update payment methods, and access invoices anytime.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

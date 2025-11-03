@@ -2,7 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Sparkles, Zap, Crown } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "@/contexts/UserContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const plans = [
   {
@@ -66,6 +69,53 @@ const plans = [
 ];
 
 export default function Pricing() {
+  const navigate = useNavigate();
+  const { user } = useUser();
+  const { toast } = useToast();
+
+  const handleUpgrade = async (planName: string) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    if (planName === 'Free') {
+      navigate('/dashboard');
+      return;
+    }
+
+    try {
+      // Get user's organization
+      const { data: membership } = await supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!membership) {
+        throw new Error('No organization found');
+      }
+
+      const plan = planName === 'Starter' ? 'starter' : 'pro';
+
+      const { data, error } = await supabase.functions.invoke('create-lemon-squeezy-checkout', {
+        body: { plan, organizationId: membership.organization_id }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create checkout session",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen gradient-hero">
       {/* Header */}
@@ -135,7 +185,7 @@ export default function Pricing() {
                   </ul>
 
                   <Button
-                    asChild
+                    onClick={() => handleUpgrade(plan.name)}
                     size="lg"
                     className={`w-full ${
                       plan.highlighted
@@ -144,7 +194,7 @@ export default function Pricing() {
                     }`}
                     variant={plan.highlighted ? "default" : "outline"}
                   >
-                    <Link to="/billing">{plan.cta}</Link>
+                    {plan.cta}
                   </Button>
                 </CardContent>
               </Card>
@@ -162,7 +212,7 @@ export default function Pricing() {
                 Start with Free and upgrade anytime as your needs grow.
               </p>
               <Button asChild variant="ghost">
-                <Link to="/dashboard">Go to Dashboard</Link>
+                <button onClick={() => navigate('/dashboard')}>Go to Dashboard</button>
               </Button>
             </CardContent>
           </Card>
