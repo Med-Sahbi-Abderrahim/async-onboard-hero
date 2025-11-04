@@ -110,6 +110,7 @@ export default function Billing() {
 
   const handleUpgrade = async () => {
     try {
+      setLoading(true);
       const plan = organization?.plan === 'free' ? 'starter' : 'pro';
       
       const { data, error } = await supabase.functions.invoke('create-lemon-squeezy-checkout', {
@@ -119,7 +120,22 @@ export default function Billing() {
       if (error) throw error;
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        // Open in new tab - if blocked by popup blocker, show message
+        const newWindow = window.open(data.url, '_blank', 'noopener,noreferrer');
+        
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+          // Popup was blocked
+          toast({
+            title: "Popup Blocked",
+            description: "Please allow popups for this site to complete checkout. Click 'Upgrade Plan' again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Opening Checkout",
+            description: "You'll be redirected to Lemon Squeezy to complete your purchase.",
+          });
+        }
       }
     } catch (error: any) {
       toast({
@@ -127,6 +143,8 @@ export default function Billing() {
         description: error.message || "Failed to create checkout session",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
