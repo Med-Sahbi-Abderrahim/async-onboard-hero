@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { User, Users, Bell, CreditCard, Key, Building } from 'lucide-react';
+import { User, Users, Bell, CreditCard, Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SettingsLayoutProps {
@@ -13,7 +13,6 @@ const settingsNavItems = [
   { title: 'Team Members', path: '/settings/team', icon: Users },
   { title: 'Notifications', path: '/settings/notifications', icon: Bell },
   { title: 'Billing', path: '/billing', icon: CreditCard },
-  { title: 'API Keys', path: '/settings/api-keys', icon: Key },
 ];
 
 export function SettingsLayout({ children }: SettingsLayoutProps) {

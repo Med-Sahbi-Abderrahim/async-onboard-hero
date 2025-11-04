@@ -35,7 +35,6 @@ import { ProfileSettings } from "./components/settings/ProfileSettings";
 import { OrganizationSettings } from "./components/settings/OrganizationSettings";
 import { TeamSettings } from "./components/settings/TeamSettings";
 import { NotificationSettings } from "./components/settings/NotificationSettings";
-import { ApiKeysSettings } from "./components/settings/ApiKeysSettings";
 import AuthCallback from "./pages/AuthCallback";
 import FormDetail from "./pages/FormDetail";
 import EditForm from "./pages/EditForm";
@@ -208,18 +207,6 @@ const App = () => (
                   <DashboardLayout>
                     <SettingsLayout>
                       <NotificationSettings />
-                    </SettingsLayout>
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings/api-keys"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <SettingsLayout>
-                      <ApiKeysSettings />
                     </SettingsLayout>
                   </DashboardLayout>
                 </ProtectedRoute>
