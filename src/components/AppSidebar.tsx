@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, FileText, Inbox, Settings } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Inbox, Settings, Bell } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -18,6 +18,7 @@ const items = [
   { title: "Clients", url: "/clients", icon: Users },
   { title: "Forms", url: "/forms", icon: FileText },
   { title: "Submissions", url: "/submissions", icon: Inbox },
+  { title: "Reminders", url: "/reminders", icon: Bell },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
 
