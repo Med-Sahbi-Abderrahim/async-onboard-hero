@@ -17,41 +17,27 @@ export default function ClientPortal() {
 
   const loadClientData = async () => {
     try {
-      // Check for client token in localStorage
-      const clientToken = localStorage.getItem("client_token");
-      const clientEmail = localStorage.getItem("client_email");
+      // Check if user is authenticated via Supabase auth
+      const { data: { user } } = await supabase.auth.getUser();
       
-      if (!clientToken || !clientEmail) {
+      if (!user) {
         setLoading(false);
         return;
       }
 
-      // Fetch client by token
+      // Fetch client data using authenticated user ID
       const { data, error } = await supabase
         .from("clients")
         .select("*")
-        .eq("access_token", clientToken)
-        .eq("email", clientEmail)
+        .eq("id", user.id)
         .is("deleted_at", null)
-        .maybeSingle();
+        .single();
 
       if (error || !data) {
         console.error("Error loading client:", error);
-        localStorage.removeItem("client_token");
-        localStorage.removeItem("client_email");
+        await supabase.auth.signOut();
         setLoading(false);
         return;
-      }
-
-      // Check if token is expired
-      if (data.access_token_expires_at) {
-        const expiresAt = new Date(data.access_token_expires_at);
-        if (expiresAt < new Date()) {
-          localStorage.removeItem("client_token");
-          localStorage.removeItem("client_email");
-          setLoading(false);
-          return;
-        }
       }
 
       setClient(data);
