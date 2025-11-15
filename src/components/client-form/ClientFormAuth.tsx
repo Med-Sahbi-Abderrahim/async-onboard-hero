@@ -15,6 +15,7 @@ interface ClientFormAuthProps {
 export function ClientFormAuth({ form, onAuthenticated }: ClientFormAuthProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,46 +23,39 @@ export function ClientFormAuth({ form, onAuthenticated }: ClientFormAuthProps) {
     setLoading(true);
 
     try {
-      // Check if client exists
-      let { data: client, error: clientError } = await supabase
+      // Check if client exists with this email
+      const { data: client } = await supabase
         .from("clients")
         .select("*")
         .eq("email", email)
         .eq("organization_id", form.organization_id)
-        .single();
+        .is("deleted_at", null)
+        .maybeSingle();
 
-      // Create client if doesn't exist
-      if (clientError || !client) {
-        const { data: newClient, error: createError } = await supabase
-          .from("clients")
-          .insert({
-            email,
-            organization_id: form.organization_id,
-            status: "active",
-          })
-          .select()
-          .single();
-
-        if (createError) throw createError;
-        client = newClient;
+      if (!client) {
+        toast({
+          title: "Not found",
+          description: "No client account found with this email. Please contact the organization.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
       }
 
-      // Check for existing draft submission
-      const { data: existingSubmission } = await supabase
-        .from("form_submissions")
-        .select("*")
-        .eq("intake_form_id", form.id)
-        .eq("client_id", client.id)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+      // Send magic link to client's email
+      const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/client-intake/${form.slug}`,
+        },
+      });
 
-      onAuthenticated(client, existingSubmission);
+      if (magicLinkError) throw magicLinkError;
 
+      setMagicLinkSent(true);
       toast({
-        title: "Access granted",
-        description: "You can now fill out the form.",
+        title: "Check your email",
+        description: "We've sent you a magic link to access this form.",
       });
     } catch (error: any) {
       console.error("Auth error:", error);
@@ -77,6 +71,35 @@ export function ClientFormAuth({ form, onAuthenticated }: ClientFormAuthProps) {
 
   const branding = form.custom_branding || {};
   const primaryColor = branding.primary_color || "#4F46E5";
+
+  if (magicLinkSent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          {branding.logo_url && (
+            <div className="flex justify-center pt-6">
+              <img src={branding.logo_url} alt="Logo" className="h-16 object-contain" />
+            </div>
+          )}
+          <CardHeader>
+            <CardTitle>Check Your Email</CardTitle>
+            <CardDescription>
+              We've sent a magic link to <strong>{email}</strong>. Click the link in your email to access this form.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setMagicLinkSent(false)}
+            >
+              Try Different Email
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">

@@ -62,30 +62,32 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated }: Creat
         ? data.tags.split(',').map((tag) => tag.trim()).filter(Boolean)
         : [];
 
-      // Insert client
-      const { data: newClient, error } = await supabase
-        .from('clients')
-        .insert({
-          organization_id: memberData.organization_id,
-          email: data.email,
-          full_name: data.full_name,
-          company_name: data.company_name || null,
-          phone: data.phone || null,
-          tags: tagsArray,
-          invited_by: user.id,
-        })
-        .select()
-        .single();
+      // Call edge function to create client with auth user
+      const { data: functionData, error: functionError } = await supabase.functions.invoke(
+        'invite-client',
+        {
+          body: {
+            email: data.email,
+            full_name: data.full_name,
+            company_name: data.company_name || null,
+            phone: data.phone || null,
+            tags: tagsArray,
+            organization_id: memberData.organization_id,
+            invited_by: user.id,
+          },
+        }
+      );
 
-      if (error) throw error;
+      if (functionError) throw functionError;
+      if (!functionData?.client) throw new Error('Failed to create client');
 
       toast({
         title: 'Success',
-        description: 'Client invited! Magic link generated.',
+        description: 'Client invited! They will receive a magic link via email.',
       });
 
       reset();
-      onClientCreated(newClient);
+      onClientCreated(functionData.client);
     } catch (error: any) {
       toast({
         title: 'Error',

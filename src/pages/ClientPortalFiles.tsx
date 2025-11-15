@@ -23,19 +23,35 @@ export default function ClientPortalFiles() {
 
   const loadClientAndFiles = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to access your files",
+        variant: "destructive",
+      });
+      navigate("/");
+      return;
+    }
 
-    const { data: clientData } = await supabase
+    const { data: clientData, error } = await supabase
       .from("clients")
-      .select("id, organization_id")
+      .select("id, organization_id, full_name")
       .eq("id", user.id)
       .single();
 
-    if (clientData) {
-      setClient(clientData);
-      setClientId(clientData.id);
-      loadFiles(clientData.id);
+    if (error || !clientData) {
+      toast({
+        title: "Access denied",
+        description: "Client account not found",
+        variant: "destructive",
+      });
+      navigate("/");
+      return;
     }
+
+    setClient(clientData);
+    setClientId(clientData.id);
+    loadFiles(clientData.id);
   };
 
   const loadFiles = async (cId: string) => {

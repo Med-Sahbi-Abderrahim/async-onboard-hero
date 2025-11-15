@@ -9,7 +9,6 @@ import { Loader2 } from "lucide-react";
 export default function ClientFormPage() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
 
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
@@ -20,7 +19,7 @@ export default function ClientFormPage() {
 
   useEffect(() => {
     loadFormAndAuth();
-  }, [slug, token]);
+  }, [slug]);
 
   const loadFormAndAuth = async () => {
     try {
@@ -40,13 +39,16 @@ export default function ClientFormPage() {
 
       setForm(formData);
 
-      // Check if token is provided and valid
-      if (token) {
+      // Check if user is authenticated via Supabase auth
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Check if user is a client
         const { data: clientData, error: clientError } = await supabase
           .from("clients")
           .select("*")
-          .eq("access_token", token)
-          .gte("access_token_expires_at", new Date().toISOString())
+          .eq("id", user.id)
+          .is("deleted_at", null)
           .single();
 
         if (clientData && !clientError) {
@@ -62,7 +64,7 @@ export default function ClientFormPage() {
             .eq("status", "pending")
             .order("created_at", { ascending: false })
             .limit(1)
-            .single();
+            .maybeSingle();
 
           if (existingSubmission) {
             setSubmission(existingSubmission);
