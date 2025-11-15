@@ -33,6 +33,10 @@ export function AddFileModal({ open, onOpenChange, clientId, organizationId, onS
     setIsSubmitting(true);
 
     try {
+      // Get the current authenticated user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("You must be logged in to upload files");
+
       const fileExt = selectedFile.name.split(".").pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const filePath = `${clientId}/${fileName}`;
@@ -50,6 +54,7 @@ export function AddFileModal({ open, onOpenChange, clientId, organizationId, onS
         file_type: selectedFile.type,
         file_size: selectedFile.size,
         storage_path: filePath,
+        uploaded_by: user.id,
       });
 
       if (dbError) throw dbError;
