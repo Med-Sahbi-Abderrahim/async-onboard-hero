@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { getPublicUrl } from "@/lib/auth-utils";
 
 interface ClientFormAuthProps {
   form: any;
@@ -42,11 +43,14 @@ export function ClientFormAuth({ form, onAuthenticated }: ClientFormAuthProps) {
         return;
       }
 
+      // Get the public form URL for redirect (ensures we redirect to published URL, not preview)
+      const formUrl = getPublicUrl(`/form/${form.slug}`);
+
       // Send magic link to client's email
       const { error: magicLinkError } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/client-intake/${form.slug}`,
+          emailRedirectTo: formUrl,
         },
       });
 

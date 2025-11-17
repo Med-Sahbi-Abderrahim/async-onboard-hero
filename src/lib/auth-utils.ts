@@ -73,8 +73,8 @@ export function getClientPortalUrl(): string {
 }
 
 /**
- * Generate a magic link for a client using their access token
+ * Generate a form URL for sharing with clients
  */
-export function getClientMagicLink(accessToken: string): string {
-  return getPublicUrl(`/intake/${accessToken}`);
+export function getFormUrl(formSlug: string): string {
+  return getPublicUrl(`/form/${formSlug}`);
 }

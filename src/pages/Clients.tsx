@@ -23,8 +23,6 @@ interface Client {
   status: string;
   last_activity_at: string | null;
   created_at: string;
-  access_token: string;
-  access_token_expires_at: string | null;
   tags?: string[];
 }
 

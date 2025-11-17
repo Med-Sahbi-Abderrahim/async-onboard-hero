@@ -341,8 +341,6 @@ export type Database = {
       }
       clients: {
         Row: {
-          access_token: string | null
-          access_token_expires_at: string | null
           avatar_url: string | null
           company_name: string | null
           created_at: string
@@ -362,8 +360,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          access_token?: string | null
-          access_token_expires_at?: string | null
           avatar_url?: string | null
           company_name?: string | null
           created_at?: string
@@ -383,8 +379,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          access_token?: string | null
-          access_token_expires_at?: string | null
           avatar_url?: string | null
           company_name?: string | null
           created_at?: string
