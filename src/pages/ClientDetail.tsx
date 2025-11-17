@@ -13,19 +13,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { getClientMagicLink } from "@/lib/auth-utils";
 import {
   ChevronRight,
-  Copy,
   Edit,
   Trash2,
-  RefreshCw,
   Mail,
   Phone,
   Building2,
   Calendar,
   Loader2,
-  Check,
   Plus,
   FileText,
   Video,
@@ -67,7 +63,6 @@ export default function ClientDetail() {
   const [loading, setLoading] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [meetings, setMeetings] = useState<any[]>([]);
   const [files, setFiles] = useState<any[]>([]);
   const [contracts, setContracts] = useState<any[]>([]);
@@ -190,67 +185,8 @@ export default function ClientDetail() {
     }
   };
 
-  const handleCopyLink = async () => {
-    // Ensure client has an access token
-    if (!client.access_token) {
-      toast({
-        title: "Error",
-        description: "Client doesn't have an access token. Please generate a new link.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const magicLink = getClientMagicLink(client.access_token);
-    console.log("Generated magic link:", magicLink);
-    console.log("Using access token:", client.access_token);
-    
-    try {
-      await navigator.clipboard.writeText(magicLink);
-      setCopied(true);
-      toast({
-        title: "Copied!",
-        description: "Magic link copied to clipboard",
-      });
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to copy link",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleGenerateNewLink = async () => {
-    try {
-      const newToken = crypto.randomUUID();
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 90);
-
-      const { error } = await supabase
-        .from("clients")
-        .update({
-          access_token: newToken,
-          access_token_expires_at: expiresAt.toISOString(),
-        })
-        .eq("id", id);
-
-      if (error) throw error;
-
-      setClient({ ...client, access_token: newToken, access_token_expires_at: expiresAt.toISOString() });
-      toast({
-        title: "Success",
-        description: "New magic link generated",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
+  // Removed: handleCopyLink and handleGenerateNewLink functions
+  // Clients now receive magic links via email when invited
 
   const onEditSubmit = async (data: EditClientFormData) => {
     setIsSubmitting(true);
@@ -338,8 +274,6 @@ export default function ClientDetail() {
 
   if (!client) return null;
 
-  const magicLink = getClientMagicLink(client.access_token);
-
   return (
     <div className="space-y-6">
       <Breadcrumb>
@@ -423,33 +357,6 @@ export default function ClientDetail() {
               Delete
             </Button>
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Magic Link</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Current Link</Label>
-            <div className="flex gap-2">
-              <Input value={magicLink} readOnly className="font-mono text-sm" />
-              <Button variant="outline" size="icon" onClick={handleCopyLink}>
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {client.access_token_expires_at
-                ? `Expires ${formatDistanceToNow(new Date(client.access_token_expires_at), { addSuffix: true })}`
-                : "Link expires in 90 days"}
-            </p>
-          </div>
-
-          <Button variant="outline" onClick={handleGenerateNewLink}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Generate New Link
-          </Button>
         </CardContent>
       </Card>
 
