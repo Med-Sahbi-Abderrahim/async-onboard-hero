@@ -24,13 +24,13 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 const getPasswordStrength = (password: string): { strength: string; color: string } => {
   if (password.length === 0) return { strength: "", color: "" };
   if (password.length < 8) return { strength: "Too short", color: "text-destructive" };
-  
+
   let score = 0;
   if (password.length >= 12) score++;
   if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
   if (/\d/.test(password)) score++;
   if (/[^a-zA-Z0-9]/.test(password)) score++;
-  
+
   if (score <= 1) return { strength: "Weak", color: "text-orange-500" };
   if (score <= 2) return { strength: "Medium", color: "text-yellow-500" };
   return { strength: "Strong", color: "text-green-500" };
@@ -45,7 +45,9 @@ export default function Signup() {
   // Redirect if already logged in
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session) {
         navigate("/dashboard");
       }
@@ -74,7 +76,7 @@ export default function Signup() {
           data: {
             full_name: values.fullName,
           },
-        }
+        },
       });
 
       if (error) {
@@ -120,7 +122,7 @@ export default function Signup() {
         // Auto-logged in
         toast({
           title: "Account created!",
-          description: "Welcome to Async!",
+          description: "Welcome to Kenly!",
         });
         navigate("/dashboard");
       }
@@ -140,7 +142,7 @@ export default function Signup() {
       {/* Left side - Gradient */}
       <div className="hidden lg:flex lg:w-1/2 gradient-auth items-center justify-center p-12">
         <div className="max-w-md text-white">
-          <h1 className="text-4xl font-bold mb-6">Welcome to Async</h1>
+          <h1 className="text-4xl font-bold mb-6">Welcome to Kenly</h1>
           <p className="text-lg opacity-90">
             AI-Powered Client Onboarding for modern agencies. Stop chasing clients and start working faster.
           </p>
@@ -152,7 +154,7 @@ export default function Signup() {
         <div className="w-full max-w-md">
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-foreground mb-2">Create your account</h2>
-            <p className="text-muted-foreground">Get started with Async today</p>
+            <p className="text-muted-foreground">Get started with Kenly today</p>
           </div>
 
           <Form {...form}>
@@ -212,9 +214,7 @@ export default function Signup() {
                       </div>
                     </FormControl>
                     {passwordStrength.strength && (
-                      <p className={`text-sm ${passwordStrength.color}`}>
-                        Strength: {passwordStrength.strength}
-                      </p>
+                      <p className={`text-sm ${passwordStrength.color}`}>Strength: {passwordStrength.strength}</p>
                     )}
                     <FormMessage />
                   </FormItem>
@@ -239,11 +239,7 @@ export default function Signup() {
                 )}
               />
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading || !form.formState.isValid}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading || !form.formState.isValid}>
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
