@@ -12,7 +12,7 @@ const Index = () => {
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-2">
               <Zap className="h-6 w-6 text-primary" />
-              <span className="text-xl font-bold">Async</span>
+              <span className="text-xl font-bold">Kenly</span>
             </div>
             <div className="hidden items-center gap-8 md:flex">
               <a
@@ -68,7 +68,7 @@ const Index = () => {
               Stop Chasing Clients for Onboarding Information
             </h1>
             <p className="mb-10 text-lg text-muted-foreground sm:text-xl md:text-2xl text-balance">
-              Async automates client intake with branded forms, file uploads, and smart follow-ups. Get the information
+              Kenly automates client intake with branded forms, file uploads, and smart follow-ups. Get the information
               you need without the back-and-forth.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -262,7 +262,7 @@ const Index = () => {
             <Card className="shadow-soft">
               <CardContent className="p-8">
                 <p className="mb-6 text-muted-foreground">
-                  "Async cut our onboarding time from 2 weeks to 2 days. It's like having a dedicated operations
+                  "Kenly cut our onboarding time from 2 weeks to 2 days. It's like having a dedicated operations
                   person."
                 </p>
                 <div className="flex items-center gap-3">
@@ -295,7 +295,7 @@ const Index = () => {
             <Card className="shadow-soft">
               <CardContent className="p-8">
                 <p className="mb-6 text-muted-foreground">
-                  "We stopped losing projects to slow starts. Async gets us working faster and looking better."
+                  "We stopped losing projects to slow starts. Kenly gets us working faster and looking better."
                 </p>
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
@@ -382,7 +382,7 @@ const Index = () => {
               Ready to Transform Your Onboarding?
             </h2>
             <p className="mb-10 text-lg text-muted-foreground sm:text-xl text-balance">
-              Join hundreds of agencies streamlining their client intake process with Async.
+              Join hundreds of agencies streamlining their client intake process with Kenly.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link to="/signup" className="w-full sm:w-auto">
@@ -407,10 +407,10 @@ const Index = () => {
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-primary" />
-              <span className="font-semibold">Async</span>
+              <span className="font-semibold">Kenly</span>
             </div>
             <p className="text-center text-sm text-muted-foreground md:text-left">
-              © 2025 Async. All rights reserved. Built for agencies that move fast.
+              © 2025 Kenly. All rights reserved. Built for agencies that move fast.
             </p>
             <div className="flex gap-6 text-sm text-muted-foreground">
               <a href="#" className="transition-colors hover:text-primary">
