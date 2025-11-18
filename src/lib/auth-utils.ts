@@ -1,11 +1,17 @@
 /**
  * Get the appropriate redirect URL for Supabase auth flows.
  * 
- * This ensures clients are never redirected to private preview URLs.
- * - In preview environments: Returns published/production URL
- * - In local/production: Returns current origin
+ * This ensures all auth redirects use the public URL from VITE_PUBLIC_URL.
+ * - If VITE_PUBLIC_URL is set: Always use that
+ * - Otherwise: Use current origin (with preview URL handling)
  */
 export function getAuthRedirectUrl(path: string = "/auth/callback"): string {
+  // Always prefer the environment variable if set
+  const envPublicUrl = import.meta.env.VITE_PUBLIC_URL;
+  if (envPublicUrl) {
+    return `${envPublicUrl}${path}`;
+  }
+  
   const origin = window.location.origin;
   
   // Detect if we're in a Lovable preview environment
