@@ -12,6 +12,8 @@ export default function AuthCallback() {
     const handleAuthCallback = async () => {
       try {
         const type = searchParams.get('type');
+        console.log("Auth callback - type:", type);
+        console.log("Auth callback - full URL:", window.location.href);
         
         // Check for error in URL (from Supabase)
         const error = searchParams.get('error');
@@ -47,12 +49,16 @@ export default function AuthCallback() {
         }
 
         if (session) {
+          console.log("Session found:", session.user.email);
+          
           // Check if user is a client
           const { data: clientData } = await supabase
             .from('clients')
             .select('id, email')
             .eq('email', session.user.email)
             .maybeSingle();
+
+          console.log("Is client?", !!clientData);
 
           // Update last_seen_at for regular users
           if (!clientData) {
@@ -68,6 +74,7 @@ export default function AuthCallback() {
 
           // Handle different auth types
           if (type === 'recovery') {
+            console.log("Password recovery flow - redirecting to reset-password");
             // Password recovery - redirect to reset password page
             toast({
               title: "Email Verified",
@@ -75,6 +82,7 @@ export default function AuthCallback() {
             });
             navigate("/reset-password", { replace: true });
           } else if (clientData) {
+            console.log("Client login - redirecting to client-portal");
             // Client magic link - redirect to client portal
             toast({
               title: "Welcome!",

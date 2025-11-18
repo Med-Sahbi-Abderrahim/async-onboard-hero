@@ -43,8 +43,12 @@ export default function ForgotPassword() {
   const onSubmit = async (values: ForgotPasswordFormValues) => {
     setIsLoading(true);
     try {
+      // Don't include ?type=recovery - Supabase adds this automatically
+      const redirectUrl = getAuthRedirectUrl("/auth/callback");
+      console.log("Password reset redirect URL:", redirectUrl);
+      
       const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-        redirectTo: getAuthRedirectUrl("/auth/callback?type=recovery"),
+        redirectTo: redirectUrl,
       });
 
       if (error) throw error;
@@ -55,6 +59,7 @@ export default function ForgotPassword() {
         description: "Check your email for the password reset link.",
       });
     } catch (error: any) {
+      console.error("Password reset error:", error);
       toast({
         variant: "destructive",
         title: "Error",
