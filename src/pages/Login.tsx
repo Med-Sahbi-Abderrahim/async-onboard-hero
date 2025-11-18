@@ -27,7 +27,9 @@ export default function Login() {
   // Redirect if already logged in
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session) {
         navigate("/dashboard");
       }
@@ -56,10 +58,7 @@ export default function Login() {
 
       // Update last_seen_at
       if (data.user) {
-        await supabase
-          .from('users')
-          .update({ last_seen_at: new Date().toISOString() })
-          .eq('id', data.user.id);
+        await supabase.from("users").update({ last_seen_at: new Date().toISOString() }).eq("id", data.user.id);
       }
 
       toast({
@@ -84,7 +83,7 @@ export default function Login() {
       {/* Left side - Gradient */}
       <div className="hidden lg:flex lg:w-1/2 gradient-auth items-center justify-center p-12">
         <div className="max-w-md text-white">
-          <h1 className="text-4xl font-bold mb-6">Welcome back to Async</h1>
+          <h1 className="text-4xl font-bold mb-6">Welcome back to Kenly</h1>
           <p className="text-lg opacity-90">
             Continue streamlining your client onboarding process with our AI-powered platform.
           </p>
@@ -123,11 +122,7 @@ export default function Login() {
                     <FormLabel>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Input
-                          type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          {...field}
-                        />
+                        <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
@@ -151,17 +146,12 @@ export default function Login() {
                       <FormControl>
                         <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                       </FormControl>
-                      <FormLabel className="text-sm font-normal cursor-pointer">
-                        Remember me
-                      </FormLabel>
+                      <FormLabel className="text-sm font-normal cursor-pointer">Remember me</FormLabel>
                     </FormItem>
                   )}
                 />
 
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-primary hover:underline"
-                >
+                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
                   Forgot password?
                 </Link>
               </div>
