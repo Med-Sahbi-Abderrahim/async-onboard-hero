@@ -33,7 +33,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         {/* Logo */}
-        <div className="p-6">{!isCollapsed && <h1 className="text-2xl font-bold text-primary">Async</h1>}</div>
+        <div className="p-6">{!isCollapsed && <h1 className="text-2xl font-bold text-primary">Kenly</h1>}</div>
 
         {/* Navigation */}
         <SidebarGroup>
