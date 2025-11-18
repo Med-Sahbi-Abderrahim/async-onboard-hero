@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Updated brand colors - Async theme */
+    /* Updated brand colors - Kenly theme */
     --background: 210 20% 98%;
     --foreground: 220 15% 20%;
 
@@ -96,7 +96,7 @@ All colors MUST be HSL.
     --border: 220 20% 20%;
     --input: 220 20% 20%;
     --ring: 217 91% 60%;
-    
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -115,7 +115,11 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family:
+      "Inter",
+      system-ui,
+      -apple-system,
+      sans-serif;
     line-height: 1.6;
   }
 
@@ -123,17 +127,34 @@ All colors MUST be HSL.
     scroll-behavior: smooth;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold tracking-tight;
     line-height: 1.2;
   }
 
-  h1 { @apply text-4xl font-bold; }
-  h2 { @apply text-3xl font-semibold; }
-  h3 { @apply text-2xl font-semibold; }
-  h4 { @apply text-xl font-semibold; }
-  h5 { @apply text-lg font-medium; }
-  h6 { @apply text-base font-medium; }
+  h1 {
+    @apply text-4xl font-bold;
+  }
+  h2 {
+    @apply text-3xl font-semibold;
+  }
+  h3 {
+    @apply text-2xl font-semibold;
+  }
+  h4 {
+    @apply text-xl font-semibold;
+  }
+  h5 {
+    @apply text-lg font-medium;
+  }
+  h6 {
+    @apply text-base font-medium;
+  }
 }
 
 @layer utilities {
@@ -242,7 +263,8 @@ All colors MUST be HSL.
   }
 
   @keyframes success-bounce {
-    0%, 100% {
+    0%,
+    100% {
       transform: scale(1);
     }
     50% {
