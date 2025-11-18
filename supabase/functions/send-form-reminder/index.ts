@@ -3,8 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 interface SubmissionToRemind {
@@ -21,99 +21,100 @@ interface SubmissionToRemind {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     // Verify authentication
-    const authHeader = req.headers.get('Authorization');
+    const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const resendApiKey = Deno.env.get('RESEND_API_KEY') || 'PLACEHOLDER_KEY';
-    
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const resendApiKey = Deno.env.get("RESEND_API_KEY") || "PLACEHOLDER_KEY";
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const resend = new Resend(resendApiKey);
 
     // Extract user from JWT token
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
+    const token = authHeader.replace("Bearer ", "");
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token);
+
     if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     console.log(`User ${user.id} triggered reminder check`);
 
     // Verify user has admin/owner role in at least one organization
     const { data: userOrgs, error: orgsError } = await supabase
-      .from('organization_members')
-      .select('organization_id, role')
-      .eq('user_id', user.id)
-      .in('role', ['owner', 'admin']);
+      .from("organization_members")
+      .select("organization_id, role")
+      .eq("user_id", user.id)
+      .in("role", ["owner", "admin"]);
 
     if (orgsError || !userOrgs || userOrgs.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Forbidden - requires admin or owner role' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: "Forbidden - requires admin or owner role" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const allowedOrgIds = userOrgs.map(org => org.organization_id);
-    console.log('Starting form reminder job...');
+    const allowedOrgIds = userOrgs.map((org) => org.organization_id);
+    console.log("Starting form reminder job...");
 
     // Get all submissions needing reminders
-    const { data: submissions, error: fetchError } = await supabase
-      .rpc('get_submissions_needing_reminders') as { data: SubmissionToRemind[] | null, error: any };
+    const { data: submissions, error: fetchError } = (await supabase.rpc("get_submissions_needing_reminders")) as {
+      data: SubmissionToRemind[] | null;
+      error: any;
+    };
 
     if (fetchError) {
-      console.error('Error fetching submissions:', fetchError);
+      console.error("Error fetching submissions:", fetchError);
       throw fetchError;
     }
 
     if (!submissions || submissions.length === 0) {
-      console.log('No submissions need reminders at this time');
-      return new Response(
-        JSON.stringify({ message: 'No reminders sent', count: 0 }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      console.log("No submissions need reminders at this time");
+      return new Response(JSON.stringify({ message: "No reminders sent", count: 0 }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
-    
+
     // Filter to only organizations the user has access to
-    const filteredSubmissions = submissions.filter(sub => 
-      allowedOrgIds.includes(sub.organization_id)
-    );
-    
+    const filteredSubmissions = submissions.filter((sub) => allowedOrgIds.includes(sub.organization_id));
+
     console.log(`Found ${filteredSubmissions.length} submissions needing reminders (filtered to user's organizations)`);
 
     if (filteredSubmissions.length === 0) {
-      console.log('No submissions need reminders at this time');
-      return new Response(
-        JSON.stringify({ message: 'No reminders sent', count: 0 }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      console.log("No submissions need reminders at this time");
+      return new Response(JSON.stringify({ message: "No reminders sent", count: 0 }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://www.kenly.io';
-    
+    const publicAppUrl = Deno.env.get("PUBLIC_APP_URL") || "https://www.kenly.io";
+
     const results = await Promise.allSettled(
       filteredSubmissions.map(async (submission) => {
         const formUrl = `${publicAppUrl}/form/${submission.form_slug}`;
-        
+
         try {
           // Send email reminder
           const { data: emailData, error: emailError } = await resend.emails.send({
-            from: 'Async Intake <onboarding@resend.dev>',
+            from: "Kenly Intake <onboarding@resend.dev>",
             to: [submission.client_email],
             subject: `Reminder: Complete your ${submission.form_title}`,
             html: `
@@ -130,7 +131,7 @@ serve(async (req) => {
                         <table role="presentation" style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                           <tr>
                             <td style="padding: 40px;">
-                              <h2 style="margin: 0 0 20px; color: #111827; font-size: 24px; font-weight: 600;">Hi ${submission.client_full_name || 'there'},</h2>
+                              <h2 style="margin: 0 0 20px; color: #111827; font-size: 24px; font-weight: 600;">Hi ${submission.client_full_name || "there"},</h2>
                               <p style="margin: 0 0 24px; color: #4b5563; font-size: 16px; line-height: 1.5;">This is a friendly reminder that you have a form in progress that needs to be completed.</p>
                               
                               <div style="background: #f3f4f6; padding: 24px; border-radius: 8px; margin: 24px 0;">
@@ -154,7 +155,7 @@ serve(async (req) => {
                         <table role="presentation" style="max-width: 600px; margin: 20px auto 0;">
                           <tr>
                             <td style="text-align: center; padding: 0 20px;">
-                              <p style="margin: 0; color: #9ca3af; font-size: 12px;">Sent by Async Intake</p>
+                              <p style="margin: 0; color: #9ca3af; font-size: 12px;">Sent by Kenly Intake</p>
                             </td>
                           </tr>
                         </table>
@@ -171,12 +172,12 @@ serve(async (req) => {
           }
 
           // Log successful reminder
-          const { error: logError } = await supabase.from('reminder_logs').insert({
+          const { error: logError } = await supabase.from("reminder_logs").insert({
             organization_id: submission.organization_id,
             client_id: submission.client_id,
             submission_id: submission.submission_id,
-            reminder_type: 'incomplete_reminder',
-            email_status: 'sent',
+            reminder_type: "incomplete_reminder",
+            email_status: "sent",
             metadata: {
               email_id: emailData?.id,
               hours_since_update: submission.hours_since_update,
@@ -185,7 +186,7 @@ serve(async (req) => {
           });
 
           if (logError) {
-            console.error('Error logging reminder:', logError);
+            console.error("Error logging reminder:", logError);
           }
 
           console.log(`Reminder sent to ${submission.client_email}`);
@@ -194,46 +195,43 @@ serve(async (req) => {
           console.error(`Failed to send reminder to ${submission.client_email}:`, error);
 
           // Log failed reminder
-          await supabase.from('reminder_logs').insert({
+          await supabase.from("reminder_logs").insert({
             organization_id: submission.organization_id,
             client_id: submission.client_id,
             submission_id: submission.submission_id,
-            reminder_type: 'incomplete_reminder',
-            email_status: 'failed',
-            error_message: error?.message || 'Unknown error',
+            reminder_type: "incomplete_reminder",
+            email_status: "failed",
+            error_message: error?.message || "Unknown error",
             retry_count: 0,
           });
 
           return { success: false, email: submission.client_email, error: error?.message };
         }
-      })
+      }),
     );
 
-    const successCount = results.filter(r => r.status === 'fulfilled' && r.value.success).length;
+    const successCount = results.filter((r) => r.status === "fulfilled" && r.value.success).length;
     const failureCount = results.length - successCount;
 
     console.log(`Reminders sent: ${successCount} successful, ${failureCount} failed`);
 
     return new Response(
       JSON.stringify({
-        message: 'Reminder job completed',
+        message: "Reminder job completed",
         total: filteredSubmissions.length,
         successful: successCount,
         failed: failureCount,
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   } catch (error: any) {
-    console.error('Error in send-form-reminder function:', error);
-    return new Response(
-      JSON.stringify({ error: error?.message || 'Unknown error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+    console.error("Error in send-form-reminder function:", error);
+    return new Response(JSON.stringify({ error: error?.message || "Unknown error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
