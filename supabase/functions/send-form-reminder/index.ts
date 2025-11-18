@@ -104,9 +104,11 @@ serve(async (req) => {
       );
     }
 
+    const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://www.kenly.io';
+    
     const results = await Promise.allSettled(
       filteredSubmissions.map(async (submission) => {
-        const formUrl = `${supabaseUrl.replace('xcvupdkdrrqjrgjzvhoy.supabase.co', 'lovable.app')}/forms/${submission.form_slug}/submit`;
+        const formUrl = `${publicAppUrl}/form/${submission.form_slug}`;
         
         try {
           // Send email reminder
