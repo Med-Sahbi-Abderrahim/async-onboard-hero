@@ -12,14 +12,14 @@ const plans = [
     name: "Free",
     price: "$0",
     period: "forever",
-    description: "Perfect for trying out Async",
+    description: "Perfect for trying out Kenly",
     icon: Sparkles,
     iconColor: "text-gray-500",
     features: [
       { text: "1 active client portal", included: true },
       { text: "1 GB file storage", included: true },
       { text: "Basic email notifications", included: true },
-      { text: "Async branding required", included: true },
+      { text: "Kenly branding required", included: true },
       { text: "Custom branding", included: false },
       { text: "Workflow automations", included: false },
       { text: "Integrations", included: false },
@@ -40,7 +40,7 @@ const plans = [
       { text: "Custom branding (logo + colors)", included: true },
       { text: "Files, contracts, meetings & feedback", included: true },
       { text: "Basic email notifications", included: true },
-      { text: "Async footer branding", included: true },
+      { text: "Kenly footer branding", included: true },
       { text: "Workflow automations", included: false },
     ],
     cta: "Upgrade to Starter",
@@ -61,7 +61,7 @@ const plans = [
       { text: "Workflow automations", included: true },
       { text: "Integrations (Google Drive, Notion)", included: true },
       { text: "Priority email support", included: true },
-      { text: "Remove Async branding (white-label)", included: true },
+      { text: "Remove Kenly branding (white-label)", included: true },
     ],
     cta: "Upgrade to Pro",
     highlighted: true,
@@ -75,37 +75,37 @@ export default function Pricing() {
 
   const handleUpgrade = async (planName: string) => {
     if (!user) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
-    if (planName === 'Free') {
-      navigate('/dashboard');
+    if (planName === "Free") {
+      navigate("/dashboard");
       return;
     }
 
     try {
       // Get user's organization
       const { data: membership } = await supabase
-        .from('organization_members')
-        .select('organization_id')
-        .eq('user_id', user.id)
+        .from("organization_members")
+        .select("organization_id")
+        .eq("user_id", user.id)
         .single();
 
       if (!membership) {
-        throw new Error('No organization found');
+        throw new Error("No organization found");
       }
 
-      const plan = planName === 'Starter' ? 'starter' : 'pro';
+      const plan = planName === "Starter" ? "starter" : "pro";
 
-      const { data, error } = await supabase.functions.invoke('create-lemon-squeezy-checkout', {
-        body: { plan, organizationId: membership.organization_id }
+      const { data, error } = await supabase.functions.invoke("create-lemon-squeezy-checkout", {
+        body: { plan, organizationId: membership.organization_id },
       });
 
       if (error) throw error;
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        window.open(data.url, "_blank");
       }
     } catch (error: any) {
       toast({
@@ -123,7 +123,9 @@ export default function Pricing() {
         <div className="text-center mb-12 md:mb-16 animate-fade-in">
           <Badge className="mb-4 shadow-soft">Simple, transparent pricing</Badge>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-            Choose your <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">Async</span> plan
+            Choose your{" "}
+            <span className="bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">Kenly</span>{" "}
+            plan
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
             Start free, upgrade as you grow. No hidden fees, cancel anytime.
@@ -146,9 +148,7 @@ export default function Pricing() {
               >
                 {plan.badge && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-gradient-to-r from-primary to-primary-glow shadow-medium">
-                      {plan.badge}
-                    </Badge>
+                    <Badge className="bg-gradient-to-r from-primary to-primary-glow shadow-medium">{plan.badge}</Badge>
                   </div>
                 )}
 
@@ -208,11 +208,11 @@ export default function Pricing() {
             <CardContent className="p-8">
               <h3 className="text-xl font-semibold mb-4">Need help choosing?</h3>
               <p className="text-muted-foreground mb-6">
-                All plans include secure client portals, form submissions, and essential collaboration tools.
-                Start with Free and upgrade anytime as your needs grow.
+                All plans include secure client portals, form submissions, and essential collaboration tools. Start with
+                Free and upgrade anytime as your needs grow.
               </p>
               <Button asChild variant="ghost">
-                <button onClick={() => navigate('/dashboard')}>Go to Dashboard</button>
+                <button onClick={() => navigate("/dashboard")}>Go to Dashboard</button>
               </Button>
             </CardContent>
           </Card>
