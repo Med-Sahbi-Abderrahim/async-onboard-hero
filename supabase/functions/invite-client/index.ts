@@ -100,12 +100,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Send magic link to client
+    // Send magic link to client using public URL
+    const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://www.kenly.io';
     const { error: magicLinkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
       email: requestData.email,
       options: {
-        redirectTo: `${req.headers.get('origin') || ''}/client-portal`,
+        redirectTo: `${publicAppUrl}/client-portal`,
       },
     });
 
