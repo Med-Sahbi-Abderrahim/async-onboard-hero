@@ -12,7 +12,9 @@ export default function AuthCallback() {
     const handleAuthCallback = async () => {
       try {
         const type = searchParams.get('type');
+        const accessToken = searchParams.get('access_token');
         console.log("Auth callback - type:", type);
+        console.log("Auth callback - access_token present:", !!accessToken);
         console.log("Auth callback - full URL:", window.location.href);
         
         // Check for error in URL (from Supabase)
@@ -51,7 +53,19 @@ export default function AuthCallback() {
         if (session) {
           console.log("Session found:", session.user.email);
           
-          // Check if user is a client
+          // CRITICAL: Check for password recovery FIRST before any other checks
+          // This handles both URL parameter and hash fragment patterns
+          if (type === 'recovery' || accessToken) {
+            console.log("Password recovery detected - redirecting to /reset-password");
+            toast({
+              title: "Email Verified",
+              description: "Please set your new password",
+            });
+            navigate("/reset-password", { replace: true });
+            return;
+          }
+          
+          // Check if user is a client (only for non-recovery flows)
           const { data: clientData } = await supabase
             .from('clients')
             .select('id, email')
@@ -72,25 +86,16 @@ export default function AuthCallback() {
             }
           }
 
-          // Handle different auth types
-          if (type === 'recovery') {
-            console.log("Password recovery flow - redirecting to reset-password");
-            // Password recovery - redirect to reset password page
-            toast({
-              title: "Email Verified",
-              description: "Please set your new password",
-            });
-            navigate("/reset-password", { replace: true });
-          } else if (clientData) {
+          // Route based on user type
+          if (clientData) {
             console.log("Client login - redirecting to client-portal");
-            // Client magic link - redirect to client portal
             toast({
               title: "Welcome!",
               description: "Accessing your client portal...",
             });
             navigate("/client-portal", { replace: true });
           } else {
-            // Organization member - redirect to dashboard
+            console.log("Organization member login - redirecting to dashboard");
             toast({
               title: "Welcome!",
               description: "Your email has been verified successfully",
