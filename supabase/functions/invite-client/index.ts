@@ -1,5 +1,4 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { Resend } from 'https://esm.sh/resend@2.0.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -72,28 +71,30 @@ Deno.serve(async (req) => {
         },
       });
     } else {
-      // Create new auth user
-      const tempPassword = crypto.randomUUID();
-      const { data: authData, error: authUserError } = await supabaseAdmin.auth.admin.createUser({
-        email: requestData.email,
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: {
-          full_name: requestData.full_name,
-          is_client: true,
-        },
-      });
+      // Use Supabase's built-in invitation system
+      const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://kenly.io';
+      
+      const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+        requestData.email,
+        {
+          redirectTo: `${publicAppUrl}/auth/callback`,
+          data: {
+            full_name: requestData.full_name,
+            is_client: true,
+          },
+        }
+      );
 
-      if (authUserError) {
-        console.error('Error creating auth user:', authUserError);
-        return new Response(JSON.stringify({ error: authUserError.message }), {
+      if (inviteError) {
+        console.error('Error inviting user:', inviteError);
+        return new Response(JSON.stringify({ error: inviteError.message }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      userId = authData.user.id;
-      console.log('Created new auth user:', userId);
+      userId = inviteData.user.id;
+      console.log('Invited new auth user:', userId);
     }
 
     // Check if client already exists for this organization
@@ -139,92 +140,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Send welcome email with simple instructions
-    const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://kenly.io';
-    const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
-    
-    try {
-      const loginUrl = `${publicAppUrl}/login`;
-      const forgotPasswordUrl = `${publicAppUrl}/forgot-password?email=${encodeURIComponent(requestData.email)}`;
-      
-      const { error: emailError } = await resend.emails.send({
-        from: 'Kenly <onboarding@kenly.io>',
-        to: [requestData.email],
-        subject: 'Welcome to Your Client Portal',
-        html: `
-          <!DOCTYPE html>
-          <html>
-            <head>
-              <style>
-                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
-                .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
-                .button { display: inline-block; background: #3b82f6; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
-                .button:hover { background: #2563eb; }
-                .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
-                .info-box { background: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0; }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <div class="header">
-                  <h1 style="margin: 0; font-size: 28px;">Welcome to Your Client Portal</h1>
-                </div>
-                <div class="content">
-                  <p>Hi ${requestData.full_name},</p>
-                  
-                  <p>You've been invited to access your client portal. This is your central hub to:</p>
-                  
-                  <ul>
-                    <li>Fill out intake forms</li>
-                    <li>Upload and share documents</li>
-                    <li>Schedule meetings</li>
-                    <li>View contracts and invoices</li>
-                    <li>Track your project status</li>
-                  </ul>
-                  
-                  <div style="text-align: center;">
-                    <a href="${forgotPasswordUrl}" class="button">
-                      Set Up Your Password
-                    </a>
-                  </div>
-                  
-                  <div class="info-box">
-                    <p style="margin: 0;"><strong>Quick Setup (2 steps):</strong></p>
-                    <p style="margin: 8px 0 0 0;">
-                      1. Click the button above<br/>
-                      2. You'll receive a password reset email - click that link to set your password
-                    </p>
-                    <p style="margin: 10px 0 0 0; font-size: 12px; color: #6b7280;">
-                      Your email: <strong>${requestData.email}</strong>
-                    </p>
-                  </div>
-                  
-                  <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
-                    If you didn't expect this invitation, you can safely ignore this email.
-                  </p>
-                </div>
-                <div class="footer">
-                  <p>Powered by Kenly</p>
-                  <p style="font-size: 12px; color: #9ca3af;">
-                    This is an automated message. Please do not reply to this email.
-                  </p>
-                </div>
-              </div>
-            </body>
-          </html>
-        `,
-      });
-
-      if (emailError) {
-        console.error('Error sending invitation email:', emailError);
-      } else {
-        console.log('Invitation email sent successfully to:', requestData.email);
-      }
-    } catch (emailError) {
-      console.error('Failed to send email via Resend:', emailError);
-    }
+    // Supabase will automatically send the invitation email with password setup link
+    console.log('Invitation email will be sent by Supabase to:', requestData.email);
 
     return new Response(JSON.stringify({ client: clientData }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
