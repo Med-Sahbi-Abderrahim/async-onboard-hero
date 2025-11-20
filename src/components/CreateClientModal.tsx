@@ -10,6 +10,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Loader2 } from 'lucide-react';
+import { UpgradeModal } from './UpgradeModal';
+import { useOrgLimits } from '@/hooks/useOrgLimits';
 
 const clientSchema = z.object({
   email: z.string().email('Invalid email address').min(1, 'Email is required'),
@@ -31,6 +33,10 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated }: Creat
   const { user } = useUser();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [organizationId, setOrganizationId] = useState<string>('');
+  const [currentPlan, setCurrentPlan] = useState<'free' | 'starter' | 'pro'>('free');
+  const { limits, canCreateClient, refresh } = useOrgLimits(organizationId);
 
   const {
     register,
@@ -55,6 +61,34 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated }: Creat
 
       if (!memberData) {
         throw new Error('Organization not found');
+      }
+
+      // Store org ID for upgrade modal
+      if (!organizationId) {
+        setOrganizationId(memberData.organization_id);
+      }
+
+      // Get organization plan
+      const { data: orgData } = await supabase
+        .from('organizations')
+        .select('plan, max_portals')
+        .eq('id', memberData.organization_id)
+        .single();
+
+      if (orgData) {
+        setCurrentPlan(orgData.plan as 'free' | 'starter' | 'pro');
+      }
+
+      // Check client limit using RPC function
+      const { data: canCreate, error: limitError } = await supabase
+        .rpc('can_create_client', { org_id: memberData.organization_id });
+
+      if (limitError) throw limitError;
+
+      if (!canCreate) {
+        setIsSubmitting(false);
+        setShowUpgradeModal(true);
+        return;
       }
 
       // Process tags
@@ -87,6 +121,7 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated }: Creat
       });
 
       reset();
+      refresh(); // Refresh limits
       onClientCreated(functionData.client);
     } catch (error: any) {
       toast({
@@ -100,8 +135,9 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated }: Creat
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Invite Client</DialogTitle>
           <DialogDescription>
@@ -177,5 +213,14 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated }: Creat
         </form>
       </DialogContent>
     </Dialog>
+
+    <UpgradeModal
+      open={showUpgradeModal}
+      onOpenChange={setShowUpgradeModal}
+      limitType="clients"
+      currentPlan={currentPlan}
+      organizationId={organizationId}
+    />
+    </>
   );
 }

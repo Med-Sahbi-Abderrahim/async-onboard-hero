@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, Download, ArrowLeft } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
+import { UpgradeModal } from "@/components/UpgradeModal";
 
 export default function ClientPortalFiles() {
   const navigate = useNavigate();
@@ -16,6 +17,8 @@ export default function ClientPortalFiles() {
   const [clientId, setClientId] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [client, setClient] = useState<any>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState<'free' | 'starter' | 'pro'>('free');
 
   useEffect(() => {
     loadClientAndFiles();
@@ -95,6 +98,32 @@ export default function ClientPortalFiles() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
+
+      // Get organization plan and check storage
+      const { data: orgData } = await supabase
+        .from('organizations')
+        .select('plan')
+        .eq('id', client.organization_id)
+        .single();
+
+      if (orgData) {
+        setCurrentPlan(orgData.plan as 'free' | 'starter' | 'pro');
+      }
+
+      // Check storage limit
+      const { data: canUpload, error: limitError } = await supabase
+        .rpc('can_upload_file', {
+          org_id: client.organization_id,
+          file_size_bytes: selectedFile.size
+        });
+
+      if (limitError) throw limitError;
+
+      if (!canUpload) {
+        setUploading(false);
+        setShowUpgradeModal(true);
+        return;
+      }
 
       const filePath = `${user.id}/${Date.now()}_${selectedFile.name}`;
 
@@ -271,6 +300,14 @@ export default function ClientPortalFiles() {
           </CardContent>
         </Card>
       </div>
+
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        limitType="storage"
+        currentPlan={currentPlan}
+        organizationId={client?.organization_id || ''}
+      />
     </div>
   );
 }
