@@ -34,7 +34,29 @@ export default function ForgotPassword() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/dashboard");
+        // Find user's first organization
+        const { data: orgMember } = await supabase
+          .from('organization_members')
+          .select('organization_id')
+          .eq('user_id', session.user.id)
+          .limit(1)
+          .maybeSingle();
+        
+        if (orgMember) {
+          navigate(`/dashboard/${orgMember.organization_id}`);
+        } else {
+          // Check if user is a client
+          const { data: clientData } = await supabase
+            .from('clients')
+            .select('organization_id')
+            .eq('email', session.user.email)
+            .limit(1)
+            .maybeSingle();
+          
+          if (clientData) {
+            navigate(`/client-portal/${clientData.organization_id}`);
+          }
+        }
       }
     };
     checkUser();

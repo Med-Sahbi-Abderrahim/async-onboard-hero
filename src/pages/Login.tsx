@@ -143,7 +143,8 @@ export default function Login() {
           if (clientData) {
             navigate(`/client-portal/${clientData.organization_id}`);
           } else {
-            navigate("/dashboard");
+            // User has no organization or client record - shouldn't happen
+            navigate("/");
           }
         }
       }

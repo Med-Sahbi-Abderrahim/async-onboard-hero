@@ -80,7 +80,19 @@ export default function Pricing() {
     }
 
     if (planName === "Free") {
-      navigate("/dashboard");
+      // Find user's first organization
+      const { data: orgMember } = await supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle();
+      
+      if (orgMember) {
+        navigate(`/dashboard/${orgMember.organization_id}`);
+      } else {
+        navigate("/");
+      }
       return;
     }
 
@@ -212,7 +224,24 @@ export default function Pricing() {
                 Free and upgrade anytime as your needs grow.
               </p>
               <Button asChild variant="ghost">
-                <button onClick={() => navigate("/dashboard")}>Go to Dashboard</button>
+                <button onClick={async () => {
+                  if (user) {
+                    const { data: orgMember } = await supabase
+                      .from('organization_members')
+                      .select('organization_id')
+                      .eq('user_id', user.id)
+                      .limit(1)
+                      .maybeSingle();
+                    
+                    if (orgMember) {
+                      navigate(`/dashboard/${orgMember.organization_id}`);
+                    } else {
+                      navigate("/");
+                    }
+                  } else {
+                    navigate("/");
+                  }
+                }}>Go to Dashboard</button>
               </Button>
             </CardContent>
           </Card>

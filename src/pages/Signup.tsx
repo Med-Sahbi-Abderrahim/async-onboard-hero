@@ -48,8 +48,31 @@ export default function Signup() {
       const {
         data: { session },
       } = await supabase.auth.getSession();
+      
       if (session) {
-        navigate("/dashboard");
+        // Find user's first organization
+        const { data: orgMember } = await supabase
+          .from('organization_members')
+          .select('organization_id')
+          .eq('user_id', session.user.id)
+          .limit(1)
+          .maybeSingle();
+        
+        if (orgMember) {
+          navigate(`/dashboard/${orgMember.organization_id}`);
+        } else {
+          // Check if user is a client
+          const { data: clientData } = await supabase
+            .from('clients')
+            .select('organization_id')
+            .eq('email', session.user.email)
+            .limit(1)
+            .maybeSingle();
+          
+          if (clientData) {
+            navigate(`/client-portal/${clientData.organization_id}`);
+          }
+        }
       }
     };
     checkUser();
@@ -118,13 +141,39 @@ export default function Signup() {
           title: "Check your email!",
           description: "We've sent you a confirmation link. Please verify your email to continue.",
         });
-      } else {
-        // Auto-logged in
+      } else if (data.session) {
+        // Auto-logged in - find user's organization
         toast({
           title: "Account created!",
           description: "Welcome to Kenly!",
         });
-        navigate("/dashboard");
+        
+        // Find user's first organization
+        const { data: orgMember } = await supabase
+          .from('organization_members')
+          .select('organization_id')
+          .eq('user_id', data.session.user.id)
+          .limit(1)
+          .maybeSingle();
+        
+        if (orgMember) {
+          navigate(`/dashboard/${orgMember.organization_id}`);
+        } else {
+          // Check if user is a client
+          const { data: clientData } = await supabase
+            .from('clients')
+            .select('organization_id')
+            .eq('email', data.session.user.email)
+            .limit(1)
+            .maybeSingle();
+          
+          if (clientData) {
+            navigate(`/client-portal/${clientData.organization_id}`);
+          } else {
+            // Fallback - shouldn't happen but redirect to root
+            navigate("/");
+          }
+        }
       }
     } catch (error: any) {
       toast({
