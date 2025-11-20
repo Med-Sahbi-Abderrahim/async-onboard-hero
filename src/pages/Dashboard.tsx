@@ -3,10 +3,12 @@ import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText, Inbox, UserPlus, FilePlus, Eye } from "lucide-react";
+import { Users, FileText, Inbox, UserPlus, FilePlus, Eye, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useOrgId } from "@/hooks/useOrgId";
 import { ProgressDashboard } from "@/components/progress/ProgressDashboard";
+import { StatsSkeleton } from "@/components/ui/loading-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export default function Dashboard() {
   const { profile } = useUser();
@@ -77,31 +79,31 @@ export default function Dashboard() {
   const hasNoData = stats.totalClients === 0 && stats.activeForms === 0 && stats.submissionsThisMonth === 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Welcome Card */}
-      <Card>
+      <Card className="border-primary/20">
         <CardHeader>
-          <CardTitle className="text-2xl">Welcome back, {profile?.full_name}!</CardTitle>
+          <CardTitle className="text-2xl flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-primary" />
+            Welcome back, {profile?.full_name}!
+          </CardTitle>
           <CardDescription>Here's what's happening with your account today.</CardDescription>
         </CardHeader>
       </Card>
 
       {/* Stats Cards */}
       {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
+        <StatsSkeleton />
       ) : hasNoData ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <h3 className="text-xl font-semibold mb-2">Let's get started!</h3>
-            <p className="text-muted-foreground mb-6">Invite your first client to begin collecting submissions.</p>
-            <Button onClick={() => navigate(orgId ? `/clients/${orgId}` : "/clients")}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Invite Client
-            </Button>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Sparkles}
+          title="Let's get started!"
+          description="Invite your first client to begin collecting submissions and managing your workflow."
+          action={{
+            label: "Invite Your First Client",
+            onClick: () => navigate(orgId ? `/clients/${orgId}` : "/clients")
+          }}
+        />
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

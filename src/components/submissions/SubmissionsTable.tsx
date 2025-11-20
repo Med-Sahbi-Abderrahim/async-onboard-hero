@@ -1,9 +1,10 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { Eye, Inbox } from "lucide-react";
 import { format } from "date-fns";
 import { Submission } from "@/hooks/useSubmissions";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
 
 interface SubmissionsTableProps {
   submissions: Submission[];
@@ -29,21 +30,11 @@ const statusLabels: Record<string, string> = {
 
 export function SubmissionsTable({ submissions, loading, onViewDetails }: SubmissionsTableProps) {
   if (loading) {
-    return (
-      <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-16 bg-muted animate-pulse rounded" />
-        ))}
-      </div>
-    );
+    return <TableSkeleton rows={8} />;
   }
 
   if (submissions.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">No submissions found.</p>
-      </div>
-    );
+    return null; // Parent handles empty state
   }
 
   return (

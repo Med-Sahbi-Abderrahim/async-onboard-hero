@@ -13,7 +13,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, MoreVertical, Edit, Trash2, ExternalLink, Eye } from "lucide-react";
+import { Plus, MoreVertical, Edit, Trash2, ExternalLink, Eye, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { useOrgId } from "@/hooks/useOrgId";
 import {
@@ -26,6 +26,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { TableSkeleton } from "@/components/ui/loading-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface IntakeForm {
   id: string;
@@ -205,11 +207,17 @@ export default function Forms() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading forms...</div>
+            <TableSkeleton rows={5} />
           ) : forms.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No forms yet. Create your first form to get started.
-            </div>
+            <EmptyState
+              icon={FileText}
+              title="No forms yet"
+              description="Create your first intake form to start collecting submissions from clients."
+              action={{
+                label: "Create Your First Form",
+                onClick: () => navigate(orgId ? `/forms/${orgId}/create` : "/forms/create")
+              }}
+            />
           ) : (
             <Table>
               <TableHeader>

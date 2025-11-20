@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Search, ChevronLeft, ChevronRight, FileDown, FileUp } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, FileDown, FileUp, Inbox } from "lucide-react";
 import { useSubmissions, Submission } from "@/hooks/useSubmissions";
 import { SubmissionsTable } from "@/components/submissions/SubmissionsTable";
 import { SubmissionDetails } from "@/components/submissions/SubmissionDetails";
 import { ImportSubmissionsModal } from "@/components/submissions/ImportSubmissionsModal";
 import { useToast } from "@/hooks/use-toast";
+import { EmptyState } from "@/components/ui/empty-state";
 import * as XLSX from 'xlsx';
 
 export default function Submissions() {
@@ -154,18 +155,30 @@ export default function Submissions() {
       </div>
 
       {/* Results count */}
-      {!loading && (
-        <div className="text-sm text-muted-foreground">
+      {!loading && submissions.length > 0 && (
+        <div className="text-sm text-muted-foreground animate-fade-in">
           Showing {submissions.length} of {totalCount} submissions
         </div>
       )}
 
-      {/* Table */}
-      <SubmissionsTable
-        submissions={submissions}
-        loading={loading}
-        onViewDetails={handleViewDetails}
-      />
+      {/* Table or Empty State */}
+      {!loading && submissions.length === 0 ? (
+        <EmptyState
+          icon={Inbox}
+          title={searchQuery || statusFilter !== "all" ? "No submissions found" : "No submissions yet"}
+          description={
+            searchQuery || statusFilter !== "all"
+              ? "Try adjusting your filters or search query."
+              : "Form submissions will appear here once clients start filling them out."
+          }
+        />
+      ) : (
+        <SubmissionsTable
+          submissions={submissions}
+          loading={loading}
+          onViewDetails={handleViewDetails}
+        />
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (
