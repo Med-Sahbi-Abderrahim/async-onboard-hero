@@ -139,28 +139,30 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Send password setup email via Supabase (longer-lived token)
-    const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://www.kenly.io';
+    // Generate password setup link with longer expiration
+    const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://kenly.io';
     
-    // Use password reset flow which provides a longer-lived token and better UX
-    const { error: inviteError } = await supabaseAdmin.auth.resetPasswordForEmail(
-      requestData.email,
-      {
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'recovery',
+      email: requestData.email,
+      options: {
         redirectTo: `${publicAppUrl}/auth/callback`,
-      }
-    );
+      },
+    });
 
-    if (inviteError) {
-      console.error('Error sending invitation:', inviteError);
-      // Don't fail - this might happen if user already exists
-      // We'll send our custom email anyway
+    if (linkError) {
+      console.error('Error generating password setup link:', linkError);
+      return new Response(JSON.stringify({ error: 'Failed to generate invitation link' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    // Send custom invitation email via Resend
+    // Send invitation email via Resend with password setup link
     const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
     
     try {
-      const loginUrl = `${publicAppUrl}/login`;
+      const setupUrl = linkData.properties.action_link;
       
       const { error: emailError } = await resend.emails.send({
         from: 'Kenly <onboarding@kenly.io>',
@@ -200,14 +202,14 @@ Deno.serve(async (req) => {
                   </ul>
                   
                   <div style="text-align: center;">
-                    <a href="${loginUrl}" class="button">
-                      Access Your Portal
+                    <a href="${setupUrl}" class="button">
+                      Set Up Your Password
                     </a>
                   </div>
                   
                   <div class="info-box">
-                    <p style="margin: 0;"><strong>First time logging in?</strong></p>
-                    <p style="margin: 5px 0 0 0;">Click the button above and use "Forgot Password" to set up your password. Your email is: <strong>${requestData.email}</strong></p>
+                    <p style="margin: 0;"><strong>First time setup:</strong></p>
+                    <p style="margin: 5px 0 0 0;">Click the button above to create your password and access your portal. This link will expire in 24 hours.</p>
                   </div>
                   
                   <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
