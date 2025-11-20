@@ -52,33 +52,73 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Generate a temporary password (client will set their own via email)
-    const tempPassword = crypto.randomUUID();
+    // Check if an auth user already exists with this email
+    let userId: string;
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = existingUsers?.users?.find(u => u.email === requestData.email);
 
-    // Create auth user for the client
-    const { data: authData, error: authUserError } = await supabaseAdmin.auth.admin.createUser({
-      email: requestData.email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: {
-        full_name: requestData.full_name,
-        is_client: true,
-      },
-    });
-
-    if (authUserError) {
-      console.error('Error creating auth user:', authUserError);
-      return new Response(JSON.stringify({ error: authUserError.message }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    if (existingUser) {
+      // User already exists, reuse their ID
+      userId = existingUser.id;
+      console.log('Reusing existing auth user:', userId);
+      
+      // Update user metadata to ensure is_client flag is set
+      await supabaseAdmin.auth.admin.updateUserById(userId, {
+        user_metadata: {
+          ...existingUser.user_metadata,
+          full_name: requestData.full_name,
+          is_client: true,
+        },
       });
+    } else {
+      // Create new auth user
+      const tempPassword = crypto.randomUUID();
+      const { data: authData, error: authUserError } = await supabaseAdmin.auth.admin.createUser({
+        email: requestData.email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          full_name: requestData.full_name,
+          is_client: true,
+        },
+      });
+
+      if (authUserError) {
+        console.error('Error creating auth user:', authUserError);
+        return new Response(JSON.stringify({ error: authUserError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      userId = authData.user.id;
+      console.log('Created new auth user:', userId);
+    }
+
+    // Check if client already exists for this organization
+    const { data: existingClient } = await supabaseAdmin
+      .from('clients')
+      .select('id')
+      .eq('organization_id', requestData.organization_id)
+      .eq('email', requestData.email)
+      .is('deleted_at', null)
+      .single();
+
+    if (existingClient) {
+      return new Response(
+        JSON.stringify({ error: 'Client already exists in your organization' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     // Create client record with the auth user's ID
     const { data: clientData, error: clientError } = await supabaseAdmin
       .from('clients')
       .insert({
-        id: authData.user.id, // Use auth user ID as client ID
+        id: userId, // Use the auth user ID (existing or new)
         organization_id: requestData.organization_id,
         email: requestData.email,
         full_name: requestData.full_name,
@@ -91,8 +131,6 @@ Deno.serve(async (req) => {
       .single();
 
     if (clientError) {
-      // Rollback: delete auth user if client creation fails
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
       console.error('Error creating client:', clientError);
       return new Response(JSON.stringify({ error: clientError.message }), {
         status: 400,
