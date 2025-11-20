@@ -139,30 +139,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Generate password setup link with longer expiration
+    // Send welcome email with simple instructions
     const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://kenly.io';
-    
-    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'recovery',
-      email: requestData.email,
-      options: {
-        redirectTo: `${publicAppUrl}/auth/callback`,
-      },
-    });
-
-    if (linkError) {
-      console.error('Error generating password setup link:', linkError);
-      return new Response(JSON.stringify({ error: 'Failed to generate invitation link' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Send invitation email via Resend with password setup link
     const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
     
     try {
-      const setupUrl = linkData.properties.action_link;
+      const loginUrl = `${publicAppUrl}/login`;
+      const forgotPasswordUrl = `${publicAppUrl}/forgot-password?email=${encodeURIComponent(requestData.email)}`;
       
       const { error: emailError } = await resend.emails.send({
         from: 'Kenly <onboarding@kenly.io>',
@@ -202,14 +185,20 @@ Deno.serve(async (req) => {
                   </ul>
                   
                   <div style="text-align: center;">
-                    <a href="${setupUrl}" class="button">
+                    <a href="${forgotPasswordUrl}" class="button">
                       Set Up Your Password
                     </a>
                   </div>
                   
                   <div class="info-box">
-                    <p style="margin: 0;"><strong>First time setup:</strong></p>
-                    <p style="margin: 5px 0 0 0;">Click the button above to create your password and access your portal. This link will expire in 24 hours.</p>
+                    <p style="margin: 0;"><strong>Quick Setup (2 steps):</strong></p>
+                    <p style="margin: 8px 0 0 0;">
+                      1. Click the button above<br/>
+                      2. You'll receive a password reset email - click that link to set your password
+                    </p>
+                    <p style="margin: 10px 0 0 0; font-size: 12px; color: #6b7280;">
+                      Your email: <strong>${requestData.email}</strong>
+                    </p>
                   </div>
                   
                   <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
