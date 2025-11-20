@@ -68,7 +68,8 @@ const Index = () => {
               The Client Portal that onboards your clients for you
             </h1>
             <p className="mb-10 text-lg text-muted-foreground sm:text-xl md:text-2xl text-balance">
-              A professional workspace where clients complete contracts, upload assets, and track progress—automatically keeping your projects on schedule from day one.
+              A professional workspace where clients complete contracts, upload assets, and track progress—automatically
+              keeping your projects on schedule from day one.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link to="/signup" className="w-full sm:w-auto">
@@ -84,7 +85,7 @@ const Index = () => {
               </Link>
             </div>
             <p className="mt-6 text-sm text-muted-foreground">
-              No credit card required. Free to start. Cancel anytime.
+              <u>No credit card required.</u> Free to start. Cancel anytime.
             </p>
           </div>
         </div>
@@ -208,7 +209,8 @@ const Index = () => {
               <div>
                 <h3 className="mb-3 text-xl font-semibold">Brand Your Portal</h3>
                 <p className="text-muted-foreground">
-                  Create a professional client workspace with your logo, colors, and messaging that reflects your agency's identity.
+                  Create a professional client workspace with your logo, colors, and messaging that reflects your
+                  agency's identity.
                 </p>
               </div>
             </div>
@@ -219,7 +221,8 @@ const Index = () => {
               <div>
                 <h3 className="mb-3 text-xl font-semibold">Define the Blockers</h3>
                 <p className="text-muted-foreground">
-                  Set up required contracts, assets, and information you need before project kickoff—eliminating common delays.
+                  Set up required contracts, assets, and information you need before project kickoff—eliminating common
+                  delays.
                 </p>
               </div>
             </div>
@@ -230,7 +233,8 @@ const Index = () => {
               <div>
                 <h3 className="mb-3 text-xl font-semibold">Onboarding on Auto-Pilot</h3>
                 <p className="text-muted-foreground">
-                  Clients receive automated reminders and progress tracking while you focus on billable work instead of follow-ups.
+                  Clients receive automated reminders and progress tracking while you focus on billable work instead of
+                  follow-ups.
                 </p>
               </div>
             </div>
