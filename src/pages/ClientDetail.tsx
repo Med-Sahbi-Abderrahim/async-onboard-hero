@@ -44,6 +44,7 @@ import { AddFileModal } from "@/components/AddFileModal";
 import { AddContractModal } from "@/components/AddContractModal";
 import { AddInvoiceModal } from "@/components/AddInvoiceModal";
 import { TaskList } from "@/components/tasks/TaskList";
+import { ClientProgressCard } from "@/components/progress/ClientProgressCard";
 
 const editClientSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -362,6 +363,9 @@ export default function ClientDetail() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Progress Card */}
+      <ClientProgressCard clientId={id!} organizationId={client.organization_id} />
 
       <Card>
         <CardHeader>
