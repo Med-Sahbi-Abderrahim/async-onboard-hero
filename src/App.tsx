@@ -33,6 +33,7 @@ import ClientPortalContracts from "./pages/ClientPortalContracts";
 import ClientPortalBilling from "./pages/ClientPortalBilling";
 import ClientPortalMeetings from "./pages/ClientPortalMeetings";
 import ClientPortalFeedback from "./pages/ClientPortalFeedback";
+import ClientPortalTasks from "./pages/ClientPortalTasks";
 import ClientIntake from "./pages/ClientIntake";
 import { SettingsLayout } from "./components/settings/SettingsLayout";
 import { ProfileSettings } from "./components/settings/ProfileSettings";
@@ -312,6 +313,14 @@ const App = () => (
                 </ClientProtectedRoute>
               } 
             />
+            <Route 
+              path="/client-portal/:orgId/tasks" 
+              element={
+                <ClientProtectedRoute>
+                  <ClientPortalTasks />
+                </ClientProtectedRoute>
+              } 
+            />
 
             {/* Legacy client portal routes without orgId */}
             <Route path="/client-portal" element={<ProtectedRoute><ClientPortal /></ProtectedRoute>} />
@@ -321,6 +330,7 @@ const App = () => (
             <Route path="/client-portal/billing" element={<ProtectedRoute><ClientPortalBilling /></ProtectedRoute>} />
             <Route path="/client-portal/meetings" element={<ProtectedRoute><ClientPortalMeetings /></ProtectedRoute>} />
             <Route path="/client-portal/feedback" element={<ProtectedRoute><ClientPortalFeedback /></ProtectedRoute>} />
+            <Route path="/client-portal/tasks" element={<ProtectedRoute><ClientPortalTasks /></ProtectedRoute>} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

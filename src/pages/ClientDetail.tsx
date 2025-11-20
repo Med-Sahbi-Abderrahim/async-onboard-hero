@@ -43,6 +43,7 @@ import { AddMeetingModal } from "@/components/AddMeetingModal";
 import { AddFileModal } from "@/components/AddFileModal";
 import { AddContractModal } from "@/components/AddContractModal";
 import { AddInvoiceModal } from "@/components/AddInvoiceModal";
+import { TaskList } from "@/components/tasks/TaskList";
 
 const editClientSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -368,11 +369,12 @@ export default function ClientDetail() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="files" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="files">Files</TabsTrigger>
               <TabsTrigger value="meetings">Meetings</TabsTrigger>
               <TabsTrigger value="contracts">Contracts</TabsTrigger>
               <TabsTrigger value="billing">Billing</TabsTrigger>
+              <TabsTrigger value="tasks">Tasks</TabsTrigger>
             </TabsList>
 
             <TabsContent value="files" className="space-y-4">
@@ -492,6 +494,14 @@ export default function ClientDetail() {
                   ))}
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent value="tasks" className="space-y-4">
+              <TaskList 
+                clientId={id!}
+                organizationId={client.organization_id}
+                isClient={false}
+              />
             </TabsContent>
           </Tabs>
         </CardContent>
