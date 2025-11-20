@@ -140,12 +140,13 @@ Deno.serve(async (req) => {
     }
 
     // Generate magic link for client portal access
+    // Must redirect through /auth/callback to properly handle authentication
     const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://www.kenly.io';
     const { data: magicLinkData, error: magicLinkError } = await supabaseAdmin.auth.admin.generateLink({
       type: 'magiclink',
       email: requestData.email,
       options: {
-        redirectTo: `${publicAppUrl}/client-portal`,
+        redirectTo: `${publicAppUrl}/auth/callback`,
       },
     });
 
