@@ -3,8 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Clock, AlertTriangle, TrendingUp } from "lucide-react";
+import { CheckCircle2, Clock, AlertTriangle, TrendingUp, RefreshCcw } from "lucide-react";
 import { useOrgId } from "@/hooks/useOrgId";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ClientProgress {
   id: string;
@@ -29,6 +31,62 @@ export function ProgressDashboard() {
   useEffect(() => {
     if (orgId) {
       fetchClientsProgress();
+
+      // Set up real-time subscriptions for automatic updates
+      const tasksChannel = supabase
+        .channel(`org-tasks-${orgId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "tasks",
+            filter: `organization_id=eq.${orgId}`,
+          },
+          () => {
+            fetchClientsProgress();
+          }
+        )
+        .subscribe();
+
+      const submissionsChannel = supabase
+        .channel(`org-submissions-${orgId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "form_submissions",
+            filter: `organization_id=eq.${orgId}`,
+          },
+          () => {
+            fetchClientsProgress();
+          }
+        )
+        .subscribe();
+
+      const contractsChannel = supabase
+        .channel(`org-contracts-${orgId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "contracts",
+            filter: `organization_id=eq.${orgId}`,
+          },
+          () => {
+            fetchClientsProgress();
+          }
+        )
+        .subscribe();
+
+      // Cleanup subscriptions
+      return () => {
+        supabase.removeChannel(tasksChannel);
+        supabase.removeChannel(submissionsChannel);
+        supabase.removeChannel(contractsChannel);
+      };
     }
   }, [orgId]);
 
@@ -180,40 +238,74 @@ export function ProgressDashboard() {
       {/* Client Progress List */}
       <Card>
         <CardHeader>
-          <CardTitle>Client Progress Overview</CardTitle>
-          <CardDescription>Track completion status for all clients</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Client Progress Overview</CardTitle>
+              <CardDescription>Track completion status for all clients</CardDescription>
+            </div>
+            <Button variant="ghost" size="sm" onClick={fetchClientsProgress}>
+              <RefreshCcw className="h-4 w-4" />
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {clients.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">No clients yet</p>
           ) : (
             <div className="space-y-4">
-              {clients.map((client) => (
-                <div key={client.id} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{client.full_name}</span>
+              {clients.map((client, index) => (
+                <div
+                  key={client.id}
+                  className="space-y-2 p-4 rounded-lg border hover:bg-accent/5 transition-all animate-fade-in"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium truncate">{client.full_name}</span>
                         {client.overall_progress === 100 && (
-                          <Badge variant="completed">
+                          <Badge className="bg-completed text-completed-foreground">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
                             Complete
                           </Badge>
                         )}
+                        {client.overall_progress > 0 && client.overall_progress < 100 && (
+                          <Badge className="bg-in-progress text-in-progress-foreground">
+                            <TrendingUp className="h-3 w-3 mr-1" />
+                            In Progress
+                          </Badge>
+                        )}
                         {client.overall_progress === 0 && (
-                          <Badge variant="outline">
+                          <Badge variant="outline" className="border-pending text-pending">
                             <Clock className="h-3 w-3 mr-1" />
                             Not Started
                           </Badge>
                         )}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground mt-1">
                         {client.completed_count} completed • {client.pending_count} pending
                       </div>
                     </div>
-                    <span className="text-lg font-bold">{client.overall_progress}%</span>
+                    <span
+                      className={cn(
+                        "text-xl font-bold tabular-nums",
+                        client.overall_progress === 100 && "text-completed",
+                        client.overall_progress > 0 && client.overall_progress < 100 && "text-in-progress",
+                        client.overall_progress === 0 && "text-pending"
+                      )}
+                    >
+                      {client.overall_progress}%
+                    </span>
                   </div>
-                  <Progress value={client.overall_progress} className="h-2" />
+                  <Progress
+                    value={client.overall_progress}
+                    className={cn(
+                      "h-2 transition-all",
+                      client.overall_progress === 100 && "[&>div]:bg-completed",
+                      client.overall_progress > 0 && client.overall_progress < 100 && "[&>div]:bg-in-progress",
+                      client.overall_progress === 0 && "[&>div]:bg-pending"
+                    )}
+                  />
                 </div>
               ))}
             </div>
