@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Users, FileText, Inbox, UserPlus, FilePlus, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useOrgId } from "@/hooks/useOrgId";
+import { ProgressDashboard } from "@/components/progress/ProgressDashboard";
 
 export default function Dashboard() {
   const { profile } = useUser();
@@ -161,6 +162,9 @@ export default function Dashboard() {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Progress Dashboard */}
+          <ProgressDashboard />
         </>
       )}
     </div>

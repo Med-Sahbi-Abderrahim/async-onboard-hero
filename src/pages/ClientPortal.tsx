@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, FileUp, CreditCard, Calendar, MessageSquare, Building, CheckCircle2 } from "lucide-react";
+import { ClientProgressCard } from "@/components/progress/ClientProgressCard";
 
 export default function ClientPortal() {
   const navigate = useNavigate();
@@ -98,6 +99,11 @@ export default function ClientPortal() {
           <Badge className={`${statusColors[client.project_status as keyof typeof statusColors]} text-sm px-4 py-1.5 shadow-soft`}>
             {client.project_status?.toUpperCase()}
           </Badge>
+        </div>
+
+        {/* Progress Overview */}
+        <div className="animate-slide-up" style={{ animationDelay: '0.05s' }}>
+          <ClientProgressCard clientId={client.id} organizationId={client.organization_id} />
         </div>
 
         {/* Quick Links */}
