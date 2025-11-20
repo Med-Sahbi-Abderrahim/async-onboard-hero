@@ -139,29 +139,29 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Generate magic link for client portal access
-    // Must redirect through /auth/callback to properly handle authentication
+    // Send password setup email via Supabase (longer-lived token)
     const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://www.kenly.io';
-    const { data: magicLinkData, error: magicLinkError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'magiclink',
-      email: requestData.email,
-      options: {
+    
+    // Use password reset flow which provides a longer-lived token and better UX
+    const { error: inviteError } = await supabaseAdmin.auth.resetPasswordForEmail(
+      requestData.email,
+      {
         redirectTo: `${publicAppUrl}/auth/callback`,
-      },
-    });
+      }
+    );
 
-    if (magicLinkError) {
-      console.error('Error generating magic link:', magicLinkError);
-      return new Response(JSON.stringify({ error: 'Failed to generate access link' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (inviteError) {
+      console.error('Error sending invitation:', inviteError);
+      // Don't fail - this might happen if user already exists
+      // We'll send our custom email anyway
     }
 
-    // Send invitation email via Resend
+    // Send custom invitation email via Resend
     const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
     
     try {
+      const loginUrl = `${publicAppUrl}/login`;
+      
       const { error: emailError } = await resend.emails.send({
         from: 'Kenly <onboarding@kenly.io>',
         to: [requestData.email],
@@ -200,14 +200,14 @@ Deno.serve(async (req) => {
                   </ul>
                   
                   <div style="text-align: center;">
-                    <a href="${magicLinkData.properties.action_link}" class="button">
+                    <a href="${loginUrl}" class="button">
                       Access Your Portal
                     </a>
                   </div>
                   
                   <div class="info-box">
                     <p style="margin: 0;"><strong>First time logging in?</strong></p>
-                    <p style="margin: 5px 0 0 0;">Click the button above to securely access your portal. No password needed!</p>
+                    <p style="margin: 5px 0 0 0;">Click the button above and use "Forgot Password" to set up your password. Your email is: <strong>${requestData.email}</strong></p>
                   </div>
                   
                   <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
@@ -228,13 +228,11 @@ Deno.serve(async (req) => {
 
       if (emailError) {
         console.error('Error sending invitation email:', emailError);
-        // Don't fail the entire request if email fails, but log it
       } else {
         console.log('Invitation email sent successfully to:', requestData.email);
       }
     } catch (emailError) {
       console.error('Failed to send email via Resend:', emailError);
-      // Don't fail the entire request if email fails
     }
 
     return new Response(JSON.stringify({ client: clientData }), {
