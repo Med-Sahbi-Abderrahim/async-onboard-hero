@@ -14,12 +14,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Eye, Loader2 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { useOrgId } from "@/hooks/useOrgId";
 
 export default function EditForm() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useUser();
+  const orgId = useOrgId();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -85,7 +87,7 @@ export default function EditForm() {
         description: error.message,
         variant: "destructive",
       });
-      navigate("/forms");
+      navigate(orgId ? `/forms/${orgId}` : "/forms");
     } finally {
       setLoading(false);
     }
@@ -125,7 +127,7 @@ export default function EditForm() {
         title: "Form updated",
         description: "Your changes have been saved successfully.",
       });
-      navigate(`/forms/${id}`);
+      navigate(orgId ? `/forms/${orgId}/${id}` : `/forms/${id}`);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -152,7 +154,7 @@ export default function EditForm() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(`/forms/${id}`)}
+            onClick={() => navigate(orgId ? `/forms/${orgId}/${id}` : `/forms/${id}`)}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

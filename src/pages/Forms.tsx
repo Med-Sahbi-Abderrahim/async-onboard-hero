@@ -15,6 +15,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, MoreVertical, Edit, Trash2, ExternalLink, Eye } from "lucide-react";
 import { format } from "date-fns";
+import { useOrgId } from "@/hooks/useOrgId";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +42,7 @@ export default function Forms() {
   const navigate = useNavigate();
   const { user } = useUser();
   const { toast } = useToast();
+  const orgId = useOrgId();
   const [forms, setForms] = useState<IntakeForm[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -191,7 +193,7 @@ export default function Forms() {
           <h2 className="text-3xl font-bold">Forms</h2>
           <p className="text-muted-foreground mt-2">Create and manage your intake forms.</p>
         </div>
-        <Button onClick={() => navigate("/forms/create")}>
+        <Button onClick={() => navigate(orgId ? `/forms/${orgId}/create` : "/forms/create")}>
           <Plus className="h-4 w-4 mr-2" />
           Create Form
         </Button>
@@ -243,11 +245,11 @@ export default function Forms() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => navigate(`/forms/${form.id}`)}>
+                          <DropdownMenuItem onClick={() => navigate(orgId ? `/forms/${orgId}/${form.id}` : `/forms/${form.id}`)}>
                             <Eye className="h-4 w-4 mr-2" />
                             View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(`/forms/${form.id}/edit`)}>
+                          <DropdownMenuItem onClick={() => navigate(orgId ? `/forms/${orgId}/${form.id}/edit` : `/forms/${form.id}/edit`)}>
                             <Edit className="h-4 w-4 mr-2" />
                             Edit Form
                           </DropdownMenuItem>

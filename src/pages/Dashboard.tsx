@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, FileText, Inbox, UserPlus, FilePlus, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useOrgId } from "@/hooks/useOrgId";
 
 export default function Dashboard() {
   const { profile } = useUser();
   const navigate = useNavigate();
+  const orgId = useOrgId();
   const [stats, setStats] = useState({
     totalClients: 0,
     activeForms: 0,
@@ -93,7 +95,7 @@ export default function Dashboard() {
           <CardContent className="py-12 text-center">
             <h3 className="text-xl font-semibold mb-2">Let's get started!</h3>
             <p className="text-muted-foreground mb-6">Invite your first client to begin collecting submissions.</p>
-            <Button onClick={() => navigate("/clients")}>
+            <Button onClick={() => navigate(orgId ? `/clients/${orgId}` : "/clients")}>
               <UserPlus className="mr-2 h-4 w-4" />
               Invite Client
             </Button>
@@ -145,15 +147,15 @@ export default function Dashboard() {
               <CardDescription>Get started with common tasks</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap gap-3">
-              <Button onClick={() => navigate("/clients")}>
+              <Button onClick={() => navigate(orgId ? `/clients/${orgId}` : "/clients")}>
                 <UserPlus className="mr-2 h-4 w-4" />
                 Invite Client
               </Button>
-              <Button variant="outline" onClick={() => navigate("/forms/create")}>
+              <Button variant="outline" onClick={() => navigate(orgId ? `/forms/${orgId}/create` : "/forms/create")}>
                 <FilePlus className="mr-2 h-4 w-4" />
                 Create Form
               </Button>
-              <Button variant="outline" onClick={() => navigate("/submissions")}>
+              <Button variant="outline" onClick={() => navigate(orgId ? `/submissions/${orgId}` : "/submissions")}>
                 <Eye className="mr-2 h-4 w-4" />
                 View Submissions
               </Button>

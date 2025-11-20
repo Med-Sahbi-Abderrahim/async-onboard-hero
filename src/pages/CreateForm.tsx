@@ -14,11 +14,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Eye } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { useOrgId } from "@/hooks/useOrgId";
 
 export default function CreateForm() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useUser();
+  const orgId = useOrgId();
   const [saving, setSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -106,7 +108,7 @@ export default function CreateForm() {
         title: "Form created",
         description: "Your form has been created successfully.",
       });
-      navigate("/forms");
+      navigate(orgId ? `/forms/${orgId}` : "/forms");
     } catch (error) {
       console.error("Error saving form:", error);
       toast({
@@ -123,7 +125,7 @@ export default function CreateForm() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/forms")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(orgId ? `/forms/${orgId}` : "/forms")}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
