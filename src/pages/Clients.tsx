@@ -285,7 +285,7 @@ export default function Clients() {
                     </TableCell>
                     <TableCell>{formatLastActivity(client.last_activity_at)}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="outline" size="sm" onClick={() => navigate(`/clients/${client.id}`)}>
+                      <Button variant="outline" size="sm" onClick={() => navigate(`/clients/${organizationId}/${client.id}`)}>
                         View
                       </Button>
                     </TableCell>
