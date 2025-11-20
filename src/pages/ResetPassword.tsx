@@ -78,39 +78,66 @@ export default function ResetPassword() {
 
       if (error) throw error;
 
-      // Check if user is a client to route appropriately
-      const { data: { user } } = await supabase.auth.getUser();
+      toast({
+        title: "Success",
+        description: "Your password has been reset successfully",
+      });
+
+      // Read stored context to determine redirect
+      const storedContext = localStorage.getItem('auth_context');
+      const storedOrgId = localStorage.getItem('auth_org_id');
       
+      console.log("Reset password - stored context:", storedContext, storedOrgId);
+      
+      if (storedContext === 'client' && storedOrgId) {
+        localStorage.removeItem('auth_context');
+        localStorage.removeItem('auth_org_id');
+        navigate(`/client-portal/${storedOrgId}`, { replace: true });
+        return;
+      }
+      
+      if (storedContext === 'agency' && storedOrgId) {
+        localStorage.removeItem('auth_context');
+        localStorage.removeItem('auth_org_id');
+        navigate(`/dashboard/${storedOrgId}`, { replace: true });
+        return;
+      }
+      
+      // No stored context - determine based on user's roles
+      const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // Check if user is an organization member first
+        const { data: orgMember } = await supabase
+          .from('organization_members')
+          .select('organization_id')
+          .eq('user_id', user.id)
+          .limit(1)
+          .maybeSingle();
+        
+        if (orgMember) {
+          navigate(`/dashboard/${orgMember.organization_id}`, { replace: true });
+          return;
+        }
+        
+        // Otherwise check if user is a client
         const { data: clientData } = await supabase
           .from('clients')
-          .select('id')
-          .eq('id', user.id)
-          .is('deleted_at', null)
+          .select('organization_id')
+          .eq('email', user.email)
+          .limit(1)
           .maybeSingle();
 
-        toast({
-          title: "Password updated!",
-          description: clientData 
-            ? "Your password has been set. Redirecting to your portal..."
-            : "Your password has been successfully changed. Redirecting to login...",
-        });
-
-        setTimeout(() => {
-          if (clientData) {
-            navigate("/client-portal", { replace: true });
-          } else {
-            navigate("/login", { replace: true });
-          }
-        }, 2000);
-      } else {
-        navigate("/login", { replace: true });
+        if (clientData) {
+          navigate(`/client-portal/${clientData.organization_id}`, { replace: true });
+        } else {
+          navigate("/login", { replace: true });
+        }
       }
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Reset failed",
-        description: error.message || "Failed to reset password",
+        title: "Error",
+        description: error.message || "Failed to reset password. Please try again.",
       });
     } finally {
       setIsLoading(false);

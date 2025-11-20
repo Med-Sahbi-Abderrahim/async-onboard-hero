@@ -24,14 +24,60 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if already logged in
+  // Read and store context from URL params
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const context = params.get('context');
+    const orgId = params.get('orgId');
+    
+    if (context) {
+      localStorage.setItem('auth_context', context);
+      console.log('Stored auth context:', context);
+    }
+    if (orgId) {
+      localStorage.setItem('auth_org_id', orgId);
+      console.log('Stored auth orgId:', orgId);
+    }
+    
     const checkUser = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
+      
       if (session) {
-        navigate("/dashboard");
+        // User is already logged in - redirect based on context
+        const storedContext = localStorage.getItem('auth_context');
+        const storedOrgId = localStorage.getItem('auth_org_id');
+        
+        if (storedContext === 'client' && storedOrgId) {
+          navigate(`/client-portal/${storedOrgId}`);
+        } else if (storedContext === 'agency' && storedOrgId) {
+          navigate(`/dashboard/${storedOrgId}`);
+        } else {
+          // No context - find user's first organization
+          const { data: orgMember } = await supabase
+            .from('organization_members')
+            .select('organization_id')
+            .eq('user_id', session.user.id)
+            .limit(1)
+            .maybeSingle();
+          
+          if (orgMember) {
+            navigate(`/dashboard/${orgMember.organization_id}`);
+          } else {
+            // Check if user is a client
+            const { data: clientData } = await supabase
+              .from('clients')
+              .select('organization_id')
+              .eq('email', session.user.email)
+              .limit(1)
+              .maybeSingle();
+            
+            if (clientData) {
+              navigate(`/client-portal/${clientData.organization_id}`);
+            }
+          }
+        }
       }
     };
     checkUser();
@@ -66,7 +112,45 @@ export default function Login() {
         description: "Successfully logged in",
       });
 
-      navigate("/dashboard");
+      // Read stored context to determine redirect
+      const storedContext = localStorage.getItem('auth_context');
+      const storedOrgId = localStorage.getItem('auth_org_id');
+      
+      if (storedContext === 'client' && storedOrgId) {
+        navigate(`/client-portal/${storedOrgId}`);
+      } else if (storedContext === 'agency' && storedOrgId) {
+        navigate(`/dashboard/${storedOrgId}`);
+      } else {
+        // No context - find user's first organization
+        const { data: orgMember } = await supabase
+          .from('organization_members')
+          .select('organization_id')
+          .eq('user_id', data.user.id)
+          .limit(1)
+          .maybeSingle();
+        
+        if (orgMember) {
+          navigate(`/dashboard/${orgMember.organization_id}`);
+        } else {
+          // Check if user is only a client
+          const { data: clientData } = await supabase
+            .from('clients')
+            .select('organization_id')
+            .eq('email', data.user.email)
+            .limit(1)
+            .maybeSingle();
+          
+          if (clientData) {
+            navigate(`/client-portal/${clientData.organization_id}`);
+          } else {
+            navigate("/dashboard");
+          }
+        }
+      }
+      
+      // Clear stored context after use
+      localStorage.removeItem('auth_context');
+      localStorage.removeItem('auth_org_id');
     } catch (error: any) {
       toast({
         variant: "destructive",

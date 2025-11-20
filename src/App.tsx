@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { UserProvider } from "@/contexts/UserContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ClientProtectedRoute } from "@/components/ClientProtectedRoute";
+import { AgencyProtectedRoute } from "@/components/AgencyProtectedRoute";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import Index from "./pages/Index";
 import Signup from "./pages/Signup";
@@ -71,7 +73,170 @@ const App = () => (
             {/* callback after email confirmation*/}
             <Route path="/auth/callback" element={<AuthCallback />} />
 
-            {/* Protected Routes with Dashboard Layout */}
+            {/* Protected Agency Routes with Dashboard Layout - Support orgId parameter */}
+            <Route
+              path="/dashboard/:orgId"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <Dashboard />
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route
+              path="/clients/:orgId"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <Clients />
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route
+              path="/clients/:orgId/:id"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <ClientDetail />
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route
+              path="/forms/:orgId"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <Forms />
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route
+              path="/forms/:orgId/create"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <CreateForm />
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route
+              path="/forms/:orgId/:id"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <FormDetail />
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route
+              path="/forms/:orgId/:id/edit"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <EditForm />
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route
+              path="/submissions/:orgId"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <Submissions />
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/:orgId"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <SettingsLayout>
+                      <Settings />
+                    </SettingsLayout>
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/:orgId/profile"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <SettingsLayout>
+                      <ProfileSettings />
+                    </SettingsLayout>
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/:orgId/organization"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <SettingsLayout>
+                      <OrganizationSettings />
+                    </SettingsLayout>
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/:orgId/team"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <SettingsLayout>
+                      <TeamSettings />
+                    </SettingsLayout>
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/:orgId/notifications"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <SettingsLayout>
+                      <NotificationSettings />
+                    </SettingsLayout>
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route
+              path="/billing/:orgId"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <Billing />
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route
+              path="/reminders/:orgId"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <ReminderSettings />
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
+
+            {/* Legacy routes without orgId - redirect to first organization */}
             <Route
               path="/dashboard"
               element={
@@ -222,7 +387,6 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            <Route path="/pricing" element={<Pricing />} />
             <Route
               path="/reminders"
               element={
@@ -240,7 +404,57 @@ const App = () => (
             {/* Client intake route (validates token and sends magic link) */}
             <Route path="/intake/:token" element={<ClientIntake />} />
 
-            {/* Client Portal Routes - Protected */}
+            {/* Client Portal Routes with orgId - Protected */}
+            <Route 
+              path="/client-portal/:orgId" 
+              element={
+                <ClientProtectedRoute>
+                  <ClientPortal />
+                </ClientProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/client-portal/:orgId/files" 
+              element={
+                <ClientProtectedRoute>
+                  <ClientPortalFiles />
+                </ClientProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/client-portal/:orgId/contracts" 
+              element={
+                <ClientProtectedRoute>
+                  <ClientPortalContracts />
+                </ClientProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/client-portal/:orgId/billing" 
+              element={
+                <ClientProtectedRoute>
+                  <ClientPortalBilling />
+                </ClientProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/client-portal/:orgId/meetings" 
+              element={
+                <ClientProtectedRoute>
+                  <ClientPortalMeetings />
+                </ClientProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/client-portal/:orgId/feedback" 
+              element={
+                <ClientProtectedRoute>
+                  <ClientPortalFeedback />
+                </ClientProtectedRoute>
+              } 
+            />
+
+            {/* Legacy client portal routes without orgId */}
             <Route path="/client-portal" element={<ProtectedRoute><ClientPortal /></ProtectedRoute>} />
             <Route path="/portal" element={<ProtectedRoute><ClientPortal /></ProtectedRoute>} />
             <Route path="/client-portal/files" element={<ProtectedRoute><ClientPortalFiles /></ProtectedRoute>} />

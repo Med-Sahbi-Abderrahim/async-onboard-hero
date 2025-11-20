@@ -60,6 +60,9 @@ Deno.serve(async (req) => {
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const existingUser = existingUsers?.users?.find(u => u.email === requestData.email);
 
+    // Build context-aware redirect URL for client invitation
+    const clientInviteUrl = `${publicAppUrl}/auth/callback?context=client&orgId=${requestData.organization_id}`;
+    
     if (existingUser) {
       // User already exists - just update metadata, we'll send custom email
       userId = existingUser.id;
@@ -75,11 +78,11 @@ Deno.serve(async (req) => {
       
       sendCustomEmail = true;
     } else {
-      // New user - use Supabase invitation
+      // New user - use Supabase invitation with context-aware redirect
       const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
         requestData.email,
         {
-          redirectTo: `${publicAppUrl}/auth/callback`,
+          redirectTo: clientInviteUrl,
           data: {
             full_name: requestData.full_name,
             is_client: true,
@@ -142,10 +145,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Send custom invitation email for existing users
+    // Send custom invitation email for existing users with context-aware link
     if (sendCustomEmail) {
       const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
-      const loginUrl = `${publicAppUrl}/login`;
+      // Context-aware login URL for clients
+      const loginUrl = `${publicAppUrl}/login?context=client&orgId=${requestData.organization_id}`;
       
       try {
         const { error: emailError } = await resend.emails.send({
