@@ -52,17 +52,19 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Check if an auth user already exists with this email
+    // Use Supabase's built-in invitation system for all users
+    const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://kenly.io';
     let userId: string;
+    
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const existingUser = existingUsers?.users?.find(u => u.email === requestData.email);
 
     if (existingUser) {
-      // User already exists, reuse their ID
+      // User already exists - update metadata and send password reset
       userId = existingUser.id;
-      console.log('Reusing existing auth user:', userId);
+      console.log('Existing user found:', userId);
       
-      // Update user metadata to ensure is_client flag is set
+      // Update user metadata
       await supabaseAdmin.auth.admin.updateUserById(userId, {
         user_metadata: {
           ...existingUser.user_metadata,
@@ -70,10 +72,26 @@ Deno.serve(async (req) => {
           is_client: true,
         },
       });
+
+      // Send password reset email to give them access
+      const { error: resetError } = await supabaseAdmin.auth.resetPasswordForEmail(
+        requestData.email,
+        {
+          redirectTo: `${publicAppUrl}/auth/callback`,
+        }
+      );
+
+      if (resetError) {
+        console.error('Error sending password reset:', resetError);
+        return new Response(JSON.stringify({ error: resetError.message }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      console.log('Password reset email sent to existing user:', requestData.email);
     } else {
-      // Use Supabase's built-in invitation system
-      const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://kenly.io';
-      
+      // New user - send invitation
       const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
         requestData.email,
         {
@@ -94,7 +112,7 @@ Deno.serve(async (req) => {
       }
 
       userId = inviteData.user.id;
-      console.log('Invited new auth user:', userId);
+      console.log('Invitation email sent to new user:', requestData.email);
     }
 
     // Check if client already exists for this organization
@@ -140,8 +158,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Supabase will automatically send the invitation email with password setup link
-    console.log('Invitation email will be sent by Supabase to:', requestData.email);
+    // Email has been sent by Supabase (invitation or password reset)
 
     return new Response(JSON.stringify({ client: clientData }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
