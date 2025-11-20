@@ -3,7 +3,7 @@ import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText, Inbox, UserPlus, FilePlus, Eye, Sparkles } from "lucide-react";
+import { Users, FileText, Inbox, UserPlus, FilePlus, Eye, Sparkles, CheckSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useOrgId } from "@/hooks/useOrgId";
 import { ProgressDashboard } from "@/components/progress/ProgressDashboard";
@@ -18,6 +18,7 @@ export default function Dashboard() {
     totalClients: 0,
     activeForms: 0,
     submissionsThisMonth: 0,
+    pendingTasks: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +39,7 @@ export default function Dashboard() {
         const orgIds = orgData.map((o) => o.organization_id);
 
         // Fetch stats in parallel
-        const [clientsResult, formsResult, submissionsResult] = await Promise.all([
+        const [clientsResult, formsResult, submissionsResult, tasksResult] = await Promise.all([
           supabase
             .from("clients")
             .select("id", { count: "exact", head: true })
@@ -57,12 +58,20 @@ export default function Dashboard() {
             .select("id", { count: "exact", head: true })
             .in("organization_id", orgIds)
             .gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
+
+          supabase
+            .from("tasks")
+            .select("id", { count: "exact", head: true })
+            .in("organization_id", orgIds)
+            .in("status", ["pending", "in_progress"])
+            .is("deleted_at", null),
         ]);
 
         setStats({
           totalClients: clientsResult.count || 0,
           activeForms: formsResult.count || 0,
           submissionsThisMonth: submissionsResult.count || 0,
+          pendingTasks: tasksResult.count || 0,
         });
       } catch (error) {
         console.error("Error fetching stats:", error);
@@ -76,7 +85,7 @@ export default function Dashboard() {
     }
   }, [profile?.id]);
 
-  const hasNoData = stats.totalClients === 0 && stats.activeForms === 0 && stats.submissionsThisMonth === 0;
+  const hasNoData = stats.totalClients === 0 && stats.activeForms === 0 && stats.submissionsThisMonth === 0 && stats.pendingTasks === 0;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -106,7 +115,7 @@ export default function Dashboard() {
         />
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Clients</CardTitle>
@@ -139,6 +148,17 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">
                   New submissions in {new Date().toLocaleDateString("en-US", { month: "long" })}
                 </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Pending Tasks</CardTitle>
+                <CheckSquare className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.pendingTasks}</div>
+                <p className="text-xs text-muted-foreground">Tasks needing attention</p>
               </CardContent>
             </Card>
           </div>
