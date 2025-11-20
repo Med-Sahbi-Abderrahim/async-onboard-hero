@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { TaskCard } from "./TaskCard";
 import { Button } from "@/components/ui/button";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, CheckSquare } from "lucide-react";
 import { AddTaskModal } from "./AddTaskModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TaskSkeleton } from "@/components/ui/loading-skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface Task {
   id: string;
@@ -58,8 +60,10 @@ export function TaskList({ clientId, organizationId, isClient = false }: TaskLis
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="space-y-3">
+        <TaskSkeleton />
+        <TaskSkeleton />
+        <TaskSkeleton />
       </div>
     );
   }
@@ -92,19 +96,15 @@ export function TaskList({ clientId, organizationId, isClient = false }: TaskLis
 
         <TabsContent value="all" className="space-y-3 mt-4">
           {tasks.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>No tasks yet</p>
-              {!isClient && (
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => setShowAddModal(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create First Task
-                </Button>
-              )}
-            </div>
+            <EmptyState
+              icon={CheckSquare}
+              title="No tasks yet"
+              description={isClient ? "You have no assigned tasks at the moment. Check back later for updates." : "Create your first task to start tracking work and deadlines."}
+              action={!isClient ? {
+                label: "Create First Task",
+                onClick: () => setShowAddModal(true)
+              } : undefined}
+            />
           ) : (
             tasks.map((task) => (
               <TaskCard
@@ -120,8 +120,10 @@ export function TaskList({ clientId, organizationId, isClient = false }: TaskLis
         {["pending", "in_progress", "completed"].map((status) => (
           <TabsContent key={status} value={status} className="space-y-3 mt-4">
             {filterTasks(status).length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <p>No {status.replace("_", " ")} tasks</p>
+              <div className="text-center py-12 text-muted-foreground animate-fade-in">
+                <CheckSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                <p className="font-medium">No {status.replace("_", " ")} tasks</p>
+                <p className="text-sm mt-1">Tasks will appear here as they're created</p>
               </div>
             ) : (
               filterTasks(status).map((task) => (

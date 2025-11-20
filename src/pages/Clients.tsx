@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import { Search, UserPlus, FileDown, FileUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { TableSkeleton } from '@/components/ui/loading-skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
 import * as XLSX from 'xlsx';
 
 interface Client {
@@ -196,8 +198,14 @@ export default function Clients() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="space-y-6 animate-fade-in">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-9 w-32 bg-muted animate-pulse rounded mb-2" />
+            <div className="h-5 w-48 bg-muted animate-pulse rounded" />
+          </div>
+        </div>
+        <TableSkeleton rows={8} />
       </div>
     );
   }
@@ -236,19 +244,19 @@ export default function Clients() {
       </div>
 
       {filteredClients.length === 0 ? (
-        <div className="text-center py-12 border rounded-lg bg-card">
-          <UserPlus className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No clients yet</h3>
-          <p className="text-muted-foreground mb-4">
-            {searchQuery ? 'No clients match your search.' : 'Invite your first client to get started.'}
-          </p>
-          {!searchQuery && (
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Invite Client
-            </Button>
-          )}
-        </div>
+        <EmptyState
+          icon={UserPlus}
+          title={searchQuery ? "No clients found" : "No clients yet"}
+          description={
+            searchQuery
+              ? "No clients match your search. Try adjusting your search terms."
+              : "Invite your first client to get started with managing projects and collecting submissions."
+          }
+          action={!searchQuery ? {
+            label: "Invite Your First Client",
+            onClick: () => setIsCreateModalOpen(true)
+          } : undefined}
+        />
       ) : (
         <>
           <div className="border rounded-lg bg-card">
