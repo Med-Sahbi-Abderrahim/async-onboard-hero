@@ -1,5 +1,4 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,13 +8,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { NotificationsDropdown } from '@/components/NotificationsDropdown';
@@ -24,7 +16,6 @@ import { useUser } from '@/contexts/UserContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useOrgId } from '@/hooks/useOrgId';
-import { Building2 } from 'lucide-react';
 
 interface Organization {
   id: string;
@@ -47,61 +38,12 @@ const getPageTitle = (pathname: string): string => {
 };
 
 export function Header() {
-  const { profile, session } = useUser();
+  const { profile } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
   const currentOrgId = useOrgId();
-  
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [loadingOrgs, setLoadingOrgs] = useState(false);
 
   const pageTitle = getPageTitle(location.pathname);
-
-  // Fetch user's organizations
-  useEffect(() => {
-    const fetchOrganizations = async () => {
-      if (!session?.user?.id) return;
-      
-      setLoadingOrgs(true);
-      try {
-        const { data, error } = await supabase
-          .from('organization_members')
-          .select('organization_id')
-          .eq('user_id', session.user.id);
-
-        if (error) throw error;
-
-        // Fetch organization details
-        const orgIds = data?.map(item => item.organization_id) || [];
-        
-        if (orgIds.length === 0) {
-          setOrganizations([]);
-          setLoadingOrgs(false);
-          return;
-        }
-
-        const { data: orgsData, error: orgsError } = await supabase
-          .from('organizations')
-          .select('id, name')
-          .in('id', orgIds);
-
-        if (orgsError) throw orgsError;
-
-        const orgs = orgsData?.map(org => ({ 
-          id: org.id, 
-          name: org.name || 'Unnamed Organization' 
-        })) || [];
-
-        setOrganizations(orgs);
-      } catch (error) {
-        console.error('Error fetching organizations:', error);
-      } finally {
-        setLoadingOrgs(false);
-      }
-    };
-
-    fetchOrganizations();
-  }, [session?.user?.id]);
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -121,43 +63,14 @@ export function Header() {
       .toUpperCase();
   };
 
-  const handleOrgChange = (newOrgId: string) => {
-    if (!currentOrgId) return;
-    
-    // Replace orgId in current path
-    const newPath = location.pathname.replace(`/${currentOrgId}`, `/${newOrgId}`);
-    navigate(newPath);
-  };
-
-  const currentOrg = organizations.find(org => org.id === currentOrgId);
-
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-16 items-center gap-4 px-6">
-        <SidebarTrigger />
+      <div className="flex h-16 items-center gap-4 px-4 md:px-6">
+        <SidebarTrigger className="-ml-1" />
         
-        <h1 className="text-2xl font-semibold">{pageTitle}</h1>
+        <h1 className="text-xl md:text-2xl font-semibold truncate">{pageTitle}</h1>
 
         <div className="ml-auto flex items-center gap-2">
-          {/* Organization Selector */}
-          {organizations.length > 1 && currentOrgId && (
-            <Select value={currentOrgId} onValueChange={handleOrgChange} disabled={loadingOrgs}>
-              <SelectTrigger className="w-[200px]">
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4" />
-                  <SelectValue placeholder="Select organization" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {organizations.map((org) => (
-                  <SelectItem key={org.id} value={org.id}>
-                    {org.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          
           <ThemeToggle />
           <NotificationsDropdown />
 
