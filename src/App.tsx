@@ -240,14 +240,14 @@ const App = () => (
             {/* Client intake route (validates token and sends magic link) */}
             <Route path="/intake/:token" element={<ClientIntake />} />
 
-            {/* Client Portal Routes */}
-            <Route path="/client-portal" element={<ClientPortal />} />
-            <Route path="/portal" element={<ClientPortal />} /> {/* Alias for /client-portal */}
-            <Route path="/client-portal/files" element={<ClientPortalFiles />} />
-            <Route path="/client-portal/contracts" element={<ClientPortalContracts />} />
-            <Route path="/client-portal/billing" element={<ClientPortalBilling />} />
-            <Route path="/client-portal/meetings" element={<ClientPortalMeetings />} />
-            <Route path="/client-portal/feedback" element={<ClientPortalFeedback />} />
+            {/* Client Portal Routes - Protected */}
+            <Route path="/client-portal" element={<ProtectedRoute><ClientPortal /></ProtectedRoute>} />
+            <Route path="/portal" element={<ProtectedRoute><ClientPortal /></ProtectedRoute>} />
+            <Route path="/client-portal/files" element={<ProtectedRoute><ClientPortalFiles /></ProtectedRoute>} />
+            <Route path="/client-portal/contracts" element={<ProtectedRoute><ClientPortalContracts /></ProtectedRoute>} />
+            <Route path="/client-portal/billing" element={<ProtectedRoute><ClientPortalBilling /></ProtectedRoute>} />
+            <Route path="/client-portal/meetings" element={<ProtectedRoute><ClientPortalMeetings /></ProtectedRoute>} />
+            <Route path="/client-portal/feedback" element={<ProtectedRoute><ClientPortalFeedback /></ProtectedRoute>} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

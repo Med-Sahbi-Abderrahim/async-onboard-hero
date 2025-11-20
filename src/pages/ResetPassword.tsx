@@ -78,14 +78,34 @@ export default function ResetPassword() {
 
       if (error) throw error;
 
-      toast({
-        title: "Password updated!",
-        description: "Your password has been successfully changed. Redirecting to login...",
-      });
+      // Check if user is a client to route appropriately
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { data: clientData } = await supabase
+          .from('clients')
+          .select('id')
+          .eq('id', user.id)
+          .is('deleted_at', null)
+          .maybeSingle();
 
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
+        toast({
+          title: "Password updated!",
+          description: clientData 
+            ? "Your password has been set. Redirecting to your portal..."
+            : "Your password has been successfully changed. Redirecting to login...",
+        });
+
+        setTimeout(() => {
+          if (clientData) {
+            navigate("/client-portal", { replace: true });
+          } else {
+            navigate("/login", { replace: true });
+          }
+        }, 2000);
+      } else {
+        navigate("/login", { replace: true });
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
