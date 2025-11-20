@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ClientProtectedRoute } from "@/components/ClientProtectedRoute";
 import { AgencyProtectedRoute } from "@/components/AgencyProtectedRoute";
+import { OrgRedirect } from "@/components/OrgRedirect";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import Index from "./pages/Index";
 import Signup from "./pages/Signup";
@@ -238,167 +239,23 @@ const App = () => (
               }
             />
 
-            {/* Legacy routes without orgId - redirect to first organization */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <Dashboard />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/clients"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <Clients />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/clients/:id"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <ClientDetail />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/forms"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <Forms />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/forms/create"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <CreateForm />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/forms/:id"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <FormDetail />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/forms/:id/edit"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <EditForm />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/submissions"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <Submissions />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <SettingsLayout>
-                      <Settings />
-                    </SettingsLayout>
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings/profile"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <SettingsLayout>
-                      <ProfileSettings />
-                    </SettingsLayout>
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings/organization"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <SettingsLayout>
-                      <OrganizationSettings />
-                    </SettingsLayout>
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings/team"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <SettingsLayout>
-                      <TeamSettings />
-                    </SettingsLayout>
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/settings/notifications"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <SettingsLayout>
-                      <NotificationSettings />
-                    </SettingsLayout>
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/billing"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <Billing />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/reminders"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <ReminderSettings />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
+
+            {/* Legacy routes without orgId - redirect to orgId routes */}
+            <Route path="/dashboard" element={<OrgRedirect />} />
+            <Route path="/clients" element={<OrgRedirect />} />
+            <Route path="/clients/:id" element={<OrgRedirect />} />
+            <Route path="/forms" element={<OrgRedirect />} />
+            <Route path="/forms/create" element={<OrgRedirect />} />
+            <Route path="/forms/:id" element={<OrgRedirect />} />
+            <Route path="/forms/:id/edit" element={<OrgRedirect />} />
+            <Route path="/submissions" element={<OrgRedirect />} />
+            <Route path="/settings" element={<OrgRedirect />} />
+            <Route path="/settings/profile" element={<OrgRedirect />} />
+            <Route path="/settings/organization" element={<OrgRedirect />} />
+            <Route path="/settings/team" element={<OrgRedirect />} />
+            <Route path="/settings/notifications" element={<OrgRedirect />} />
+            <Route path="/billing" element={<OrgRedirect />} />
+            <Route path="/reminders" element={<OrgRedirect />} />
 
             {/* Public client-facing form route */}
             <Route path="/forms/:slug/submit" element={<ClientFormPage />} />

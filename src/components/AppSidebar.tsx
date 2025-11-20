@@ -12,14 +12,15 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useOrgId } from "@/hooks/useOrgId";
 
-const items = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Clients", url: "/clients", icon: Users },
-  { title: "Forms", url: "/forms", icon: FileText },
-  { title: "Submissions", url: "/submissions", icon: Inbox },
-  { title: "Reminders", url: "/reminders", icon: Bell },
-  { title: "Settings", url: "/settings", icon: Settings },
+const baseItems = [
+  { title: "Dashboard", path: "dashboard", icon: LayoutDashboard },
+  { title: "Clients", path: "clients", icon: Users },
+  { title: "Forms", path: "forms", icon: FileText },
+  { title: "Submissions", path: "submissions", icon: Inbox },
+  { title: "Reminders", path: "reminders", icon: Bell },
+  { title: "Settings", path: "settings", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -27,8 +28,15 @@ export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const orgId = useOrgId();
 
   const isCollapsed = state === "collapsed";
+
+  // Build items with orgId
+  const items = baseItems.map(item => ({
+    ...item,
+    url: orgId ? `/${item.path}/${orgId}` : `/${item.path}`
+  }));
 
   const handleNavClick = () => {
     if (isMobile) {
@@ -85,7 +93,7 @@ export function AppSidebar() {
                 variant="default" 
                 size="sm" 
                 className="w-full" 
-                onClick={() => navigate("/settings")}
+                onClick={() => navigate(orgId ? `/settings/${orgId}` : "/settings")}
               >
                 Upgrade Now
               </Button>

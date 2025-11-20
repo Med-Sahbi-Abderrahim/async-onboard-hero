@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useOrgId } from "@/hooks/useOrgId";
 import {
   ChevronRight,
   Edit,
@@ -58,6 +59,7 @@ export default function ClientDetail() {
   const navigate = useNavigate();
   const { user } = useUser();
   const { toast } = useToast();
+  const orgId = useOrgId();
   const [client, setClient] = useState<any>(null);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -156,7 +158,7 @@ export default function ClientDetail() {
         description: error.message,
         variant: "destructive",
       });
-      navigate("/clients");
+      navigate(orgId ? `/clients/${orgId}` : "/clients");
     } finally {
       setLoading(false);
     }
@@ -244,7 +246,7 @@ export default function ClientDetail() {
         description: `"${client?.full_name || "Client"}" has been deleted successfully.`,
       });
 
-      navigate("/clients");
+      navigate(orgId ? `/clients/${orgId}` : "/clients");
     } catch (error: any) {
       console.error("Delete client error:", error);
       toast({
@@ -508,7 +510,7 @@ export default function ClientDetail() {
                 <div
                   key={submission.id}
                   className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
-                  onClick={() => navigate(`/submissions/${submission.id}`)}
+                  onClick={() => navigate(orgId ? `/submissions/${orgId}` : `/submissions`)}
                 >
                   <div>
                     <div className="font-medium">{submission.intake_forms?.title || "Untitled Form"}</div>

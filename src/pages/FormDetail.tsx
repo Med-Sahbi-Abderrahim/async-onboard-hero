@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
 import { ArrowLeft, Edit, ExternalLink, Eye, Copy, Trash2, BarChart3, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { useOrgId } from "@/hooks/useOrgId";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +26,7 @@ export default function FormDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useUser();
+  const orgId = useOrgId();
   const [form, setForm] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -62,7 +64,7 @@ export default function FormDetail() {
         description: error.message,
         variant: "destructive",
       });
-      navigate("/forms");
+      navigate(orgId ? `/forms/${orgId}` : "/forms");
     } finally {
       setLoading(false);
     }
@@ -206,7 +208,7 @@ export default function FormDetail() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/forms")}
+            onClick={() => navigate(orgId ? `/forms/${orgId}` : "/forms")}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -223,7 +225,7 @@ export default function FormDetail() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => navigate(`/forms/${form.id}/edit`)}
+            onClick={() => navigate(orgId ? `/forms/${orgId}/${form.id}/edit` : `/forms/${form.id}/edit`)}
           >
             <Edit className="h-4 w-4 mr-2" />
             Edit
