@@ -16,7 +16,6 @@ export function AgencyProtectedRoute({ children }: AgencyProtectedRouteProps) {
   const { orgId } = useParams<{ orgId: string }>();
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     const checkAgencyAccess = async () => {
@@ -38,22 +37,8 @@ export function AgencyProtectedRoute({ children }: AgencyProtectedRouteProps) {
         if (error) {
           console.error('Error checking organization access:', error);
           setHasAccess(false);
-        } else if (memberData) {
-          setHasAccess(true);
         } else {
-          // Not an org member - check if they're a client
-          const { data: clientData } = await supabase
-            .from('clients')
-            .select('id, organization_id')
-            .eq('id', session.user.id)
-            .eq('organization_id', orgId)
-            .is('deleted_at', null)
-            .maybeSingle();
-          
-          if (clientData) {
-            setIsClient(true);
-          }
-          setHasAccess(false);
+          setHasAccess(!!memberData);
         }
       } catch (error) {
         console.error('Error checking organization access:', error);
@@ -84,18 +69,11 @@ export function AgencyProtectedRoute({ children }: AgencyProtectedRouteProps) {
   }
 
   if (!hasAccess) {
-    // If user is a client, redirect them to client portal
-    if (isClient && orgId) {
-      return <Navigate to={`/client-portal/${orgId}`} replace />;
-    }
-    
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-4 max-w-md px-4">
-          <h2 className="text-2xl font-bold">Access Denied</h2>
-          <p className="text-muted-foreground">
-            You don't have access to this agency dashboard. If you're a client, you should access your client portal instead.
-          </p>
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+          <p className="text-muted-foreground">You don't have access to this organization.</p>
         </div>
       </div>
     );
