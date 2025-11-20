@@ -267,7 +267,7 @@ export function ImportSubmissionsModal({ open, onOpenChange, onImportComplete }:
               )}
 
               {/* Template Info */}
-              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="bg-info/10 border border-info/20 rounded-lg p-4">
                 <h4 className="font-medium text-sm mb-2">Expected Format</h4>
                 <p className="text-xs text-muted-foreground mb-2">
                   Your file should include the following columns:
@@ -301,12 +301,12 @@ export function ImportSubmissionsModal({ open, onOpenChange, onImportComplete }:
                     <div className="text-2xl font-bold">{importStatus.total}</div>
                     <div className="text-sm text-muted-foreground">Total</div>
                   </div>
-                  <div className="text-center p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">{importStatus.successful}</div>
+                  <div className="text-center p-4 bg-success/10 border border-success/20 rounded-lg">
+                    <div className="text-2xl font-bold text-completed">{importStatus.successful}</div>
                     <div className="text-sm text-muted-foreground">Success</div>
                   </div>
-                  <div className="text-center p-4 bg-red-50 dark:bg-red-950/20 rounded-lg">
-                    <div className="text-2xl font-bold text-red-600">{importStatus.failed}</div>
+                  <div className="text-center p-4 bg-blocked/10 border border-blocked/20 rounded-lg">
+                    <div className="text-2xl font-bold text-blocked">{importStatus.failed}</div>
                     <div className="text-sm text-muted-foreground">Failed</div>
                   </div>
                 </div>
@@ -326,7 +326,7 @@ export function ImportSubmissionsModal({ open, onOpenChange, onImportComplete }:
                 )}
 
                 {importStatus.successful > 0 && (
-                  <div className="flex items-center gap-2 text-green-600 text-sm">
+                  <div className="flex items-center gap-2 text-completed text-sm">
                     <CheckCircle2 className="h-4 w-4" />
                     <span>Import completed successfully</span>
                   </div>

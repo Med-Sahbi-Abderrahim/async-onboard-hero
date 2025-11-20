@@ -297,19 +297,19 @@ export function ImportClientsModal({
           {result && (
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
-                <div className="text-center p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                  <CheckCircle2 className="h-8 w-8 text-green-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-green-600">{result.success}</p>
+                <div className="text-center p-4 bg-success/10 border border-success/20 rounded-lg">
+                  <CheckCircle2 className="h-8 w-8 text-completed mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-completed">{result.success}</p>
                   <p className="text-sm text-muted-foreground">Added</p>
                 </div>
-                <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                  <CheckCircle2 className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-blue-600">{result.updated}</p>
+                <div className="text-center p-4 bg-info/10 border border-info/20 rounded-lg">
+                  <CheckCircle2 className="h-8 w-8 text-in-progress mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-in-progress">{result.updated}</p>
                   <p className="text-sm text-muted-foreground">Updated</p>
                 </div>
-                <div className="text-center p-4 bg-red-50 dark:bg-red-950 rounded-lg">
-                  <XCircle className="h-8 w-8 text-red-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-red-600">{result.failed}</p>
+                <div className="text-center p-4 bg-blocked/10 border border-blocked/20 rounded-lg">
+                  <XCircle className="h-8 w-8 text-blocked mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-blocked">{result.failed}</p>
                   <p className="text-sm text-muted-foreground">Failed</p>
                 </div>
               </div>

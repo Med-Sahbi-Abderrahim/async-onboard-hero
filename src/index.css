@@ -34,6 +34,39 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
+    /* Status colors */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+    --pending: 38 92% 50%;
+    --pending-foreground: 0 0% 100%;
+    --completed: 142 71% 45%;
+    --completed-foreground: 0 0% 100%;
+    --blocked: 0 84% 60%;
+    --blocked-foreground: 0 0% 100%;
+    --in-progress: 217 91% 60%;
+    --in-progress-foreground: 0 0% 100%;
+
+    /* Status colors */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+    --pending: 38 92% 50%;
+    --pending-foreground: 0 0% 100%;
+    --completed: 142 71% 45%;
+    --completed-foreground: 0 0% 100%;
+    --blocked: 0 84% 60%;
+    --blocked-foreground: 0 0% 100%;
+    --in-progress: 217 91% 60%;
+    --in-progress-foreground: 0 0% 100%;
+    --destructive-foreground: 0 0% 100%;
+
     --border: 220 15% 90%;
     --input: 220 15% 90%;
     --ring: 217 91% 60%;

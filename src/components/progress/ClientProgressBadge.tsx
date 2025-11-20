@@ -8,9 +8,9 @@ interface ClientProgressBadgeProps {
 
 export function ClientProgressBadge({ percentage, size = "md" }: ClientProgressBadgeProps) {
   const getVariant = () => {
-    if (percentage === 100) return "default";
-    if (percentage >= 50) return "secondary";
-    return "outline";
+    if (percentage === 100) return "completed";
+    if (percentage >= 50) return "in-progress";
+    return "pending";
   };
 
   const getIcon = () => {
@@ -19,14 +19,8 @@ export function ClientProgressBadge({ percentage, size = "md" }: ClientProgressB
     return <Clock className="h-3 w-3 mr-1" />;
   };
 
-  const getColor = () => {
-    if (percentage === 100) return "text-green-600";
-    if (percentage >= 50) return "text-blue-600";
-    return "text-yellow-600";
-  };
-
   return (
-    <Badge variant={getVariant()} className={`${size === "sm" ? "text-xs" : ""} ${getColor()}`}>
+    <Badge variant={getVariant()} className={size === "sm" ? "text-xs" : ""}>
       {getIcon()}
       {percentage}% Complete
     </Badge>

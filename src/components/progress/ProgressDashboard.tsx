@@ -143,36 +143,36 @@ export function ProgressDashboard() {
         <Card>
           <CardHeader className="pb-3">
             <CardDescription className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <CheckCircle2 className="h-4 w-4 text-completed" />
               Completed
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.fullyCompleted}</div>
+            <div className="text-2xl font-bold text-completed">{stats.fullyCompleted}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
             <CardDescription className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-blue-500" />
+              <TrendingUp className="h-4 w-4 text-in-progress" />
               In Progress
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.inProgress}</div>
+            <div className="text-2xl font-bold text-in-progress">{stats.inProgress}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
             <CardDescription className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-yellow-500" />
+              <AlertTriangle className="h-4 w-4 text-pending" />
               Not Started
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{stats.notStarted}</div>
+            <div className="text-2xl font-bold text-pending">{stats.notStarted}</div>
           </CardContent>
         </Card>
       </div>
@@ -195,7 +195,7 @@ export function ProgressDashboard() {
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{client.full_name}</span>
                         {client.overall_progress === 100 && (
-                          <Badge variant="secondary" className="text-green-600">
+                          <Badge variant="completed">
                             <CheckCircle2 className="h-3 w-3 mr-1" />
                             Complete
                           </Badge>
