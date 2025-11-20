@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, RefreshCcw, Home } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 interface ErrorFallbackProps {
   error: Error;
@@ -9,11 +8,8 @@ interface ErrorFallbackProps {
 }
 
 export function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
-  const navigate = useNavigate();
-
   const handleGoHome = () => {
-    navigate("/");
-    resetErrorBoundary();
+    window.location.href = "/";
   };
 
   // Log error to console for debugging
