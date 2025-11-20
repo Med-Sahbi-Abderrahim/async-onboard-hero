@@ -1,7 +1,9 @@
 import { ReactNode } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Header } from '@/components/Header';
+import { ErrorFallback } from './ErrorFallback';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -15,7 +17,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex-1 flex flex-col">
           <Header />
           <main className="flex-1 p-6">
-            {children}
+            <ErrorBoundary
+              FallbackComponent={ErrorFallback}
+              onReset={() => window.location.reload()}
+            >
+              {children}
+            </ErrorBoundary>
           </main>
         </div>
       </div>
