@@ -22,6 +22,7 @@ interface Notification {
   metadata: any;
   is_read: boolean;
   created_at: string;
+  organization_id: string;
 }
 
 export function NotificationsDropdown() {
@@ -151,12 +152,31 @@ export function NotificationsDropdown() {
       await markAsRead(notification.id);
     }
 
-    // Navigate based on notification type
+    // Get organization ID from notification
+    const orgId = notification.organization_id;
+    
+    if (!orgId) {
+      toast({
+        title: "Navigation Error",
+        description: "Unable to navigate - organization not found",
+        variant: "destructive",
+      });
+      setOpen(false);
+      return;
+    }
+
+    // Navigate based on notification type with orgId
     const { metadata } = notification;
+    
     if (metadata.client_id) {
-      navigate(`/clients/${metadata.client_id}`);
+      navigate(`/${orgId}/clients/${metadata.client_id}`);
     } else if (metadata.submission_id) {
-      navigate(`/submissions`);
+      navigate(`/${orgId}/submissions`);
+    } else if (metadata.form_id) {
+      navigate(`/${orgId}/forms/${metadata.form_id}`);
+    } else {
+      // Default to dashboard if no specific target
+      navigate(`/${orgId}/dashboard`);
     }
 
     setOpen(false);
