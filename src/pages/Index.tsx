@@ -65,22 +65,21 @@ const Index = () => {
               AI-Powered Client Onboarding
             </div>
             <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance">
-              Stop Chasing Clients for Onboarding Information
+              The Client Portal that onboards your clients for you
             </h1>
             <p className="mb-10 text-lg text-muted-foreground sm:text-xl md:text-2xl text-balance">
-              Kenly automates client intake with branded forms, file uploads, and smart follow-ups. Get the information
-              you need without the back-and-forth.
+              A professional workspace where clients complete contracts, upload assets, and track progress—automatically keeping your projects on schedule from day one.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link to="/signup" className="w-full sm:w-auto">
                 <Button variant="hero" size="xl" className="w-full">
-                  Get Started Free
+                  Create your first Portal
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/login" className="w-full sm:w-auto">
                 <Button variant="outline" size="xl" className="w-full">
-                  Sign In
+                  View a Demo Project
                 </Button>
               </Link>
             </div>
@@ -207,9 +206,9 @@ const Index = () => {
                 1
               </div>
               <div>
-                <h3 className="mb-3 text-xl font-semibold">Create Your Workflow</h3>
+                <h3 className="mb-3 text-xl font-semibold">Brand Your Portal</h3>
                 <p className="text-muted-foreground">
-                  Build custom forms and upload requirements using our visual builder.
+                  Create a professional client workspace with your logo, colors, and messaging that reflects your agency's identity.
                 </p>
               </div>
             </div>
@@ -218,9 +217,9 @@ const Index = () => {
                 2
               </div>
               <div>
-                <h3 className="mb-3 text-xl font-semibold">Send One Link</h3>
+                <h3 className="mb-3 text-xl font-semibold">Define the Blockers</h3>
                 <p className="text-muted-foreground">
-                  Share your branded onboarding link via email or embed it on your site.
+                  Set up required contracts, assets, and information you need before project kickoff—eliminating common delays.
                 </p>
               </div>
             </div>
@@ -229,9 +228,9 @@ const Index = () => {
                 3
               </div>
               <div>
-                <h3 className="mb-3 text-xl font-semibold">Client Completes</h3>
+                <h3 className="mb-3 text-xl font-semibold">Onboarding on Auto-Pilot</h3>
                 <p className="text-muted-foreground">
-                  Clients fill forms and upload files at their own pace with gentle reminders.
+                  Clients receive automated reminders and progress tracking while you focus on billable work instead of follow-ups.
                 </p>
               </div>
             </div>
@@ -240,9 +239,9 @@ const Index = () => {
                 4
               </div>
               <div>
-                <h3 className="mb-3 text-xl font-semibold">Data Syncs</h3>
+                <h3 className="mb-3 text-xl font-semibold">Ready on Day 1</h3>
                 <p className="text-muted-foreground">
-                  Everything flows into Airtable, Google Sheets, or your existing tools.
+                  Everything you need is collected, organized, and ready when it's time to start—no delays, no excuses.
                 </p>
               </div>
             </div>
