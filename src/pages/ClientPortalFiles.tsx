@@ -4,14 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileText, Download, ArrowLeft } from "lucide-react";
+import { Upload, FileText, Download, ArrowLeft, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { UpgradeModal } from "@/components/UpgradeModal";
+import { useFileDownload } from "@/hooks/useFileDownload";
 
 export default function ClientPortalFiles() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { downloadFile: downloadFileSecure, downloading } = useFileDownload();
   const [files, setFiles] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
   const [clientId, setClientId] = useState<string | null>(null);
@@ -166,26 +168,8 @@ export default function ClientPortalFiles() {
     }
   };
 
-  const downloadFile = async (file: any) => {
-    try {
-      const { data, error } = await supabase.storage
-        .from("client-uploads")
-        .download(file.storage_path);
-
-      if (error) throw error;
-
-      const url = URL.createObjectURL(data);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = file.file_name;
-      a.click();
-    } catch (error: any) {
-      toast({
-        title: "Download failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
+  const handleDownload = (file: any) => {
+    downloadFileSecure(file.storage_path, file.file_name, "client-uploads");
   };
 
   const formatFileSize = (bytes: number) => {
@@ -290,8 +274,18 @@ export default function ClientPortalFiles() {
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="icon" onClick={() => downloadFile(file)} className="hover:scale-110 transition-transform">
-                      <Download className="h-4 w-4" />
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={() => handleDownload(file)} 
+                      disabled={downloading === file.storage_path}
+                      className="hover:scale-110 transition-transform"
+                    >
+                      {downloading === file.storage_path ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 ))}

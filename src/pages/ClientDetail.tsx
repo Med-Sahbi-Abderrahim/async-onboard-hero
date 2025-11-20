@@ -29,6 +29,7 @@ import {
   CreditCard,
   Download,
 } from "lucide-react";
+import { useFileDownload } from "@/hooks/useFileDownload";
 import { format, formatDistanceToNow } from "date-fns";
 import {
   Breadcrumb,
@@ -62,6 +63,7 @@ export default function ClientDetail() {
   const { user } = useUser();
   const { toast } = useToast();
   const orgId = useOrgId();
+  const { downloadFile: downloadFileSecure, downloading } = useFileDownload();
   const [client, setClient] = useState<any>(null);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -259,6 +261,10 @@ export default function ClientDetail() {
     }
   };
 
+  const handleDownloadFile = (file: any) => {
+    downloadFileSecure(file.storage_path, file.file_name, "client-uploads");
+  };
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -395,15 +401,30 @@ export default function ClientDetail() {
                 <div className="space-y-2">
                   {files.map((file) => (
                     <div key={file.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-1">
                         <FileText className="h-5 w-5 text-primary" />
-                        <div>
+                        <div className="flex-1">
                           <div className="font-medium">{file.file_name}</div>
                           <div className="text-xs text-muted-foreground">
                             {(file.file_size / 1024 / 1024).toFixed(2)} MB • {format(new Date(file.created_at), "MMM dd, yyyy")}
                           </div>
                         </div>
                       </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDownloadFile(file)}
+                        disabled={downloading === file.storage_path}
+                      >
+                        {downloading === file.storage_path ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                          </>
+                        )}
+                      </Button>
                     </div>
                   ))}
                 </div>
