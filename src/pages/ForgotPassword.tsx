@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -21,12 +21,11 @@ export default function ForgotPassword() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const [searchParams] = useSearchParams();
 
   const form = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
-      email: searchParams.get('email') || "",
+      email: "",
     },
   });
 
@@ -44,7 +43,7 @@ export default function ForgotPassword() {
   const onSubmit = async (values: ForgotPasswordFormValues) => {
     setIsLoading(true);
     try {
-      const redirectUrl = getAuthRedirectUrl("/auth/callback");
+      const redirectUrl = getAuthRedirectUrl("/reset-password");
       console.log("Password reset redirect URL:", redirectUrl);
       
       const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
