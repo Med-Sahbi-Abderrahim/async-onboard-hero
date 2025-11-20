@@ -26,22 +26,22 @@ export function TaskCard({ task, onUpdate, isClient = false }: TaskCardProps) {
   const getStatusIcon = () => {
     switch (task.status) {
       case "completed":
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+        return <CheckCircle2 className="h-5 w-5 text-completed" />;
       case "in_progress":
-        return <Clock className="h-5 w-5 text-blue-500" />;
+        return <Clock className="h-5 w-5 text-in-progress" />;
       case "cancelled":
-        return <XCircle className="h-5 w-5 text-red-500" />;
+        return <XCircle className="h-5 w-5 text-blocked" />;
       default:
         return <Circle className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
   const getStatusBadge = () => {
-    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-      pending: "outline",
-      in_progress: "default",
-      completed: "secondary",
-      cancelled: "destructive",
+    const variants: Record<string, "completed" | "pending" | "blocked" | "in-progress" | "outline"> = {
+      pending: "pending",
+      in_progress: "in-progress",
+      completed: "completed",
+      cancelled: "blocked",
     };
 
     return (

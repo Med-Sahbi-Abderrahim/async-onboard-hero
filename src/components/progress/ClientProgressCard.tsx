@@ -26,15 +26,15 @@ export function ClientProgressCard({ clientId, organizationId }: ClientProgressC
   }
 
   const getStatusColor = (percentage: number) => {
-    if (percentage === 100) return "text-green-500";
-    if (percentage >= 50) return "text-yellow-500";
-    return "text-red-500";
+    if (percentage === 100) return "text-completed";
+    if (percentage >= 50) return "text-warning";
+    return "text-blocked";
   };
 
   const getStatusIcon = (percentage: number) => {
-    if (percentage === 100) return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-    if (percentage >= 50) return <Circle className="h-5 w-5 text-yellow-500" />;
-    return <AlertCircle className="h-5 w-5 text-red-500" />;
+    if (percentage === 100) return <CheckCircle2 className="h-5 w-5 text-completed" />;
+    if (percentage >= 50) return <Circle className="h-5 w-5 text-warning" />;
+    return <AlertCircle className="h-5 w-5 text-blocked" />;
   };
 
   return (
@@ -128,7 +128,7 @@ export function ClientProgressCard({ clientId, organizationId }: ClientProgressC
         {progress.blockedItems.length > 0 && (
           <div className="space-y-3 pt-4 border-t">
             <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-yellow-500" />
+              <AlertCircle className="h-4 w-4 text-warning" />
               <h3 className="font-semibold text-sm">Pending Items ({progress.blockedItems.length})</h3>
             </div>
             <div className="space-y-2">
@@ -156,7 +156,7 @@ export function ClientProgressCard({ clientId, organizationId }: ClientProgressC
 
         {/* Success Message */}
         {progress.overall === 100 && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 text-green-700 dark:text-green-400">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-completed">
             <CheckCircle2 className="h-5 w-5" />
             <span className="text-sm font-medium">All items completed!</span>
           </div>

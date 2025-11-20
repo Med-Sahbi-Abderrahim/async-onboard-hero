@@ -32,11 +32,11 @@ export default function ClientPortalBilling() {
     setInvoices(data || []);
   };
 
-  const statusColors = {
-    pending: "bg-yellow-500",
-    paid: "bg-green-500",
-    overdue: "bg-red-500",
-    cancelled: "bg-gray-500",
+  const statusColors: Record<string, string> = {
+    pending: "bg-pending",
+    paid: "bg-completed",
+    overdue: "bg-blocked",
+    cancelled: "bg-muted",
   };
 
   const formatAmount = (amountCents: number, currency: string) => {
@@ -107,7 +107,7 @@ export default function ClientPortalBilling() {
                   </div>
                   {invoice.paid_at && (
                     <p className="text-sm text-muted-foreground mt-4 flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <CheckCircle className="h-4 w-4 text-completed" />
                       Paid on: {new Date(invoice.paid_at).toLocaleDateString()}
                     </p>
                   )}

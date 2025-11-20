@@ -66,11 +66,11 @@ export default function ClientPortal() {
     );
   }
 
-  const statusColors = {
-    active: "bg-green-500",
-    "on-hold": "bg-yellow-500",
-    completed: "bg-blue-500",
-    cancelled: "bg-red-500",
+  const statusColors: Record<string, string> = {
+    active: "bg-completed",
+    "on-hold": "bg-pending",
+    completed: "bg-in-progress",
+    cancelled: "bg-blocked",
   };
 
   const quickLinks = [

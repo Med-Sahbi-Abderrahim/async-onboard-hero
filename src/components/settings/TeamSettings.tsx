@@ -90,9 +90,9 @@ export function TeamSettings() {
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'owner':
-        return <Badge className="bg-amber-500">Owner</Badge>;
+        return <Badge variant="warning">Owner</Badge>;
       case 'admin':
-        return <Badge className="bg-blue-500">Admin</Badge>;
+        return <Badge variant="info">Admin</Badge>;
       default:
         return <Badge variant="secondary">Member</Badge>;
     }

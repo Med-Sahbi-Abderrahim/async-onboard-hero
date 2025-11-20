@@ -20,7 +20,7 @@ export function ClientFormSuccess({ form }: ClientFormSuccessProps) {
         )}
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <CheckCircle2 className="h-16 w-16 text-green-500 animate-success" />
+            <CheckCircle2 className="h-16 w-16 text-success animate-success" />
           </div>
           <CardTitle className="text-3xl">Submission Complete!</CardTitle>
           <CardDescription className="text-base mt-2">{successMessage}</CardDescription>

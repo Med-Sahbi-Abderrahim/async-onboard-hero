@@ -12,11 +12,11 @@ interface SubmissionsTableProps {
 }
 
 const statusColors: Record<string, string> = {
-  pending: "bg-gray-500",
-  in_progress: "bg-blue-500",
-  completed: "bg-green-500",
-  approved: "bg-purple-500",
-  rejected: "bg-red-500",
+  pending: "bg-pending",
+  in_progress: "bg-in-progress",
+  completed: "bg-completed",
+  approved: "bg-primary",
+  rejected: "bg-blocked",
 };
 
 const statusLabels: Record<string, string> = {
