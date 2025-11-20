@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { Resend } from 'https://esm.sh/resend@2.0.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -52,19 +53,18 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Use Supabase's built-in invitation system for all users
     const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://kenly.io';
     let userId: string;
+    let sendCustomEmail = false;
     
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const existingUser = existingUsers?.users?.find(u => u.email === requestData.email);
 
     if (existingUser) {
-      // User already exists - update metadata and send password reset
+      // User already exists - just update metadata, we'll send custom email
       userId = existingUser.id;
       console.log('Existing user found:', userId);
       
-      // Update user metadata
       await supabaseAdmin.auth.admin.updateUserById(userId, {
         user_metadata: {
           ...existingUser.user_metadata,
@@ -72,26 +72,10 @@ Deno.serve(async (req) => {
           is_client: true,
         },
       });
-
-      // Send password reset email to give them access
-      const { error: resetError } = await supabaseAdmin.auth.resetPasswordForEmail(
-        requestData.email,
-        {
-          redirectTo: `${publicAppUrl}/auth/callback`,
-        }
-      );
-
-      if (resetError) {
-        console.error('Error sending password reset:', resetError);
-        return new Response(JSON.stringify({ error: resetError.message }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      console.log('Password reset email sent to existing user:', requestData.email);
+      
+      sendCustomEmail = true;
     } else {
-      // New user - send invitation
+      // New user - use Supabase invitation
       const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
         requestData.email,
         {
@@ -112,7 +96,7 @@ Deno.serve(async (req) => {
       }
 
       userId = inviteData.user.id;
-      console.log('Invitation email sent to new user:', requestData.email);
+      console.log('Supabase invitation sent to new user:', requestData.email);
     }
 
     // Check if client already exists for this organization
@@ -158,7 +142,88 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Email has been sent by Supabase (invitation or password reset)
+    // Send custom invitation email for existing users
+    if (sendCustomEmail) {
+      const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
+      const loginUrl = `${publicAppUrl}/login`;
+      
+      try {
+        const { error: emailError } = await resend.emails.send({
+          from: 'Kenly <onboarding@kenly.io>',
+          to: [requestData.email],
+          subject: 'You\'ve Been Invited to a Client Portal',
+          html: `
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; line-height: 1.6; color: #333; }
+                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                  .header { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
+                  .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
+                  .button { display: inline-block; background: #3b82f6; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
+                  .button:hover { background: #2563eb; }
+                  .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
+                  .info-box { background: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0; }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <h1 style="margin: 0; font-size: 28px;">You've Been Invited to a Client Portal</h1>
+                  </div>
+                  <div class="content">
+                    <p>Hi ${requestData.full_name},</p>
+                    
+                    <p>Good news! You've been invited to access a client portal. This is your central hub to:</p>
+                    
+                    <ul>
+                      <li>Fill out intake forms</li>
+                      <li>Upload and share documents</li>
+                      <li>Schedule meetings</li>
+                      <li>View contracts and invoices</li>
+                      <li>Track your project status</li>
+                    </ul>
+                    
+                    <div style="text-align: center;">
+                      <a href="${loginUrl}" class="button">
+                        Access Your Client Portal
+                      </a>
+                    </div>
+                    
+                    <div class="info-box">
+                      <p style="margin: 0;"><strong>Getting Started:</strong></p>
+                      <p style="margin: 8px 0 0 0;">
+                        Simply log in with your existing account credentials.<br/>
+                        Your email: <strong>${requestData.email}</strong>
+                      </p>
+                    </div>
+                    
+                    <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+                      If you didn't expect this invitation, you can safely ignore this email.
+                    </p>
+                  </div>
+                  <div class="footer">
+                    <p>Powered by Kenly</p>
+                    <p style="font-size: 12px; color: #9ca3af;">
+                      This is an automated message. Please do not reply to this email.
+                    </p>
+                  </div>
+                </div>
+              </body>
+            </html>
+          `,
+        });
+
+        if (emailError) {
+          console.error('Error sending custom invitation email:', emailError);
+        } else {
+          console.log('Custom invitation email sent to existing user:', requestData.email);
+        }
+      } catch (emailError) {
+        console.error('Failed to send email via Resend:', emailError);
+      }
+    }
 
     return new Response(JSON.stringify({ client: clientData }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
