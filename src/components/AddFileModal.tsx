@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Upload } from "lucide-react";
+import { UpgradeModal } from "./UpgradeModal";
+import { useOrgLimits } from "@/hooks/useOrgLimits";
 
 interface AddFileModalProps {
   open: boolean;
@@ -19,6 +21,9 @@ export function AddFileModal({ open, onOpenChange, clientId, organizationId, onS
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState<'free' | 'starter' | 'pro'>('free');
+  const { canUploadFile, refresh } = useOrgLimits(organizationId);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -33,6 +38,32 @@ export function AddFileModal({ open, onOpenChange, clientId, organizationId, onS
     setIsSubmitting(true);
 
     try {
+      // Get organization plan
+      const { data: orgData } = await supabase
+        .from('organizations')
+        .select('plan')
+        .eq('id', organizationId)
+        .single();
+
+      if (orgData) {
+        setCurrentPlan(orgData.plan as 'free' | 'starter' | 'pro');
+      }
+
+      // Check storage limit using RPC function
+      const { data: canUpload, error: limitError } = await supabase
+        .rpc('can_upload_file', {
+          org_id: organizationId,
+          file_size_bytes: selectedFile.size
+        });
+
+      if (limitError) throw limitError;
+
+      if (!canUpload) {
+        setIsSubmitting(false);
+        setShowUpgradeModal(true);
+        return;
+      }
+
       // Get the current authenticated user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("You must be logged in to upload files");
@@ -65,6 +96,7 @@ export function AddFileModal({ open, onOpenChange, clientId, organizationId, onS
       });
 
       setSelectedFile(null);
+      refresh(); // Refresh limits
       onOpenChange(false);
       onSuccess();
     } catch (error: any) {
@@ -79,8 +111,9 @@ export function AddFileModal({ open, onOpenChange, clientId, organizationId, onS
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Add File</DialogTitle>
         </DialogHeader>
@@ -123,5 +156,14 @@ export function AddFileModal({ open, onOpenChange, clientId, organizationId, onS
         </form>
       </DialogContent>
     </Dialog>
+
+    <UpgradeModal
+      open={showUpgradeModal}
+      onOpenChange={setShowUpgradeModal}
+      limitType="storage"
+      currentPlan={currentPlan}
+      organizationId={organizationId}
+    />
+    </>
   );
 }
