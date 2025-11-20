@@ -60,7 +60,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="system" storageKey="kenly-ui-theme">
+    <ThemeProvider defaultTheme="light" storageKey="kenly-ui-theme">
       <TooltipProvider>
         <Toaster />
         <Sonner />
