@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, FileUp, CreditCard, Calendar, MessageSquare, Building } from "lucide-react";
+import { FileText, FileUp, CreditCard, Calendar, MessageSquare, Building, CheckCircle2 } from "lucide-react";
 
 export default function ClientPortal() {
   const navigate = useNavigate();
@@ -73,11 +73,12 @@ export default function ClientPortal() {
   };
 
   const quickLinks = [
-    { title: "Files", icon: FileUp, path: "/client-portal/files", description: "Upload and view files" },
-    { title: "Contracts", icon: FileText, path: "/client-portal/contracts", description: "Review and sign contracts" },
-    { title: "Billing", icon: CreditCard, path: "/client-portal/billing", description: "View invoices and payments" },
-    { title: "Meetings", icon: Calendar, path: "/client-portal/meetings", description: "Upcoming meetings" },
-    { title: "Feedback", icon: MessageSquare, path: "/client-portal/feedback", description: "Share your feedback" },
+    { title: "Files", icon: FileUp, path: `/client-portal/${client.organization_id}/files`, description: "Upload and view files" },
+    { title: "Contracts", icon: FileText, path: `/client-portal/${client.organization_id}/contracts`, description: "Review and sign contracts" },
+    { title: "Billing", icon: CreditCard, path: `/client-portal/${client.organization_id}/billing`, description: "View invoices and payments" },
+    { title: "Meetings", icon: Calendar, path: `/client-portal/${client.organization_id}/meetings`, description: "Upcoming meetings" },
+    { title: "Tasks", icon: CheckCircle2, path: `/client-portal/${client.organization_id}/tasks`, description: "View your tasks" },
+    { title: "Feedback", icon: MessageSquare, path: `/client-portal/${client.organization_id}/feedback`, description: "Share your feedback" },
   ];
 
   return (
