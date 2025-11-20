@@ -1,9 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle, AlertCircle, RefreshCcw } from "lucide-react";
+import { CheckCircle2, Circle, AlertCircle, RefreshCcw, TrendingUp, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useClientProgress } from "@/hooks/useClientProgress";
+import { MilestoneTimeline } from "./MilestoneTimeline";
+import { format } from "date-fns";
 
 interface ClientProgressCardProps {
   clientId: string;
@@ -38,19 +40,23 @@ export function ClientProgressCard({ clientId, organizationId }: ClientProgressC
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Client Progress</CardTitle>
-            <CardDescription>Overall completion status</CardDescription>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Client Progress
+              </CardTitle>
+              <CardDescription>Overall completion status</CardDescription>
+            </div>
+            <Button variant="ghost" size="sm" onClick={refresh}>
+              <RefreshCcw className="h-4 w-4" />
+            </Button>
           </div>
-          <Button variant="ghost" size="sm" onClick={refresh}>
-            <RefreshCcw className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
+        </CardHeader>
+        <CardContent className="space-y-6">
         {/* Overall Progress */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -128,24 +134,26 @@ export function ClientProgressCard({ clientId, organizationId }: ClientProgressC
         {progress.blockedItems.length > 0 && (
           <div className="space-y-3 pt-4 border-t">
             <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-warning" />
-              <h3 className="font-semibold text-sm">Pending Items ({progress.blockedItems.length})</h3>
+              <AlertCircle className="h-5 w-5 text-warning" />
+              <h3 className="font-semibold">Pending Items ({progress.blockedItems.length})</h3>
             </div>
             <div className="space-y-2">
-              {progress.blockedItems.map((item) => (
+              {progress.blockedItems.map((item, index) => (
                 <div
                   key={item.id}
-                  className="flex items-start gap-2 text-sm p-2 rounded-lg bg-muted/50"
+                  className="flex items-start gap-3 p-3 rounded-lg border border-warning/20 bg-warning/5 hover:bg-warning/10 transition-all animate-fade-in"
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <Badge variant="outline" className="mt-0.5">
+                  <Badge variant="outline" className="mt-0.5 border-warning/50 text-warning">
                     {item.type}
                   </Badge>
-                  <div className="flex-1">
-                    <p className="font-medium">{item.title}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{item.title}</p>
                     {item.dueDate && (
-                      <p className="text-xs text-muted-foreground">
-                        Due: {new Date(item.dueDate).toLocaleDateString()}
-                      </p>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                        <Calendar className="h-3 w-3" />
+                        Due: {format(new Date(item.dueDate), "MMM dd, yyyy")}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -156,12 +164,23 @@ export function ClientProgressCard({ clientId, organizationId }: ClientProgressC
 
         {/* Success Message */}
         {progress.overall === 100 && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-success/10 text-completed">
-            <CheckCircle2 className="h-5 w-5" />
-            <span className="text-sm font-medium">All items completed!</span>
+          <div className="flex items-center gap-3 p-4 rounded-lg border-2 border-completed bg-completed/10 text-completed animate-success">
+            <CheckCircle2 className="h-6 w-6" />
+            <div>
+              <p className="font-semibold">All items completed!</p>
+              <p className="text-xs text-muted-foreground">Client onboarding is complete</p>
+            </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {/* Milestone Timeline */}
+      <MilestoneTimeline
+        clientId={clientId}
+        organizationId={organizationId}
+        progress={progress}
+      />
+    </div>
   );
 }
