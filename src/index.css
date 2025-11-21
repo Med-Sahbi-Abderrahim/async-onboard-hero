@@ -1,152 +1,230 @@
-/*
-|--------------------------------------------------------------------------
-| Kenly Design System (Global Stylesheet)
-|--------------------------------------------------------------------------
-|
-| This file defines the core visual tokens, including colors (in HSL),
-| shadows, typography settings, and custom utilities, supporting both
-| light and dark modes for the Kenly application theme.
-|
-*/
-
 @tailwind base;
+
 @tailwind components;
+
 @tailwind utilities;
 
-/*
-|--------------------------------------------------------------------------
-| 1. Design Tokens: Colors, Radii, Shadows, Motion
-|--------------------------------------------------------------------------
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+
+All colors MUST be HSL.
+
 */
 
 @layer base {
   :root {
-    /* 1. Base Colors (Soft Light Mode) */
-    --background: 210 20% 98%; /* Soft gray background (was pure white) */
-    --foreground: 220 15% 20%; /* Body text color (was 220 15% 20%) */
-    --foreground-subtle: 220 12% 40%; /* Subtitles, icons (New token) */
-    --surface: 210 16% 96%; /* Soft Light Mode surface (New token) */
+    /* Updated brand colors - Kenly theme */
 
-    --card: 0 0% 100%; /* Card background */
+    --background: 210 20% 98%;
+
+    --foreground: 220 15% 20%;
+
+    --card: 0 0% 100%;
+
     --card-foreground: 220 15% 20%;
 
     --popover: 0 0% 100%;
+
     --popover-foreground: 220 15% 20%;
 
-    /* 2. Primary & Accent Colors (Reduced Blue Overload) */
-    --primary: 217 80% 56%; /* Slightly muted blue (was 217 91% 60%) */
+    --primary: 217 91% 60%; /* #3B82F6 - soft indigo/electric blue */
+
     --primary-foreground: 0 0% 100%;
+
     --primary-glow: 217 91% 70%;
 
     --secondary: 210 40% 96%;
+
     --secondary-foreground: 220 15% 20%;
 
-    --muted: 215 16% 85%; /* Lighter gray for muted elements (was 210 30% 94%) */
-    --muted-foreground: 215 22% 38%; /* Darker, higher contrast muted text (was 220 10% 50%) */
+    --muted: 210 30% 94%;
 
-    --accent: 160 75% 85%;
+    --muted-foreground: 220 10% 50%;
+
+    --accent: 160 75% 85%; /* #A7F3D0 - mint/lime hint */
+
     --accent-foreground: 220 15% 20%;
 
     --destructive: 0 84% 60%;
+
     --destructive-foreground: 0 0% 100%;
 
     /* Status colors */
+
     --success: 142 71% 45%;
+
     --success-foreground: 0 0% 100%;
+
     --warning: 38 92% 50%;
+
     --warning-foreground: 0 0% 100%;
+
     --info: 217 91% 60%;
+
     --info-foreground: 0 0% 100%;
 
-    /* 6. Borders & Radii Tokens */
-    --border: 220 12% 88%; /* Main border (was 220 15% 90%) */
-    --border-soft: 220 10% 92%; /* Softer border for subtle divisions (New) */
+    --pending: 38 92% 50%;
+
+    --pending-foreground: 0 0% 100%;
+
+    --completed: 142 71% 45%;
+
+    --completed-foreground: 0 0% 100%;
+
+    --blocked: 0 84% 60%;
+
+    --blocked-foreground: 0 0% 100%;
+
+    --in-progress: 217 91% 60%;
+
+    --in-progress-foreground: 0 0% 100%;
+
+    /* Status colors */
+
+    --success: 142 71% 45%;
+
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+
+    --warning-foreground: 0 0% 100%;
+
+    --info: 217 91% 60%;
+
+    --info-foreground: 0 0% 100%;
+
+    --pending: 38 92% 50%;
+
+    --pending-foreground: 0 0% 100%;
+
+    --completed: 142 71% 45%;
+
+    --completed-foreground: 0 0% 100%;
+
+    --blocked: 0 84% 60%;
+
+    --blocked-foreground: 0 0% 100%;
+
+    --in-progress: 217 91% 60%;
+
+    --in-progress-foreground: 0 0% 100%;
+
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 90%;
+
     --input: 220 15% 90%;
+
     --ring: 217 91% 60%;
 
-    --radius: 0.75rem; /* Default radius (rounded-lg equivalent) */
-    --radius-lg: 1rem; /* Large radius (New) */
-    --radius-xl: 1.25rem; /* Extra large radius (New) */
+    --radius: 1rem;
 
-    /* 7. Sidebar Tokens (Reduced Brightness) */
-    --sidebar-background: 220 20% 97%; /* Softer sidebar BG (was 0 0% 98%) */
-    --sidebar-foreground: 220 10% 35%; /* Default sidebar text/icons */
-    --sidebar-active: 217 90% 60%; /* Primary color for active link */
-    --sidebar-active-foreground: 0 0% 100%;
-    --sidebar-border: 220 13% 91%;
+    /* Enhanced gradients for premium feel */
 
-    /* 3. Shadow Tokens (Improved Depth) */
-    --shadow-soft: 0 1px 3px hsl(220deg 14% 96% / 0.8), 0 1px 2px hsl(220deg 14% 88% / 0.6);
-    --shadow-medium: 0 4px 12px hsl(220deg 14% 90% / 0.6);
-    --shadow-strong: 0 8px 40px hsl(217 91% 60% / 0.16);
-    --shadow-glow: 0 0 40px hsl(217 91% 70% / 0.3);
-
-    /* Gradients (Kept existing, but updated primary hue reference) */
     --gradient-hero: linear-gradient(135deg, hsl(217 91% 95%), hsl(160 75% 95%));
+
     --gradient-hero-dark: linear-gradient(135deg, hsl(222 47% 15%), hsl(222 47% 12%));
-    --gradient-primary: linear-gradient(135deg, hsl(217 80% 56%), hsl(225 85% 55%)); /* uses new primary */
+
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(225 85% 55%));
+
     --gradient-accent: linear-gradient(180deg, hsl(0 0% 100%), hsl(217 91% 98%));
 
-    /* Optional Motion Tokens */
-    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-    --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
-    --duration-fast: 150ms;
-    --duration-medium: 250ms;
+    --gradient-accent-dark: linear-gradient(180deg, hsl(222 47% 14%), hsl(222 47% 16%));
+
+    --gradient-auth: linear-gradient(135deg, hsl(217 91% 60%), hsl(225 85% 55%));
+
+    --gradient-success: linear-gradient(135deg, hsl(160 75% 85%), hsl(160 70% 75%));
+
+    /* Softer, more premium shadows with depth */
+
+    --shadow-soft: 0 2px 12px hsl(217 91% 60% / 0.08);
+
+    --shadow-medium: 0 4px 20px hsl(217 91% 60% / 0.12);
+
+    --shadow-strong: 0 8px 40px hsl(217 91% 60% / 0.16);
+
+    --shadow-glow: 0 0 40px hsl(217 91% 70% / 0.3);
+
+    /* Animation & transition utilities */
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  /* 9. Dark Mode Contrast Improvement */
   .dark {
-    --background: 222 47% 10%; /* Deeper dark background (was 11%) */
-    --foreground: 210 20% 96%; /* Brighter text (was 210 40% 98%) */
+    --background: 222 47% 11%;
 
-    --card: 222 47% 14%; /* Slightly darker cards (was 14%) */
-    --card-foreground: 210 20% 96%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 14%;
+
+    --card-foreground: 210 40% 98%;
 
     --popover: 222 47% 14%;
-    --popover-foreground: 210 20% 96%;
 
-    --primary: 217 91% 60%; /* Primary color */
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 217 91% 60%;
+
     --primary-foreground: 0 0% 100%;
+
+    --primary-glow: 217 91% 70%;
 
     --secondary: 217 33% 20%;
-    --secondary-foreground: 210 20% 96%;
+
+    --secondary-foreground: 210 40% 98%;
 
     --muted: 217 33% 20%;
-    --muted-foreground: 215 15% 70%; /* Higher contrast muted text (was 215 20% 70%) */
+
+    --muted-foreground: 215 20% 70%;
 
     --accent: 217 33% 25%;
-    --accent-foreground: 210 20% 96%;
+
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 63% 50%;
-    --destructive-foreground: 210 20% 96%;
+
+    --destructive-foreground: 210 40% 98%;
 
     --border: 217 33% 22%;
+
     --input: 217 33% 18%;
+
     --ring: 217 91% 60%;
 
-    --sidebar-background: 222 47% 10%;
-    --sidebar-foreground: 210 20% 96%;
-    --sidebar-active: 217 91% 60%;
-    --sidebar-active-foreground: 210 20% 96%;
-    --sidebar-border: 217 33% 22%;
-  }
+    --sidebar-background: 222 47% 11%;
 
-  /* 8. Client Portal Theme Variant */
-  .client-portal {
-    --background: 200 20% 97%; /* Distinct, slightly cooler background */
-    --card: 0 0% 100%;
-    --primary: 215 85% 55%; /* Slightly different primary hue */
-    --primary-foreground: 0 0% 100%;
-    --foreground: 220 15% 20%;
-    --foreground-subtle: 220 12% 40%;
+    --sidebar-foreground: 210 40% 98%;
+
+    --sidebar-primary: 217 91% 60%;
+
+    --sidebar-primary-foreground: 210 40% 98%;
+
+    --sidebar-accent: 217 33% 20%;
+
+    --sidebar-accent-foreground: 210 40% 98%;
+
+    --sidebar-border: 217 33% 22%;
+
+    --sidebar-ring: 217 91% 60%;
   }
 }
-
-/*
-|--------------------------------------------------------------------------
-| 2. Base HTML Element Styling (Typography)
-|--------------------------------------------------------------------------
-*/
 
 @layer base {
   * {
@@ -154,60 +232,60 @@
   }
 
   body {
-    /* 5. Typography Clarity: New Foreground and Font Stack */
-    @apply bg-background text-[hsl(var(--foreground))] font-sans antialiased;
+    @apply bg-background text-foreground font-sans antialiased;
+
     font-family:
       "Inter",
       system-ui,
       -apple-system,
       sans-serif;
-    line-height: 1.6; /* Increased line height */
+
+    line-height: 1.6;
   }
 
-  /* 5. Typography Clarity: Reduce bold weights, increase line height */
+  html {
+    scroll-behavior: smooth;
+  }
+
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    @apply font-medium tracking-tight; /* Reduced font weight */
-    line-height: 1.3; /* Increased line height */
+    @apply font-semibold tracking-tight;
+
+    line-height: 1.2;
   }
 
   h1 {
-    @apply text-4xl;
-  }
-  h2 {
-    @apply text-3xl;
-  }
-  h3 {
-    @apply text-2xl;
-  }
-  h4 {
-    @apply text-xl;
-  }
-  h5 {
-    @apply text-lg;
-  }
-  h6 {
-    @apply text-base;
+    @apply text-4xl font-bold;
   }
 
-  /* Utility for titles/icons */
-  .text-subtle {
-    color: hsl(var(--foreground-subtle));
+  h2 {
+    @apply text-3xl font-semibold;
+  }
+
+  h3 {
+    @apply text-2xl font-semibold;
+  }
+
+  h4 {
+    @apply text-xl font-semibold;
+  }
+
+  h5 {
+    @apply text-lg font-medium;
+  }
+
+  h6 {
+    @apply text-base font-medium;
   }
 }
 
-/*
-|--------------------------------------------------------------------------
-| 3. Custom Utilities (Shadows, Gradients, Transitions)
-|--------------------------------------------------------------------------
-*/
-
 @layer utilities {
   /* Gradients */
+
   .gradient-hero {
     background: var(--gradient-hero);
   }
@@ -220,7 +298,24 @@
     background: var(--gradient-primary);
   }
 
+  .gradient-accent {
+    background: var(--gradient-accent);
+  }
+
+  .dark .gradient-accent {
+    background: var(--gradient-accent-dark);
+  }
+
+  .gradient-auth {
+    background: var(--gradient-auth);
+  }
+
+  .gradient-success {
+    background: var(--gradient-success);
+  }
+
   /* Shadows */
+
   .shadow-soft {
     box-shadow: var(--shadow-soft);
   }
@@ -229,48 +324,102 @@
     box-shadow: var(--shadow-medium);
   }
 
-  /* Transitions (Using new motion tokens) */
+  .shadow-strong {
+    box-shadow: var(--shadow-strong);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Transitions */
+
   .transition-smooth {
-    transition: all var(--duration-medium) var(--ease-smooth);
+    transition: var(--transition-smooth);
   }
 
   .transition-bounce {
     transition: var(--transition-bounce);
   }
 
-  /* 3. Card Application (Ensuring all cards use soft shadow) */
-  .card {
-    @apply rounded-[var(--radius)] bg-card shadow-soft hover:shadow-medium transition-all;
-  }
-
-  /* Interactive elements with motion */
-  .hover-lift {
-    @apply transition-smooth hover:scale-[1.02] hover:shadow-medium;
-  }
-
   /* Text utilities */
+
   .text-balance {
     text-wrap: balance;
   }
 
-  /* Existing animations */
+  /* Interactive elements with motion */
+
+  .hover-lift {
+    @apply transition-smooth hover:scale-[1.02] hover:shadow-medium;
+  }
+
+  .hover-glow {
+    @apply transition-smooth hover:shadow-glow;
+  }
+
   .animate-slide-up {
     animation: slide-up 0.3s ease-out;
   }
+
   .animate-fade-in {
     animation: fade-in 0.3s ease-out;
   }
+
   .animate-scale-in {
     animation: scale-in 0.2s ease-out;
   }
 
   @keyframes slide-up {
-    /* ... keyframe definitions ... */
+    from {
+      opacity: 0;
+
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+
+      transform: translateY(0);
+    }
   }
+
   @keyframes fade-in {
-    /* ... keyframe definitions ... */
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
+
   @keyframes scale-in {
-    /* ... keyframe definitions ... */
+    from {
+      opacity: 0;
+
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+
+      transform: scale(1);
+    }
+  }
+
+  @keyframes success-bounce {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.1);
+    }
+  }
+
+  .animate-success {
+    animation: success-bounce 0.5s ease-in-out;
   }
 }
