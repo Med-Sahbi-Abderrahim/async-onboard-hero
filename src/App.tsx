@@ -44,6 +44,7 @@ import AuthCallback from "./pages/AuthCallback";
 import FormDetail from "./pages/FormDetail";
 import EditForm from "./pages/EditForm";
 import Tasks from "./pages/Tasks";
+import EarlyAccessAdmin from "./pages/EarlyAccessAdmin";
 
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -250,6 +251,16 @@ const App = () => (
                 </AgencyProtectedRoute>
               }
             />
+            <Route
+              path="/early-access-admin/:orgId"
+              element={
+                <AgencyProtectedRoute>
+                  <DashboardLayout>
+                    <EarlyAccessAdmin />
+                  </DashboardLayout>
+                </AgencyProtectedRoute>
+              }
+            />
 
 
             {/* Legacy routes without orgId - redirect to orgId routes */}
@@ -269,6 +280,7 @@ const App = () => (
             <Route path="/billing" element={<OrgRedirect />} />
             <Route path="/reminders" element={<OrgRedirect />} />
             <Route path="/tasks" element={<OrgRedirect />} />
+            <Route path="/early-access-admin" element={<OrgRedirect />} />
 
             {/* Public client-facing form route */}
             <Route path="/forms/:slug/submit" element={<ClientFormPage />} />
