@@ -24,29 +24,11 @@ export function ClientFormAuth({ form, onAuthenticated }: ClientFormAuthProps) {
     setLoading(true);
 
     try {
-      // Check if client exists with this email
-      const { data: client } = await supabase
-        .from("clients")
-        .select("*")
-        .eq("email", email)
-        .eq("organization_id", form.organization_id)
-        .is("deleted_at", null)
-        .maybeSingle();
-
-      if (!client) {
-        toast({
-          title: "Not found",
-          description: "No client account found with this email. Please contact the organization.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
       // Get the public form URL for redirect (ensures we redirect to published URL, not preview)
       const formUrl = getPublicUrl(`/form/${form.slug}`);
 
-      // Send magic link to client's email
+      // Send magic link - no longer require pre-existing client record
+      // Client will be auto-created after authentication if needed
       const { error: magicLinkError } = await supabase.auth.signInWithOtp({
         email,
         options: {

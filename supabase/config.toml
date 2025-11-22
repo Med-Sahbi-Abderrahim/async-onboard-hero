@@ -32,3 +32,6 @@ verify_jwt = true
 
 [functions.remove-team-member]
 verify_jwt = true
+
+[functions.auto-create-client]
+verify_jwt = true
