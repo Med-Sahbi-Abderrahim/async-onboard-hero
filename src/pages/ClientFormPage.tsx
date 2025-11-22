@@ -43,16 +43,17 @@ export default function ClientFormPage() {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
-        // Check if user is a client for ANY organization
+        // Check if user is a client for this organization
         const { data: clientData, error: clientError } = await supabase
           .from("clients")
           .select("*")
           .eq("id", user.id)
+          .eq("organization_id", formData.organization_id)
           .is("deleted_at", null)
           .maybeSingle();
 
         if (clientData && !clientError) {
-          // User is authenticated and is a client - grant access immediately
+          // User is already a client - grant access immediately
           setClient(clientData);
           setAuthenticated(true);
 
@@ -70,8 +71,35 @@ export default function ClientFormPage() {
           if (existingSubmission) {
             setSubmission(existingSubmission);
           }
+        } else {
+          // User is authenticated but not a client - auto-create client record
+          console.log("Auto-creating client record for authenticated user");
+          
+          try {
+            const { data: autoClientData, error: autoCreateError } = await supabase.functions.invoke(
+              'auto-create-client',
+              {
+                body: {
+                  email: user.email,
+                  full_name: user.user_metadata?.full_name,
+                  organization_id: formData.organization_id,
+                  form_id: formData.id,
+                },
+              }
+            );
+
+            if (autoCreateError) {
+              console.error("Failed to auto-create client:", autoCreateError);
+            } else if (autoClientData?.client) {
+              setClient(autoClientData.client);
+              setAuthenticated(true);
+              
+              console.log("Client auto-created successfully");
+            }
+          } catch (autoError) {
+            console.error("Error auto-creating client:", autoError);
+          }
         }
-        // If user is authenticated but not a client, they'll still see auth page
       }
     } catch (error) {
       console.error("Error loading form:", error);
