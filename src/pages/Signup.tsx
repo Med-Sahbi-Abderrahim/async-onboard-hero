@@ -41,6 +41,16 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ strength: "", color: "" });
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+
+  // Check for invite code in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("invite");
+    if (code) {
+      setInviteCode(code);
+    }
+  }, []);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -135,6 +145,27 @@ export default function Signup() {
         return;
       }
 
+      // If invite code exists, use it
+      if (inviteCode && data.user) {
+        const { data: inviteResult, error: inviteError } = await supabase.rpc(
+          "use_early_access_invite",
+          { invite_code: inviteCode }
+        );
+
+        if (inviteError) {
+          toast({
+            variant: "destructive",
+            title: "Invalid invite code",
+            description: inviteError.message,
+          });
+        } else {
+          toast({
+            title: "Early access activated!",
+            description: "You now have 30 days of Pro plan access.",
+          });
+        }
+      }
+
       // Check if email confirmation is required
       if (data.user && !data.session) {
         toast({
@@ -145,7 +176,7 @@ export default function Signup() {
         // Auto-logged in - find user's organization
         toast({
           title: "Account created!",
-          description: "Welcome to Kenly!",
+          description: inviteCode ? "Welcome to Kenly! Your early access has been activated." : "Welcome to Kenly!",
         });
         
         // Find user's first organization
@@ -203,7 +234,9 @@ export default function Signup() {
         <div className="w-full max-w-md">
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-foreground mb-2">Create your account</h2>
-            <p className="text-muted-foreground">Get started with Kenly today</p>
+            <p className="text-muted-foreground">
+              {inviteCode ? "🎉 You have an early access invite! Sign up to get 30 days of Pro." : "Get started with Kenly today"}
+            </p>
           </div>
 
           <Form {...form}>
