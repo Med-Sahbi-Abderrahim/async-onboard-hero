@@ -9,6 +9,7 @@ import { useOrgId } from "@/hooks/useOrgId";
 import { ProgressDashboard } from "@/components/progress/ProgressDashboard";
 import { StatsSkeleton } from "@/components/ui/loading-skeleton";
 import { EmptyState } from "@/components/ui/empty-state";
+import { EarlyAccessBanner } from "@/components/EarlyAccessBanner";
 
 export default function Dashboard() {
   const { profile } = useUser();
@@ -89,6 +90,8 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <EarlyAccessBanner />
+      
       {/* Welcome Card */}
       <Card className="border-primary/20">
         <CardHeader>

@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, FileText, Inbox, Settings, Bell, Sparkles, Building2, ChevronDown, CheckSquare } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Inbox, Settings, Bell, Sparkles, Building2, ChevronDown, CheckSquare, Gift } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -33,6 +33,7 @@ const baseItems = [
   { title: "Submissions", path: "submissions", icon: Inbox },
   { title: "Tasks", path: "tasks", icon: CheckSquare },
   { title: "Reminders", path: "reminders", icon: Bell },
+  { title: "Early Access", path: "early-access-admin", icon: Gift },
   { title: "Settings", path: "settings", icon: Settings },
 ];
 

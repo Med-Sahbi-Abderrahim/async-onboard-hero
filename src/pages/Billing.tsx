@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Users, HardDrive, Sparkles, Zap, Crown, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { EarlyAccessBanner } from "@/components/EarlyAccessBanner";
 
 interface Organization {
   id: string;
@@ -178,6 +179,8 @@ export default function Billing() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <EarlyAccessBanner />
+      
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold">Billing & Usage</h2>
