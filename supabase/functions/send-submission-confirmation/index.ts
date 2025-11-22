@@ -114,26 +114,98 @@ serve(async (req) => {
       );
     }
 
+    // Get public app URL for portal link
+    const publicAppUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://kenly.io';
+    const portalUrl = `${publicAppUrl}/client-portal/${submission.organization_id}`;
+
     try {
       // Send confirmation email
       const { data: emailData, error: emailError } = await resend.emails.send({
-        from: 'Form Confirmation <onboarding@resend.dev>',
+        from: 'Kenly <onboarding@kenly.io>',
         to: [clients.email],
-        subject: `Confirmation: Your ${intake_forms.title} has been received`,
+        subject: `Form Received ✓ Your Portal is Ready`,
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>Thank you, ${clients.full_name || 'valued client'}!</h2>
-            <p>We have successfully received your completed form submission.</p>
-            <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 20px; margin: 20px 0;">
-              <h3 style="margin-top: 0; color: #065f46;">${intake_forms.title}</h3>
-              <p style="margin: 5px 0;"><strong>Submitted:</strong> ${new Date(submission.submitted_at).toLocaleString()}</p>
-              <p style="margin: 5px 0;"><strong>Completion:</strong> ${submission.completion_percentage}%</p>
-            </div>
-            <p>Our team will review your submission and get back to you shortly.</p>
-            <p style="color: #888; font-size: 14px; margin-top: 30px;">
-              If you have any questions or need to make changes, please contact us.
-            </p>
-          </div>
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 0 auto; }
+                .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 40px 30px; text-align: center; }
+                .content { background: #ffffff; padding: 40px 30px; }
+                .button { display: inline-block; background: #3b82f6; color: white !important; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+                .button:hover { background: #2563eb; }
+                .success-box { background: #f0fdf4; border-left: 4px solid #10b981; padding: 20px; border-radius: 4px; margin: 24px 0; }
+                .feature-list { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 24px 0; }
+                .feature-item { display: flex; align-items: start; margin-bottom: 10px; font-size: 14px; }
+                .feature-icon { color: #3b82f6; margin-right: 10px; font-weight: bold; }
+                .footer { text-align: center; padding: 30px; color: #6b7280; font-size: 14px; background: #f9fafb; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1 style="margin: 0; font-size: 32px; font-weight: 700;">✓ Form Received!</h1>
+                </div>
+                <div class="content">
+                  <p style="font-size: 16px; margin-bottom: 24px;">Hi ${clients.full_name || 'there'},</p>
+                  
+                  <p style="font-size: 16px; margin-bottom: 24px;">
+                    Thanks for completing <strong>${intake_forms.title}</strong>! We've received your submission and our team will review it shortly.
+                  </p>
+                  
+                  <div class="success-box">
+                    <p style="margin: 0 0 8px 0; font-weight: 600; color: #065f46;">Submission Details:</p>
+                    <p style="margin: 0; color: #065f46;">
+                      <strong>Form:</strong> ${intake_forms.title}<br/>
+                      <strong>Submitted:</strong> ${new Date(submission.submitted_at).toLocaleString()}<br/>
+                      <strong>Status:</strong> Complete (${submission.completion_percentage}%)
+                    </p>
+                  </div>
+                  
+                  <h3 style="margin: 32px 0 16px 0; color: #111827;">Your Client Portal is Ready</h3>
+                  <p style="font-size: 15px; margin-bottom: 16px;">
+                    You now have access to your secure client portal where you can:
+                  </p>
+                  
+                  <div class="feature-list">
+                    <div class="feature-item">
+                      <span class="feature-icon">•</span>
+                      <span>Upload and share documents securely</span>
+                    </div>
+                    <div class="feature-item">
+                      <span class="feature-icon">•</span>
+                      <span>View contracts and invoices</span>
+                    </div>
+                    <div class="feature-item">
+                      <span class="feature-icon">•</span>
+                      <span>Schedule meetings with your team</span>
+                    </div>
+                    <div class="feature-item">
+                      <span class="feature-icon">•</span>
+                      <span>Track your project progress in real-time</span>
+                    </div>
+                  </div>
+                  
+                  <div style="text-align: center; margin: 32px 0;">
+                    <a href="${portalUrl}" class="button">
+                      Access Your Portal →
+                    </a>
+                  </div>
+                  
+                  <p style="color: #6b7280; font-size: 14px; margin-top: 32px;">
+                    Need help or have questions? Just reply to this email and we'll be happy to assist.
+                  </p>
+                </div>
+                <div class="footer">
+                  <p style="margin: 0 0 8px 0;">Powered by Kenly</p>
+                  <p style="font-size: 12px; color: #9ca3af; margin: 0;">
+                    This is an automated confirmation. Please do not reply directly to this email.
+                  </p>
+                </div>
+              </div>
+            </body>
+          </html>
         `,
       });
 

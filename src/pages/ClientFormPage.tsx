@@ -39,19 +39,20 @@ export default function ClientFormPage() {
 
       setForm(formData);
 
-      // Check if user is authenticated via Supabase auth
+      // Check if user is already authenticated (SMART AUTH)
       const { data: { user } } = await supabase.auth.getUser();
       
       if (user) {
-        // Check if user is a client
+        // Check if user is a client for ANY organization
         const { data: clientData, error: clientError } = await supabase
           .from("clients")
           .select("*")
           .eq("id", user.id)
           .is("deleted_at", null)
-          .single();
+          .maybeSingle();
 
         if (clientData && !clientError) {
+          // User is authenticated and is a client - grant access immediately
           setClient(clientData);
           setAuthenticated(true);
 
@@ -70,6 +71,7 @@ export default function ClientFormPage() {
             setSubmission(existingSubmission);
           }
         }
+        // If user is authenticated but not a client, they'll still see auth page
       }
     } catch (error) {
       console.error("Error loading form:", error);
