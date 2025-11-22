@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.lemon-squeezy-webhook]
 verify_jwt = false
+
+[functions.transition-early-access]
+verify_jwt = false
