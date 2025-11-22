@@ -155,61 +155,85 @@ Deno.serve(async (req) => {
         const { error: emailError } = await resend.emails.send({
           from: 'Kenly <onboarding@kenly.io>',
           to: [requestData.email],
-          subject: 'You\'ve Been Invited to a Client Portal',
+          subject: 'Welcome to Your Client Portal',
           html: `
             <!DOCTYPE html>
             <html>
               <head>
                 <style>
-                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; line-height: 1.6; color: #333; }
-                  .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                  .header { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
-                  .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
-                  .button { display: inline-block; background: #3b82f6; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+                  .container { max-width: 600px; margin: 0 auto; }
+                  .header { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 40px 30px; text-align: center; }
+                  .content { background: #ffffff; padding: 40px 30px; }
+                  .button { display: inline-block; background: #3b82f6; color: white !important; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
                   .button:hover { background: #2563eb; }
-                  .footer { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
-                  .info-box { background: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0; }
+                  .feature-list { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 24px 0; }
+                  .feature-item { display: flex; align-items: start; margin-bottom: 12px; }
+                  .feature-icon { color: #10b981; font-weight: bold; margin-right: 12px; font-size: 18px; }
+                  .info-box { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 4px; margin: 24px 0; }
+                  .footer { text-align: center; padding: 30px; color: #6b7280; font-size: 14px; background: #f9fafb; }
                 </style>
               </head>
               <body>
                 <div class="container">
                   <div class="header">
-                    <h1 style="margin: 0; font-size: 28px;">You've Been Invited to a Client Portal</h1>
+                    <h1 style="margin: 0; font-size: 32px; font-weight: 700;">Welcome to Your Client Portal</h1>
                   </div>
                   <div class="content">
-                    <p>Hi ${requestData.full_name},</p>
+                    <p style="font-size: 16px; margin-bottom: 24px;">Hi ${requestData.full_name},</p>
                     
-                    <p>Good news! You've been invited to access a client portal. This is your central hub to:</p>
+                    <p style="font-size: 16px; margin-bottom: 24px;">
+                      Great news! Your secure client portal is ready. This is your central hub for everything related to your project.
+                    </p>
                     
-                    <ul>
-                      <li>Fill out intake forms</li>
-                      <li>Upload and share documents</li>
-                      <li>Schedule meetings</li>
-                      <li>View contracts and invoices</li>
-                      <li>Track your project status</li>
-                    </ul>
+                    <div class="feature-list">
+                      <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span><strong>Upload & Share Documents</strong> – Securely share files with your team</span>
+                      </div>
+                      <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span><strong>View Contracts & Invoices</strong> – Access all your project documents in one place</span>
+                      </div>
+                      <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span><strong>Schedule Meetings</strong> – Book time directly with your team</span>
+                      </div>
+                      <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span><strong>Track Progress</strong> – See real-time project status and milestones</span>
+                      </div>
+                      <div class="feature-item">
+                        <span class="feature-icon">✓</span>
+                        <span><strong>Complete Forms</strong> – Fill out intake forms at your convenience</span>
+                      </div>
+                    </div>
                     
-                    <div style="text-align: center;">
+                    <div style="text-align: center; margin: 32px 0;">
                       <a href="${loginUrl}" class="button">
-                        Access Your Client Portal
+                        Access Your Portal →
                       </a>
                     </div>
                     
                     <div class="info-box">
-                      <p style="margin: 0;"><strong>Getting Started:</strong></p>
-                      <p style="margin: 8px 0 0 0;">
-                        Simply log in with your existing account credentials.<br/>
-                        Your email: <strong>${requestData.email}</strong>
+                      <p style="margin: 0 0 8px 0; font-weight: 600;">Getting Started:</p>
+                      <p style="margin: 0;">
+                        Simply log in using your existing account credentials:<br/>
+                        <strong>${requestData.email}</strong>
                       </p>
                     </div>
                     
-                    <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+                    <p style="color: #6b7280; font-size: 14px; margin-top: 32px;">
+                      Questions? Just reply to this email and we'll be happy to help.
+                    </p>
+                    
+                    <p style="color: #9ca3af; font-size: 13px; margin-top: 24px;">
                       If you didn't expect this invitation, you can safely ignore this email.
                     </p>
                   </div>
                   <div class="footer">
-                    <p>Powered by Kenly</p>
-                    <p style="font-size: 12px; color: #9ca3af;">
+                    <p style="margin: 0 0 8px 0;">Powered by Kenly</p>
+                    <p style="font-size: 12px; color: #9ca3af; margin: 0;">
                       This is an automated message. Please do not reply to this email.
                     </p>
                   </div>
