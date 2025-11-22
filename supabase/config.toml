@@ -15,6 +15,9 @@ verify_jwt = false
 [functions.transition-early-access]
 verify_jwt = false
 
+[functions.trigger-milestone-email]
+verify_jwt = false
+
 [functions.send-status-emails]
 verify_jwt = false
 

@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 interface EmailPayload {
-  type: "early_access_reminder" | "trial_welcome" | "trial_ending" | "trial_ended" | "payment_failed" | "subscription_ended" | "plan_expiring_soon" | "plan_expired_day1" | "plan_expired_day5" | "plan_expired_day14";
+  type: "early_access_reminder" | "trial_welcome" | "trial_ending" | "trial_ended" | "payment_failed" | "subscription_ended" | "plan_expiring_soon" | "plan_expired_day1" | "plan_expired_day5" | "plan_expired_day14" | "post_signup_nudge" | "inactivity_reminder" | "milestone_onboarding" | "milestone_first_submission" | "milestone_first_automation" | "seasonal_thanks" | "feature_update";
   userId: string;
   metadata?: Record<string, any>;
 }
@@ -343,6 +343,214 @@ serve(async (req: Request) => {
                 </a>
               </p>
               <p>Whatever you decide, thank you for trying ClientFlow. Your account will remain active on the Free plan.</p>
+              <p>Best,<br>The ClientFlow Team</p>
+            </div>
+          `,
+        });
+        break;
+
+      case "post_signup_nudge":
+        emailResponse = await resend.emails.send({
+          from: "ClientFlow <hello@resend.dev>",
+          to: [user.email],
+          subject: "How's it going so far?",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #3b82f6;">Just checking in!</h1>
+              <p>Hi ${user.full_name || "there"},</p>
+              <p>I wanted to reach out and see how things are going with ClientFlow.</p>
+              <p>Setting up your first client portal or workflow can feel like a lot, so I wanted you to know: <strong>real humans read and respond to every reply to this email.</strong></p>
+              <p>If you're stuck on anything — even something small — just hit reply and let me know. I'm here to help you get your first workflow running.</p>
+              <p><strong>Quick wins to get started:</strong></p>
+              <ul>
+                <li>Create your first client portal in under 2 minutes</li>
+                <li>Customize a simple intake form</li>
+                <li>Invite your first client</li>
+              </ul>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${supabaseUrl.replace('.supabase.co', '')}/clients" 
+                   style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                  Get Started
+                </a>
+              </div>
+              <p>Looking forward to seeing what you build!</p>
+              <p>Best,<br>The ClientFlow Team</p>
+            </div>
+          `,
+        });
+        break;
+
+      case "inactivity_reminder":
+        const daysSinceLastActivity = metadata?.daysSinceLastActivity || 7;
+        emailResponse = await resend.emails.send({
+          from: "ClientFlow <hello@resend.dev>",
+          to: [user.email],
+          subject: "Haven't seen you around — want help?",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #3b82f6;">We miss you!</h1>
+              <p>Hi ${user.full_name || "there"},</p>
+              <p>I noticed it's been ${daysSinceLastActivity} days since you last logged in to ClientFlow.</p>
+              <p>Don't worry — it happens! Many users sign up with big plans, but life gets busy and they forget to finish setting up.</p>
+              <p><strong>Can I help you get started?</strong></p>
+              <p>Whether you're not sure where to begin, hit a technical issue, or just need a quick walkthrough, I'm here to help.</p>
+              <p><strong>What would be most helpful?</strong></p>
+              <ul>
+                <li>A 10-minute guided setup call?</li>
+                <li>Step-by-step instructions for your specific use case?</li>
+                <li>Just point me in the right direction?</li>
+              </ul>
+              <p>Reply to this email and let me know — I read every response personally.</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${supabaseUrl.replace('.supabase.co', '')}/dashboard" 
+                   style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                  Jump Back In
+                </a>
+              </div>
+              <p>Best,<br>The ClientFlow Team</p>
+            </div>
+          `,
+        });
+        break;
+
+      case "milestone_onboarding":
+        emailResponse = await resend.emails.send({
+          from: "ClientFlow <hello@resend.dev>",
+          to: [user.email],
+          subject: "You're all set up! 🎉",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #3b82f6;">🎉 You did it!</h1>
+              <p>Hi ${user.full_name || "there"},</p>
+              <p>Congratulations — you've completed your ClientFlow setup! That's huge.</p>
+              <p>You're now ready to:</p>
+              <ul>
+                <li>✅ Create and manage client portals</li>
+                <li>✅ Build custom intake forms</li>
+                <li>✅ Automate your client workflows</li>
+                <li>✅ Track everything in one place</li>
+              </ul>
+              <p><strong>What's next?</strong></p>
+              <p>Now that you're all set up, the real magic begins. Try inviting your first client or creating your first custom form.</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${supabaseUrl.replace('.supabase.co', '')}/clients" 
+                   style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                  Invite Your First Client
+                </a>
+              </div>
+              <p>You're off to a great start. Keep it up!</p>
+              <p>Best,<br>The ClientFlow Team</p>
+            </div>
+          `,
+        });
+        break;
+
+      case "milestone_first_submission":
+        emailResponse = await resend.emails.send({
+          from: "ClientFlow <hello@resend.dev>",
+          to: [user.email],
+          subject: "Your first submission is in! 🎉 Nice work!",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #3b82f6;">🎉 You got your first submission!</h1>
+              <p>Hi ${user.full_name || "there"},</p>
+              <p>This is a big moment — your first client just submitted a form through ClientFlow!</p>
+              <p>This is exactly what it's all about: <strong>streamlining your client onboarding and making your life easier.</strong></p>
+              <p><strong>What you've accomplished:</strong></p>
+              <ul>
+                <li>✅ Created a professional intake form</li>
+                <li>✅ Shared it with a client</li>
+                <li>✅ Received your first submission</li>
+              </ul>
+              <p>You're already seeing the value of automation. Keep going!</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${supabaseUrl.replace('.supabase.co', '')}/submissions" 
+                   style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                  View Your Submission
+                </a>
+              </div>
+              <p>Proud of you!</p>
+              <p>Best,<br>The ClientFlow Team</p>
+            </div>
+          `,
+        });
+        break;
+
+      case "milestone_first_automation":
+        emailResponse = await resend.emails.send({
+          from: "ClientFlow <hello@resend.dev>",
+          to: [user.email],
+          subject: "Your first automation is live! 🚀",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #3b82f6;">🚀 You're automating like a pro!</h1>
+              <p>Hi ${user.full_name || "there"},</p>
+              <p>Incredible work — you just set up your first automation in ClientFlow!</p>
+              <p>This is where the magic really happens. While you're focusing on your work, ClientFlow is handling the tedious stuff in the background.</p>
+              <p><strong>What this means for you:</strong></p>
+              <ul>
+                <li>⏰ Save hours every week</li>
+                <li>📧 Never miss a follow-up</li>
+                <li>✨ Deliver a better client experience</li>
+                <li>🎯 Focus on what matters most</li>
+              </ul>
+              <p>You've unlocked one of the most powerful features in ClientFlow. Now imagine what else you can automate...</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${supabaseUrl.replace('.supabase.co', '')}/forms" 
+                   style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                  Explore More Automations
+                </a>
+              </div>
+              <p>You're crushing it!</p>
+              <p>Best,<br>The ClientFlow Team</p>
+            </div>
+          `,
+        });
+        break;
+
+      case "seasonal_thanks":
+        emailResponse = await resend.emails.send({
+          from: "ClientFlow <hello@resend.dev>",
+          to: [user.email],
+          subject: "Thanks for building with us ❤️",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #3b82f6;">You're awesome.</h1>
+              <p>Hi ${user.full_name || "there"},</p>
+              <p>No pitch, no ask — just a genuine thank you.</p>
+              <p>You chose to build your client workflows with ClientFlow, and that means everything to us.</p>
+              <p>Every client portal you create, every form you customize, every automation you set up — it all helps us understand what you need and how we can serve you better.</p>
+              <p><strong>So thank you.</strong> For trusting us, for your feedback, and for being part of this journey.</p>
+              <p>We're here whenever you need us.</p>
+              <p>With gratitude,<br>The ClientFlow Team</p>
+            </div>
+          `,
+        });
+        break;
+
+      case "feature_update":
+        const featureName = metadata?.featureName || "a feature you use";
+        const featureDescription = metadata?.featureDescription || "We've made some improvements";
+        emailResponse = await resend.emails.send({
+          from: "ClientFlow <updates@resend.dev>",
+          to: [user.email],
+          subject: `We improved ${featureName}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #3b82f6;">We made something better for you</h1>
+              <p>Hi ${user.full_name || "there"},</p>
+              <p>We noticed you use <strong>${featureName}</strong> often, so we thought you'd want to know: we just shipped an improvement.</p>
+              <p><strong>What changed:</strong></p>
+              <p>${featureDescription}</p>
+              <p>This update is live now — no action needed on your part. Just keep using ClientFlow as you normally do, and you'll see the improvement.</p>
+              <p>As always, if you have feedback or ideas for what we should build next, just reply to this email. We read every response.</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${supabaseUrl.replace('.supabase.co', '')}/dashboard" 
+                   style="background-color: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                  Try It Out
+                </a>
+              </div>
+              <p>Thanks for being a valued user!</p>
               <p>Best,<br>The ClientFlow Team</p>
             </div>
           `,
