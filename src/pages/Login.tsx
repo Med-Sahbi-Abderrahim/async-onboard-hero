@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, Users, UserCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,24 +19,49 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+type AuthContext = 'client' | 'agency' | null;
+
+interface OrgData {
+  name: string;
+  logo_url: string | null;
+  brand_color: string | null;
+}
+
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [authContext, setAuthContext] = useState<AuthContext>(null);
+  const [orgData, setOrgData] = useState<OrgData | null>(null);
 
-  // Read and store context from URL params
+  // Read and store context from URL params, fetch org data
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const context = params.get('context');
-    const orgId = params.get('orgId');
+    const context = searchParams.get('context') as AuthContext;
+    const orgId = searchParams.get('orgId');
     
     if (context) {
+      setAuthContext(context);
       localStorage.setItem('auth_context', context);
       console.log('Stored auth context:', context);
     }
     if (orgId) {
       localStorage.setItem('auth_org_id', orgId);
       console.log('Stored auth orgId:', orgId);
+      
+      // Fetch organization data for branding
+      const fetchOrgData = async () => {
+        const { data } = await supabase
+          .from('organizations')
+          .select('name, logo_url, brand_color')
+          .eq('id', orgId)
+          .single();
+        
+        if (data) {
+          setOrgData(data);
+        }
+      };
+      fetchOrgData();
     }
     
     const checkUser = async () => {
@@ -163,24 +188,79 @@ export default function Login() {
     }
   };
 
+  // Determine UI based on context
+  const isClientLogin = authContext === 'client';
+  const isAgencyLogin = authContext === 'agency';
+
   return (
     <div className="flex min-h-screen">
-      {/* Left side - Gradient */}
-      <div className="hidden lg:flex lg:w-1/2 gradient-auth items-center justify-center p-12">
+      {/* Left side - Context-aware gradient */}
+      <div className={`hidden lg:flex lg:w-1/2 ${isClientLogin ? 'bg-gradient-to-br from-emerald-500 to-teal-600' : 'gradient-auth'} items-center justify-center p-12`}>
         <div className="max-w-md text-white">
-          <h1 className="text-4xl font-bold mb-6">Welcome back to Kenly</h1>
-          <p className="text-lg opacity-90">
-            Continue streamlining your client onboarding process with our AI-powered platform.
-          </p>
+          {isClientLogin ? (
+            <>
+              <div className="flex items-center gap-3 mb-6">
+                <UserCircle className="h-12 w-12" />
+                <h1 className="text-4xl font-bold">Client Portal</h1>
+              </div>
+              <p className="text-lg opacity-90">
+                Access your secure client portal to view project status, upload documents, and collaborate with your team.
+              </p>
+              {orgData && (
+                <div className="mt-8 p-4 bg-white/10 rounded-lg backdrop-blur-sm">
+                  <p className="text-sm opacity-75 mb-1">Logging in to</p>
+                  <p className="font-semibold text-lg">{orgData.name}</p>
+                </div>
+              )}
+            </>
+          ) : isAgencyLogin ? (
+            <>
+              <div className="flex items-center gap-3 mb-6">
+                <Users className="h-12 w-12" />
+                <h1 className="text-4xl font-bold">Agency Dashboard</h1>
+              </div>
+              <p className="text-lg opacity-90">
+                Continue managing your client relationships and streamlining your onboarding process.
+              </p>
+              {orgData && (
+                <div className="mt-8 p-4 bg-white/10 rounded-lg backdrop-blur-sm">
+                  <p className="text-sm opacity-75 mb-1">Team workspace</p>
+                  <p className="font-semibold text-lg">{orgData.name}</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <h1 className="text-4xl font-bold mb-6">Welcome back to Kenly</h1>
+              <p className="text-lg opacity-90">
+                Continue streamlining your client onboarding process with our AI-powered platform.
+              </p>
+            </>
+          )}
         </div>
       </div>
 
       {/* Right side - Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
+          {/* Organization branding */}
+          {orgData?.logo_url && (
+            <div className="flex justify-center mb-6">
+              <img src={orgData.logo_url} alt={orgData.name} className="h-16 object-contain" />
+            </div>
+          )}
+          
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-foreground mb-2">Log in to your account</h2>
-            <p className="text-muted-foreground">Enter your credentials to continue</p>
+            <h2 className="text-3xl font-bold text-foreground mb-2">
+              {isClientLogin ? 'Log in to Your Portal' : isAgencyLogin ? 'Log in to Your Dashboard' : 'Log in to your account'}
+            </h2>
+            <p className="text-muted-foreground">
+              {isClientLogin && orgData
+                ? `Access your ${orgData.name} client portal`
+                : isAgencyLogin && orgData
+                ? `Continue to ${orgData.name} workspace`
+                : 'Enter your credentials to continue'}
+            </p>
           </div>
 
           <Form {...form}>
@@ -254,12 +334,18 @@ export default function Login() {
             </form>
           </Form>
 
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link to="/signup" className="text-primary font-medium hover:underline">
-              Sign up
-            </Link>
-          </p>
+          {isClientLogin ? (
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              First time here? Check your email for your invitation link with access instructions.
+            </p>
+          ) : (
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+              Don't have an account?{" "}
+              <Link to="/signup" className="text-primary font-medium hover:underline">
+                Sign up
+              </Link>
+            </p>
+          )}
         </div>
       </div>
     </div>
