@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.transition-early-access]
 verify_jwt = false
+
+[functions.send-status-emails]
+verify_jwt = false
+
+[functions.check-status-transitions]
+verify_jwt = false

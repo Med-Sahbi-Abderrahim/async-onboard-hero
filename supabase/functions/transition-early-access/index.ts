@@ -68,6 +68,21 @@ serve(async (req: Request) => {
 
     console.log(`Successfully transitioned ${successCount} users to free trial`);
 
+    // Send welcome emails to transitioned users
+    for (const user of expiredUsers) {
+      try {
+        await supabase.functions.invoke("send-status-emails", {
+          body: {
+            type: "trial_welcome",
+            userId: user.id,
+          },
+        });
+        console.log(`Sent trial welcome email to ${user.email}`);
+      } catch (emailError) {
+        console.error(`Failed to send email to ${user.email}:`, emailError);
+      }
+    }
+
     return new Response(
       JSON.stringify({
         message: "Transition completed",
