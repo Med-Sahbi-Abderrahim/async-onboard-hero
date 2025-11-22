@@ -251,17 +251,9 @@ const App = () => (
                 </AgencyProtectedRoute>
               }
             />
-            <Route
-              path="/early-access-admin/:orgId"
-              element={
-                <AgencyProtectedRoute>
-                  <DashboardLayout>
-                    <EarlyAccessAdmin />
-                  </DashboardLayout>
-                </AgencyProtectedRoute>
-              }
-            />
-
+            
+            {/* Admin Routes - No orgId required */}
+            <Route path="/admin/early-access" element={<ProtectedRoute><EarlyAccessAdmin /></ProtectedRoute>} />
 
             {/* Legacy routes without orgId - redirect to orgId routes */}
             <Route path="/dashboard" element={<OrgRedirect />} />
@@ -280,7 +272,6 @@ const App = () => (
             <Route path="/billing" element={<OrgRedirect />} />
             <Route path="/reminders" element={<OrgRedirect />} />
             <Route path="/tasks" element={<OrgRedirect />} />
-            <Route path="/early-access-admin" element={<OrgRedirect />} />
 
             {/* Public client-facing form route */}
             <Route path="/forms/:slug/submit" element={<ClientFormPage />} />

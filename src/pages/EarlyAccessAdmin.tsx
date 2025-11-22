@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,6 +17,40 @@ export default function EarlyAccessAdmin() {
   const [maxUses, setMaxUses] = useState("1");
   const [daysValid, setDaysValid] = useState("30");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  // Check if user is authorized (owner role)
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate("/login");
+        return;
+      }
+
+      // Check if user has owner role in any organization
+      const { data: membership } = await supabase
+        .from("organization_members")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "owner")
+        .single();
+
+      if (!membership) {
+        toast({
+          title: "Unauthorized",
+          description: "You don't have permission to access this page",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
+      setIsAuthorized(true);
+    };
+
+    checkAuth();
+  }, [navigate, toast]);
 
   // Fetch existing invites
   const { data: invites, isLoading } = useQuery({
@@ -80,12 +113,21 @@ export default function EarlyAccessAdmin() {
     });
   };
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold">Early Access Admin</h2>
-        <p className="text-muted-foreground mt-2">Manage early access invites and codes</p>
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Checking authorization...</p>
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background p-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold">Early Access Admin</h2>
+          <p className="text-muted-foreground mt-2">Manage early access invites and codes</p>
+        </div>
         {/* Create New Invite */}
         <Card>
           <CardHeader>
@@ -189,6 +231,7 @@ export default function EarlyAccessAdmin() {
             )}
           </CardContent>
         </Card>
+      </div>
     </div>
   );
 }
