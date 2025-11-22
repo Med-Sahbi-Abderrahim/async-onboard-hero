@@ -456,6 +456,39 @@ export type Database = {
           },
         ]
       }
+      early_access_invites: {
+        Row: {
+          code: string
+          created_at: string | null
+          created_by: string | null
+          expires_at: string
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          used_count: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          used_count?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          used_count?: number | null
+        }
+        Relationships: []
+      }
       email_templates: {
         Row: {
           available_variables: Json
@@ -1171,32 +1204,47 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string | null
+          early_access_end_date: string | null
           email: string | null
           full_name: string | null
           id: string
           last_seen_at: string | null
           organization_id: string | null
+          plan: Database["public"]["Enums"]["plan_type"] | null
           preferences: Json | null
+          status: Database["public"]["Enums"]["user_status"] | null
+          trial_end_date: string | null
+          trial_start_date: string | null
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string | null
+          early_access_end_date?: string | null
           email?: string | null
           full_name?: string | null
           id: string
           last_seen_at?: string | null
           organization_id?: string | null
+          plan?: Database["public"]["Enums"]["plan_type"] | null
           preferences?: Json | null
+          status?: Database["public"]["Enums"]["user_status"] | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
         }
         Update: {
           avatar_url?: string | null
           created_at?: string | null
+          early_access_end_date?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
           last_seen_at?: string | null
           organization_id?: string | null
+          plan?: Database["public"]["Enums"]["plan_type"] | null
           preferences?: Json | null
+          status?: Database["public"]["Enums"]["user_status"] | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
         }
         Relationships: [
           {
@@ -1235,6 +1283,10 @@ export type Database = {
       delete_user_and_org: {
         Args: { user_id_to_delete: string }
         Returns: string
+      }
+      get_early_access_days_remaining: {
+        Args: { user_id: string }
+        Returns: number
       }
       get_submissions_needing_reminders: {
         Args: never
@@ -1276,6 +1328,7 @@ export type Database = {
         Args: { p_org_id: string; p_user_id: string }
         Returns: boolean
       }
+      use_early_access_invite: { Args: { invite_code: string }; Returns: Json }
     }
     Enums: {
       automation_action_type:
@@ -1317,6 +1370,7 @@ export type Database = {
         | "cancelled"
         | "paused"
       organization_subscription_tier: "free" | "pro" | "enterprise"
+      plan_type: "free" | "starter" | "pro" | "enterprise"
       submission_status:
         | "pending"
         | "in_progress"
@@ -1324,6 +1378,7 @@ export type Database = {
         | "approved"
         | "rejected"
       user_role: "owner" | "admin" | "member"
+      user_status: "early_access" | "free_trial" | "active" | "suspended"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1495,6 +1550,7 @@ export const Constants = {
         "paused",
       ],
       organization_subscription_tier: ["free", "pro", "enterprise"],
+      plan_type: ["free", "starter", "pro", "enterprise"],
       submission_status: [
         "pending",
         "in_progress",
@@ -1503,6 +1559,7 @@ export const Constants = {
         "rejected",
       ],
       user_role: ["owner", "admin", "member"],
+      user_status: ["early_access", "free_trial", "active", "suspended"],
     },
   },
 } as const
