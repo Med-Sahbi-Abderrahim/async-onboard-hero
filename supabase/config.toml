@@ -23,3 +23,12 @@ verify_jwt = false
 
 [functions.check-status-transitions]
 verify_jwt = false
+
+[functions.invite-team-member]
+verify_jwt = true
+
+[functions.update-member-role]
+verify_jwt = true
+
+[functions.remove-team-member]
+verify_jwt = true
