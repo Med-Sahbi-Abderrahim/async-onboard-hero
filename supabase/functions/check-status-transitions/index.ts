@@ -283,6 +283,110 @@ serve(async (req: Request) => {
       }
     }
 
+    let postSignupNudgeCount = 0;
+    let inactivityReminderCount = 0;
+
+    // 6. Check for users who signed up 2-3 days ago (post-signup nudge)
+    const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+
+    const { data: recentSignups } = await supabase
+      .from("users")
+      .select("id, email, full_name, created_at, organization_id")
+      .gte("created_at", threeDaysAgo.toISOString())
+      .lte("created_at", twoDaysAgo.toISOString());
+
+    if (recentSignups && recentSignups.length > 0) {
+      for (const user of recentSignups) {
+        // Check if they've been active (created any clients)
+        const { data: clients } = await supabase
+          .from("clients")
+          .select("id")
+          .eq("organization_id", user.organization_id)
+          .limit(1);
+
+        // Only send if they haven't created any clients yet
+        if (!clients || clients.length === 0) {
+          // Check if we already sent this email
+          const { data: existingLog } = await supabase
+            .from("activity_logs")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("description", "post_signup_nudge_sent")
+            .single();
+
+          if (!existingLog) {
+            await supabase.functions.invoke("send-status-emails", {
+              body: { type: "post_signup_nudge", userId: user.id }
+            });
+
+            await supabase.from("activity_logs").insert({
+              organization_id: user.organization_id,
+              user_id: user.id,
+              action: "created",
+              entity_type: "user",
+              description: "post_signup_nudge_sent",
+              metadata: {}
+            });
+
+            postSignupNudgeCount++;
+            console.log(`Sent post-signup nudge for user ${user.id}`);
+          }
+        }
+      }
+    }
+
+    // 7. Check for inactive users (7 days since last activity)
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const { data: inactiveUsers } = await supabase
+      .from("users")
+      .select("id, email, full_name, last_seen_at, organization_id")
+      .lt("last_seen_at", sevenDaysAgo.toISOString())
+      .not("last_seen_at", "is", null);
+
+    if (inactiveUsers && inactiveUsers.length > 0) {
+      for (const user of inactiveUsers) {
+        // Check if we sent a reminder recently
+        const { data: recentLog } = await supabase
+          .from("activity_logs")
+          .select("id, created_at")
+          .eq("user_id", user.id)
+          .eq("description", "inactivity_reminder_sent")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .single();
+
+        // Only send if no reminder in last 14 days
+        const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+        if (!recentLog || new Date(recentLog.created_at) < fourteenDaysAgo) {
+          const daysSinceLastActivity = Math.floor(
+            (now.getTime() - new Date(user.last_seen_at).getTime()) / (1000 * 60 * 60 * 24)
+          );
+
+          await supabase.functions.invoke("send-status-emails", {
+            body: {
+              type: "inactivity_reminder",
+              userId: user.id,
+              metadata: { daysSinceLastActivity }
+            }
+          });
+
+          await supabase.from("activity_logs").insert({
+            organization_id: user.organization_id,
+            user_id: user.id,
+            action: "created",
+            entity_type: "user",
+            description: "inactivity_reminder_sent",
+            metadata: { days_since_last_activity: daysSinceLastActivity }
+          });
+
+          inactivityReminderCount++;
+          console.log(`Sent inactivity reminder for user ${user.id}`);
+        }
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -293,6 +397,8 @@ serve(async (req: Request) => {
         earlyAccessReminders: earlyAccessUsers?.length || 0,
         trialEndingReminders: trialEndingUsers?.length || 0,
         expiredTrials: expiredTrialUsers?.length || 0,
+        postSignupNudges: postSignupNudgeCount,
+        inactivityReminders: inactivityReminderCount,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
