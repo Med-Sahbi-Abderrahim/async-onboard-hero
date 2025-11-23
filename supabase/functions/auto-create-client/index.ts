@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
     const { data: existingClient } = await supabaseAdmin
       .from('clients')
       .select('id')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .eq('organization_id', requestData.organization_id)
       .is('deleted_at', null)
       .maybeSingle();
@@ -73,11 +73,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Create client record
+    // Create client record with auto-generated ID, linking to auth user
     const { data: clientData, error: clientError } = await supabaseAdmin
       .from('clients')
       .insert({
-        id: user.id,
+        user_id: user.id,
         organization_id: requestData.organization_id,
         email: requestData.email || user.email,
         full_name: requestData.full_name || user.user_metadata?.full_name || user.email?.split('@')[0],

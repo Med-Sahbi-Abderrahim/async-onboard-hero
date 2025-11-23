@@ -14,12 +14,23 @@ export default function ClientPortalTasks() {
     const getClientId = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        setClientId(user.id);
+        // Get the client record ID using user_id
+        const { data: clientData } = await supabase
+          .from("clients")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("organization_id", orgId)
+          .is("deleted_at", null)
+          .single();
+        
+        if (clientData) {
+          setClientId(clientData.id);
+        }
       }
       setLoading(false);
     };
     getClientId();
-  }, []);
+  }, [orgId]);
 
   if (loading) {
     return (

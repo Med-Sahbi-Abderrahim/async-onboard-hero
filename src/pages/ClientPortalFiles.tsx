@@ -41,7 +41,7 @@ export default function ClientPortalFiles() {
     const { data: clientData, error } = await supabase
       .from("clients")
       .select("id, organization_id, full_name")
-      .eq("id", user.id)
+      .eq("user_id", user.id)
       .single();
 
     if (error || !clientData) {

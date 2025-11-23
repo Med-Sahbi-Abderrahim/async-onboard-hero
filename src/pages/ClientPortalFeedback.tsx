@@ -41,15 +41,17 @@ export default function ClientPortalFeedback() {
 
       const { data: client } = await supabase
         .from("clients")
-        .select("organization_id")
-        .eq("id", user.id)
+        .select("id, organization_id")
+        .eq("user_id", user.id)
         .single();
+
+      if (!client) throw new Error("Client record not found");
 
       const { error } = await supabase
         .from("client_feedback")
         .insert({
-          client_id: user.id,
-          organization_id: client?.organization_id,
+          client_id: client.id,
+          organization_id: client.organization_id,
           rating,
           message,
         });
