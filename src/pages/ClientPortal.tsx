@@ -6,11 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, FileUp, CreditCard, Calendar, MessageSquare, Building, CheckCircle2 } from "lucide-react";
 import { ClientProgressCard } from "@/components/progress/ClientProgressCard";
+import { WelcomeModal } from "@/components/WelcomeModal";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ClientPortal() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [client, setClient] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
     loadClientData();
@@ -42,10 +46,44 @@ export default function ClientPortal() {
       }
 
       setClient(data);
+      
+      // Check if this is first-time user (onboarding not completed)
+      const metadata = data.metadata as Record<string, any> || {};
+      const hasSeenOnboarding = metadata.onboarding_completed === true;
+      if (!hasSeenOnboarding) {
+        setShowWelcome(true);
+      }
     } catch (error) {
       console.error("Error loading client:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCompleteOnboarding = async () => {
+    try {
+      // Update client metadata to mark onboarding as completed
+      const currentMetadata = (client.metadata as Record<string, any>) || {};
+      const { error } = await supabase
+        .from("clients")
+        .update({ 
+          metadata: { 
+            ...currentMetadata, 
+            onboarding_completed: true 
+          } 
+        })
+        .eq("id", client.id);
+
+      if (error) throw error;
+
+      setShowWelcome(false);
+      toast({
+        title: "Welcome aboard! 🚀",
+        description: "You're all set to explore your client portal.",
+      });
+    } catch (error) {
+      console.error("Error completing onboarding:", error);
+      setShowWelcome(false);
     }
   };
 
@@ -83,8 +121,15 @@ export default function ClientPortal() {
   ];
 
   return (
-    <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
-      <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
+    <>
+      <WelcomeModal 
+        open={showWelcome} 
+        onComplete={handleCompleteOnboarding}
+        clientName={client?.full_name}
+      />
+      
+      <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
+        <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
         {/* Hero Header Section */}
         <div className="text-center space-y-3 py-8 animate-slide-up">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl gradient-primary shadow-glow mb-4">
@@ -167,7 +212,8 @@ export default function ClientPortal() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
