@@ -121,11 +121,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Create client record with the auth user's ID
+    // Create client record with auto-generated unique ID
+    // This allows the same user email to be a client of multiple organizations
     const { data: clientData, error: clientError } = await supabaseAdmin
       .from('clients')
       .insert({
-        id: userId, // Use the auth user ID (existing or new)
         organization_id: requestData.organization_id,
         email: requestData.email,
         full_name: requestData.full_name,
