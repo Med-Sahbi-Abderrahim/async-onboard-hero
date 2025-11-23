@@ -266,8 +266,11 @@ export default function Forms() {
                           ) : (
                             <DropdownMenuItem onClick={() => handlePublishForm(form)}>Publish</DropdownMenuItem>
                           )}
-                          {form.status === "active" && (
-                            <DropdownMenuItem onClick={() => window.open(`/forms/${form.slug}/submit`, "_blank")}>
+                          {form.status === "active" && form.slug && (
+                            <DropdownMenuItem onClick={() => {
+                              const formUrl = `${window.location.origin}/forms/${form.slug}/submit`;
+                              window.open(formUrl, "_blank");
+                            }}>
                               <ExternalLink className="h-4 w-4 mr-2" />
                               Open Form
                             </DropdownMenuItem>
