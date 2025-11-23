@@ -216,6 +216,16 @@ export function ClientFormRenderer({
         // Don't block submission if email fails
       }
 
+      // Notify agency if this is a new auto-created client
+      try {
+        await supabase.functions.invoke('notify-agency-new-client', {
+          body: { submissionId: submissionId }
+        });
+      } catch (notifyError) {
+        console.error('Failed to send agency notification:', notifyError);
+        // Don't block submission if notification fails
+      }
+
       onSubmitted();
     } catch (error: any) {
       console.error("Submission error:", error);

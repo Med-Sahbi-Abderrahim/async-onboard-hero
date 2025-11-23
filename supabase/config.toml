@@ -6,6 +6,9 @@ verify_jwt = true
 [functions.send-submission-confirmation]
 verify_jwt = true
 
+[functions.notify-agency-new-client]
+verify_jwt = false
+
 [functions.create-lemon-squeezy-checkout]
 verify_jwt = true
 
