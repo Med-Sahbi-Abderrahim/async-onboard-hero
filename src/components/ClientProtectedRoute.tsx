@@ -30,7 +30,7 @@ export function ClientProtectedRoute({ children }: ClientProtectedRouteProps) {
         const { data: clientData, error } = await supabase
           .from('clients')
           .select('id, organization_id')
-          .eq('email', session.user.email)
+          .eq('user_id', session.user.id)
           .eq('organization_id', orgId)
           .is('deleted_at', null)
           .maybeSingle();

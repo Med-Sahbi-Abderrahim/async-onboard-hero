@@ -1,20 +1,22 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, FileUp, CreditCard, Calendar, MessageSquare, Building, CheckCircle2 } from "lucide-react";
+import { FileText, FileUp, CreditCard, Calendar, MessageSquare, Building, CheckCircle2, ArrowLeftRight } from "lucide-react";
 import { ClientProgressCard } from "@/components/progress/ClientProgressCard";
 import { WelcomeModal } from "@/components/WelcomeModal";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ClientPortal() {
   const navigate = useNavigate();
+  const { orgId } = useParams<{ orgId: string }>();
   const { toast } = useToast();
   const [client, setClient] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [hasMultipleOrgs, setHasMultipleOrgs] = useState(false);
 
   useEffect(() => {
     loadClientData();
@@ -30,11 +32,21 @@ export default function ClientPortal() {
         return;
       }
 
-      // Fetch client data using authenticated user ID
+      // Check how many organizations this client belongs to
+      const { data: allClients } = await supabase
+        .from("clients")
+        .select("organization_id")
+        .eq("user_id", user.id)
+        .is("deleted_at", null);
+      
+      setHasMultipleOrgs((allClients?.length || 0) > 1);
+
+      // Fetch client data using authenticated user ID and current org
       const { data, error } = await supabase
         .from("clients")
         .select("*")
         .eq("user_id", user.id)
+        .eq("organization_id", orgId || "")
         .is("deleted_at", null)
         .single();
 
@@ -130,6 +142,21 @@ export default function ClientPortal() {
       
       <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
         <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
+        {/* Header with Organization Switcher */}
+        {hasMultipleOrgs && (
+          <div className="flex justify-end animate-slide-up">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/client-dashboard')}
+              className="hover:scale-105 transition-transform"
+            >
+              <ArrowLeftRight className="h-4 w-4 mr-2" />
+              Switch Organization
+            </Button>
+          </div>
+        )}
+        
         {/* Hero Header Section */}
         <div className="text-center space-y-3 py-8 animate-slide-up">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl gradient-primary shadow-glow mb-4">

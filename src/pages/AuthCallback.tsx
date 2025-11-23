@@ -184,21 +184,31 @@ export default function AuthCallback() {
           }
           
           // Check if user is ONLY a client
-          const { data: clientData } = await supabase
+          const { data: clientRecords } = await supabase
             .from('clients')
             .select('organization_id')
             .eq('user_id', session.user.id)
-            .limit(1)
-            .maybeSingle();
+            .is('deleted_at', null);
           
-          if (clientData) {
-            // User is only a client - redirect to client portal
-            console.log("Default: Client only - redirecting to client-portal");
-            toast({
-              title: "Welcome!",
-              description: "Accessing your client portal...",
-            });
-            navigate(`/client-portal/${clientData.organization_id}`, { replace: true });
+          if (clientRecords && clientRecords.length > 0) {
+            // User is a client
+            console.log(`Default: Client with access to ${clientRecords.length} organization(s)`);
+            
+            if (clientRecords.length === 1) {
+              // Only one organization - redirect directly to portal
+              toast({
+                title: "Welcome!",
+                description: "Accessing your client portal...",
+              });
+              navigate(`/client-portal/${clientRecords[0].organization_id}`, { replace: true });
+            } else {
+              // Multiple organizations - show dashboard
+              toast({
+                title: "Welcome!",
+                description: "Choose an organization to access...",
+              });
+              navigate('/client-dashboard', { replace: true });
+            }
             return;
           }
           

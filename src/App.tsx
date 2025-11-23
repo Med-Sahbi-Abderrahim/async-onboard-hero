@@ -45,6 +45,7 @@ import FormDetail from "./pages/FormDetail";
 import EditForm from "./pages/EditForm";
 import Tasks from "./pages/Tasks";
 import EarlyAccessAdmin from "./pages/EarlyAccessAdmin";
+import ClientDashboard from "./pages/ClientDashboard";
 
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -278,6 +279,16 @@ const App = () => (
 
             {/* Client intake route (validates token and sends magic link) */}
             <Route path="/intake/:token" element={<ClientIntake />} />
+
+            {/* Client Dashboard - Shows all organizations client belongs to */}
+            <Route 
+              path="/client-dashboard" 
+              element={
+                <ProtectedRoute>
+                  <ClientDashboard />
+                </ProtectedRoute>
+              } 
+            />
 
             {/* Client Portal Routes with orgId - Protected */}
             <Route 
