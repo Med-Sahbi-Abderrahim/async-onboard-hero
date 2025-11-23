@@ -41,37 +41,49 @@ export default function ClientDashboard() {
       setUserName(user.user_metadata?.full_name || user.email?.split('@')[0] || "User");
 
       // Get all client records for this user
-      const { data: clientRecords, error } = await supabase
+      const { data: clientRecords, error: clientError } = await supabase
         .from("clients")
-        .select(`
-          id,
-          organization_id,
-          project_title,
-          project_status,
-          last_activity_at,
-          organizations!inner(
-            name,
-            logo_url,
-            brand_color
-          )
-        `)
+        .select("id, organization_id, project_title, project_status, last_activity_at")
         .eq("user_id", user.id)
         .is("deleted_at", null)
         .order("last_activity_at", { ascending: false, nullsFirst: false });
 
-      if (error) throw error;
+      if (clientError) throw clientError;
+
+      if (!clientRecords || clientRecords.length === 0) {
+        setOrganizations([]);
+        setLoading(false);
+        return;
+      }
+
+      // Get unique organization IDs
+      const orgIds = [...new Set(clientRecords.map(r => r.organization_id))];
+
+      // Fetch organization details
+      const { data: orgData, error: orgError } = await supabase
+        .from("organizations")
+        .select("id, name, logo_url, brand_color")
+        .in("id", orgIds);
+
+      if (orgError) throw orgError;
+
+      // Create a map of organizations for quick lookup
+      const orgMap = new Map(orgData?.map(org => [org.id, org]) || []);
 
       // Transform data
-      const orgs = clientRecords?.map((record: any) => ({
-        id: record.id,
-        organization_id: record.organization_id,
-        organization_name: record.organizations?.name || "Organization",
-        organization_logo: record.organizations?.logo_url,
-        organization_brand_color: record.organizations?.brand_color,
-        project_title: record.project_title,
-        project_status: record.project_status,
-        last_activity_at: record.last_activity_at,
-      })) || [];
+      const orgs = clientRecords.map((record) => {
+        const org = orgMap.get(record.organization_id);
+        return {
+          id: record.id,
+          organization_id: record.organization_id,
+          organization_name: org?.name || "Organization",
+          organization_logo: org?.logo_url,
+          organization_brand_color: org?.brand_color,
+          project_title: record.project_title,
+          project_status: record.project_status,
+          last_activity_at: record.last_activity_at,
+        };
+      });
 
       setOrganizations(orgs);
 
