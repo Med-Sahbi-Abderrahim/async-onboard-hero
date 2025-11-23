@@ -30,7 +30,7 @@ export function ClientFormSuccess({ form }: ClientFormSuccessProps) {
         const { data: clientData } = await supabase
           .from("clients")
           .select("organization_id")
-          .eq("id", user.id)
+          .eq("user_id", user.id)
           .is("deleted_at", null)
           .single();
 

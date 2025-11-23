@@ -24,7 +24,7 @@ export default function ClientPortalContracts() {
     const { data: client } = await supabase
       .from("clients")
       .select("id")
-      .eq("id", user.id)
+      .eq("user_id", user.id)
       .single();
 
     if (client) {

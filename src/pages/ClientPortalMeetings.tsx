@@ -18,10 +18,20 @@ export default function ClientPortalMeetings() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // First get the client record for this organization
+    const { data: clientData } = await supabase
+      .from("clients")
+      .select("id")
+      .eq("user_id", user.id)
+      .is("deleted_at", null)
+      .single();
+
+    if (!clientData) return;
+
     const { data, error } = await supabase
       .from("meetings")
       .select("*")
-      .eq("client_id", user.id)
+      .eq("client_id", clientData.id)
       .is("deleted_at", null)
       .order("scheduled_at", { ascending: true });
 

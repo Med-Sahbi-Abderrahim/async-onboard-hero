@@ -91,7 +91,7 @@ export default function AuthCallback() {
             const { data: clientData } = await supabase
               .from('clients')
               .select('id, organization_id')
-              .eq('email', session.user.email)
+              .eq('user_id', session.user.id)
               .eq('organization_id', finalOrgId)
               .maybeSingle();
             
@@ -187,7 +187,7 @@ export default function AuthCallback() {
           const { data: clientData } = await supabase
             .from('clients')
             .select('organization_id')
-            .eq('email', session.user.email)
+            .eq('user_id', session.user.id)
             .limit(1)
             .maybeSingle();
           

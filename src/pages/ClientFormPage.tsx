@@ -47,7 +47,7 @@ export default function ClientFormPage() {
         const { data: clientData, error: clientError } = await supabase
           .from("clients")
           .select("*")
-          .eq("id", user.id)
+          .eq("user_id", user.id)
           .eq("organization_id", formData.organization_id)
           .is("deleted_at", null)
           .maybeSingle();
