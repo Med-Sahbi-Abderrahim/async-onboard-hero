@@ -10,6 +10,7 @@ import { Loader2, Building, Eye, Upload } from 'lucide-react';
 import { BrandingPreviewModal } from './BrandingPreviewModal';
 import { FontSelector } from './FontSelector';
 import { useOrgLimits } from '@/hooks/useOrgLimits';
+import { UsageDashboard } from '@/components/usage/UsageDashboard';
 
 interface Organization {
   id: string;
@@ -288,6 +289,8 @@ export function OrganizationSettings() {
           </div>
         </CardContent>
       </Card>
+
+      <UsageDashboard organizationId={organization.id} />
 
       <BrandingPreviewModal
         open={showPreview}
