@@ -4,8 +4,124 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Clock, Database, FileText, Sparkles, Upload, Zap, ArrowRight } from "lucide-react";
 
 const Index = () => {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "Kenly",
+        "applicationCategory": "BusinessApplication",
+        "applicationSubCategory": "Client Management Software",
+        "operatingSystem": "Web Browser",
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "Basic Plan",
+            "price": "29",
+            "priceCurrency": "USD",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "price": "29",
+              "priceCurrency": "USD",
+              "unitText": "user per month"
+            }
+          },
+          {
+            "@type": "Offer",
+            "name": "Pro Plan",
+            "price": "49",
+            "priceCurrency": "USD",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "price": "49",
+              "priceCurrency": "USD",
+              "unitText": "user per month"
+            }
+          },
+          {
+            "@type": "Offer",
+            "name": "Enterprise Plan",
+            "price": "0",
+            "priceCurrency": "USD",
+            "description": "Custom pricing available"
+          }
+        ],
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "5",
+          "ratingCount": "3",
+          "bestRating": "5",
+          "worstRating": "1"
+        },
+        "description": "AI-powered client onboarding platform that automates intake forms, file uploads, contract management, and follow-ups for creative and digital agencies.",
+        "featureList": [
+          "Custom Intake Forms",
+          "Smart File Uploads",
+          "Automated Follow-ups",
+          "AI Client Summaries",
+          "Task Management",
+          "Contract Management",
+          "Invoice Tracking",
+          "Team Collaboration",
+          "Progress Tracking",
+          "Branded Client Portal"
+        ],
+        "screenshot": "https://storage.googleapis.com/gpt-engineer-file-uploads/dWvqdtRAVib2R32OIdhn88PchYE2/social-images/social-1763487156994-dfff6f05129d42b1ae07a864d874096e.jpg",
+        "softwareVersion": "1.0",
+        "author": {
+          "@type": "Organization",
+          "name": "Kenly"
+        }
+      },
+      {
+        "@type": "Organization",
+        "name": "Kenly",
+        "url": "https://kenly.app",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://storage.googleapis.com/gpt-engineer-file-uploads/dWvqdtRAVib2R32OIdhn88PchYE2/social-images/social-1763487156994-dfff6f05129d42b1ae07a864d874096e.jpg"
+        },
+        "description": "Kenly provides AI-powered client onboarding and management solutions for agencies and service-based businesses.",
+        "sameAs": [
+          "https://twitter.com/kenly"
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "Customer Support",
+          "availableLanguage": "English"
+        }
+      },
+      {
+        "@type": "WebApplication",
+        "name": "Kenly",
+        "url": "https://kenly.app",
+        "description": "Professional client portal and onboarding automation platform for agencies",
+        "browserRequirements": "Requires JavaScript. Requires HTML5.",
+        "softwareVersion": "1.0",
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "5",
+          "reviewCount": "3"
+        },
+        "offers": {
+          "@type": "AggregateOffer",
+          "lowPrice": "29",
+          "highPrice": "49",
+          "priceCurrency": "USD",
+          "offerCount": "3"
+        }
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Schema.org Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      
       {/* Navigation */}
       <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
