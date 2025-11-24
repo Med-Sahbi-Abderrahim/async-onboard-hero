@@ -6,12 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, ArrowLeft, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { BrandedFooter } from "@/components/BrandedFooter";
 
 export default function ClientPortalContracts() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [contracts, setContracts] = useState<any[]>([]);
   const [clientId, setClientId] = useState<string | null>(null);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
 
   useEffect(() => {
     loadClientAndContracts();
@@ -23,12 +25,13 @@ export default function ClientPortalContracts() {
 
     const { data: client } = await supabase
       .from("clients")
-      .select("id")
+      .select("id, organization_id")
       .eq("user_id", user.id)
       .single();
 
     if (client) {
       setClientId(client.id);
+      setOrganizationId(client.organization_id);
       loadContracts(client.id);
     }
   };
@@ -149,6 +152,8 @@ export default function ClientPortalContracts() {
           )}
         </div>
       </div>
+      
+      {organizationId && <BrandedFooter organizationId={organizationId} />}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { TaskList } from "@/components/tasks/TaskList";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BrandedFooter } from "@/components/BrandedFooter";
 
 export default function ClientPortalTasks() {
   const { orgId } = useParams<{ orgId: string }>();
@@ -79,6 +80,8 @@ export default function ClientPortalTasks() {
           />
         </CardContent>
       </Card>
+      
+      {orgId && <BrandedFooter organizationId={orgId} />}
     </div>
   );
 }

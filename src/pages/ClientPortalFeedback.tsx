@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Star, ArrowLeft, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { BrandedFooter } from "@/components/BrandedFooter";
 
 export default function ClientPortalFeedback() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function ClientPortalFeedback() {
   const [rating, setRating] = useState(0);
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (rating === 0) {
@@ -46,6 +48,8 @@ export default function ClientPortalFeedback() {
         .single();
 
       if (!client) throw new Error("Client record not found");
+
+      setOrganizationId(client.organization_id);
 
       const { error } = await supabase
         .from("client_feedback")
@@ -163,6 +167,8 @@ export default function ClientPortalFeedback() {
           </CardContent>
         </Card>
       </div>
+      
+      {organizationId && <BrandedFooter organizationId={organizationId} />}
     </div>
   );
 }
