@@ -244,6 +244,12 @@ const Index = () => {
               >
                 Pricing
               </a>
+              <a
+                href="#faq"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
+                FAQ
+              </a>
             </div>
             <div className="flex items-center gap-3">
               <Link to="/login">
