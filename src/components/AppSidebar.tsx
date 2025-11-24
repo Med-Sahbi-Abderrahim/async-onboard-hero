@@ -108,7 +108,10 @@ export function AppSidebar() {
         <div className="p-4">
           {!isCollapsed ? (
             <div className="space-y-3">
-              <h1 className="text-xl font-bold text-primary">Kenly</h1>
+              <div className="flex items-center gap-2">
+                <img src={kenlyLogo} alt="Kenly" className="h-6 w-6 object-contain" />
+                <h1 className="text-xl font-bold text-primary">Kenly</h1>
+              </div>
               
               {/* Organization Switcher */}
               {organizations.length > 1 && orgId && !loading && (
