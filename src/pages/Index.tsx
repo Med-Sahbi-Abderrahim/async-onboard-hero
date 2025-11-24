@@ -1,9 +1,98 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Clock, Database, FileText, Sparkles, Upload, Zap, ArrowRight } from "lucide-react";
+import { CheckCircle2, Clock, Database, FileText, Sparkles, Upload, Zap, ArrowRight, Search } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 const Index = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const faqs = [
+    {
+      id: "what-is-kenly",
+      question: "What is Kenly?",
+      answer: "Kenly is an AI-powered client onboarding platform designed for agencies and service-based businesses. It streamlines the client intake process by providing a centralized workspace where clients can complete forms, upload files, sign contracts, and track project progress—all from one branded portal."
+    },
+    {
+      id: "who-is-kenly-for",
+      question: "Who is Kenly for?",
+      answer: "Kenly is built for creative agencies, digital agencies, marketing firms, consulting businesses, and freelancers who want to streamline their client onboarding process. If you're spending hours each week chasing clients for information, forms, or files, Kenly is for you."
+    },
+    {
+      id: "how-does-pricing-work",
+      question: "How does pricing work?",
+      answer: "Kenly uses simple per-user pricing. You pay only for active team members who need access to the platform. All plans include unlimited clients and unlimited team members. We offer three tiers: Basic ($29/user/month), Pro ($49/user/month), and Enterprise (custom pricing). Each plan has different storage limits, automation runs, and e-signature allowances."
+    },
+    {
+      id: "what-are-automation-runs",
+      question: "What are automation runs?",
+      answer: "Automation runs are triggered actions that happen automatically when certain conditions are met, such as sending an email when a form is submitted, updating a client status, or creating a task. Each plan includes a certain number of automation runs per user per month. Basic includes 25 runs, Pro includes 100 runs, and Enterprise includes unlimited runs."
+    },
+    {
+      id: "can-i-try-kenly-for-free",
+      question: "Can I try Kenly for free?",
+      answer: "Yes! Kenly offers a free trial with no credit card required. You can explore all features, create client portals, and test the platform with your team before committing to a paid plan. The trial gives you full access to Pro features so you can experience everything Kenly has to offer."
+    },
+    {
+      id: "how-long-does-setup-take",
+      question: "How long does setup take?",
+      answer: "Most agencies are up and running with their first client portal in under 30 minutes. You can create a branded intake form, customize your portal appearance, and send your first client invitation in just a few clicks. No technical expertise required."
+    },
+    {
+      id: "can-i-customize-branding",
+      question: "Can I customize the branding?",
+      answer: "Yes! Basic plans allow you to add your logo. Pro and Enterprise plans offer full white-label branding including custom colors, fonts, and the ability to remove all Kenly branding. Your clients will see a completely branded experience that matches your agency's identity."
+    },
+    {
+      id: "what-file-types-supported",
+      question: "What file types are supported?",
+      answer: "Kenly supports all common file types including documents (PDF, DOCX, XLSX), images (JPG, PNG, GIF, SVG), videos (MP4, MOV), and compressed files (ZIP, RAR). All files are securely stored with encryption and access controls based on your organization's settings."
+    },
+    {
+      id: "how-secure-is-my-data",
+      question: "How secure is my data?",
+      answer: "Security is our top priority. All data is encrypted at rest and in transit using industry-standard protocols. We implement row-level security to ensure complete data isolation between organizations. Each file upload is scanned, and we maintain detailed activity logs for audit trails. Your data is stored on secure, enterprise-grade infrastructure."
+    },
+    {
+      id: "can-clients-access-portal-mobile",
+      question: "Can clients access the portal on mobile?",
+      answer: "Absolutely! Kenly is fully responsive and works seamlessly on desktop, tablet, and mobile devices. Your clients can complete forms, upload files, and check their progress from any device with an internet connection."
+    },
+    {
+      id: "what-happens-when-limit-reached",
+      question: "What happens when I reach my usage limits?",
+      answer: "When you approach your storage, automation, or e-signature limits, you'll receive notifications prompting you to upgrade. Actions are blocked gracefully with clear messaging, so you're never caught off guard. Usage resets monthly, and you can upgrade your plan at any time to increase your limits."
+    },
+    {
+      id: "can-i-integrate-other-tools",
+      question: "Can I integrate with other tools?",
+      answer: "Kenly offers webhook integrations that allow you to connect with thousands of other tools through platforms like Zapier or Make. Enterprise plans include custom integrations and dedicated API access for deeper connections with your existing tech stack."
+    },
+    {
+      id: "how-many-team-members",
+      question: "How many team members can I add?",
+      answer: "All plans include unlimited team members. You only pay for the active users who need access to manage clients and forms. This means your entire team can collaborate without worrying about per-seat restrictions."
+    },
+    {
+      id: "what-support-included",
+      question: "What support is included?",
+      answer: "Basic plans include email support with response times within 24-48 hours. Pro plans add priority email and chat support. Enterprise plans include a dedicated account manager and priority support with guaranteed response times via a dedicated Slack channel."
+    },
+    {
+      id: "can-i-cancel-anytime",
+      question: "Can I cancel anytime?",
+      answer: "Yes, you can cancel your subscription at any time with no penalties or cancellation fees. Your data remains accessible until the end of your billing period, and you can export all client information and files before canceling."
+    }
+  ];
+
+  const filteredFaqs = faqs.filter(
+    faq =>
+      faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -596,6 +685,88 @@ const Index = () => {
                 <Link to="/signup" className="w-full">
                   <Button variant="outline" size="lg" className="w-full">
                     Contact Sales
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-20 sm:py-32">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center mb-16">
+            <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-muted-foreground sm:text-xl text-balance">
+              Everything you need to know about Kenly. Can't find what you're looking for? Contact our support team.
+            </p>
+          </div>
+
+          {/* Search Box */}
+          <div className="mx-auto max-w-2xl mb-12">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search for answers..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-12 h-14 text-base shadow-soft"
+              />
+            </div>
+            {searchQuery && (
+              <p className="mt-3 text-sm text-muted-foreground text-center">
+                {filteredFaqs.length} {filteredFaqs.length === 1 ? 'result' : 'results'} found
+              </p>
+            )}
+          </div>
+
+          {/* FAQ Accordion */}
+          <div className="mx-auto max-w-3xl">
+            {filteredFaqs.length > 0 ? (
+              <Accordion type="single" collapsible className="space-y-4">
+                {filteredFaqs.map((faq) => (
+                  <AccordionItem
+                    key={faq.id}
+                    value={faq.id}
+                    className="border rounded-lg bg-card shadow-soft hover:shadow-medium transition-shadow px-6"
+                  >
+                    <AccordionTrigger className="text-left hover:no-underline py-6">
+                      <span className="font-semibold text-base">{faq.question}</span>
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground pb-6">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            ) : (
+              <Card className="shadow-soft">
+                <CardContent className="p-12 text-center">
+                  <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-lg font-medium mb-2">No results found</p>
+                  <p className="text-muted-foreground">
+                    Try adjusting your search or browse all questions above.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Contact CTA */}
+          <div className="mx-auto max-w-2xl mt-16 text-center">
+            <Card className="shadow-soft bg-accent/50 border-accent">
+              <CardContent className="p-8">
+                <h3 className="text-xl font-semibold mb-3">Still have questions?</h3>
+                <p className="text-muted-foreground mb-6">
+                  Our team is here to help you get started with Kenly and answer any questions you may have.
+                </p>
+                <Link to="/signup">
+                  <Button variant="default" size="lg">
+                    Contact Support
                   </Button>
                 </Link>
               </CardContent>
