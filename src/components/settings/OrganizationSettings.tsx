@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Building, Eye, Upload } from 'lucide-react';
 import { BrandingPreviewModal } from './BrandingPreviewModal';
+import { FontSelector } from './FontSelector';
+import { useOrgLimits } from '@/hooks/useOrgLimits';
 
 interface Organization {
   id: string;
@@ -15,6 +17,10 @@ interface Organization {
   slug: string;
   brand_color: string;
   logo_url: string | null;
+  font_family: string;
+  custom_font_url: string | null;
+  custom_font_name: string | null;
+  plan: string;
 }
 
 export function OrganizationSettings() {
@@ -28,6 +34,11 @@ export function OrganizationSettings() {
   const [brandColor, setBrandColor] = useState('#4F46E5');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [fontFamily, setFontFamily] = useState('Inter');
+  const [customFontUrl, setCustomFontUrl] = useState<string | null>(null);
+  const [customFontName, setCustomFontName] = useState<string | null>(null);
+
+  const { limits } = useOrgLimits(organization?.id);
 
   useEffect(() => {
     if (user) {
@@ -57,6 +68,9 @@ export function OrganizationSettings() {
       setOrgName(org.name);
       setBrandColor(org.brand_color || '#4F46E5');
       setLogoUrl(org.logo_url);
+      setFontFamily(org.font_family || 'Inter');
+      setCustomFontUrl(org.custom_font_url);
+      setCustomFontName(org.custom_font_name);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -66,6 +80,12 @@ export function OrganizationSettings() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFontChange = (font: string, customUrl?: string, customName?: string) => {
+    setFontFamily(font);
+    if (customUrl) setCustomFontUrl(customUrl);
+    if (customName) setCustomFontName(customName);
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,6 +135,9 @@ export function OrganizationSettings() {
           name: orgName,
           brand_color: brandColor,
           logo_url: logoUrl,
+          font_family: fontFamily,
+          custom_font_url: customFontUrl,
+          custom_font_name: customFontName,
         })
         .eq('id', organization.id);
 
@@ -241,6 +264,14 @@ export function OrganizationSettings() {
               Choose a color that matches your brand
             </p>
           </div>
+
+          <FontSelector
+            fontFamily={fontFamily}
+            customFontUrl={customFontUrl}
+            customFontName={customFontName}
+            plan={(limits?.plan || organization.plan) as 'free' | 'starter' | 'pro' | 'enterprise'}
+            onFontChange={handleFontChange}
+          />
 
           <div className="flex gap-3">
             <Button onClick={handleSaveOrganization} disabled={saving || !orgName.trim()}>

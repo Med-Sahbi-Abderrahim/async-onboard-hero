@@ -896,9 +896,12 @@ export type Database = {
           brand_color: string | null
           branding_level: string | null
           created_at: string | null
+          custom_font_name: string | null
+          custom_font_url: string | null
           esignature_runs_per_user: number | null
           esignature_runs_used: number | null
           features: Json
+          font_family: string | null
           id: string
           is_personal: boolean | null
           lemonsqueezy_customer_id: string | null
@@ -928,9 +931,12 @@ export type Database = {
           brand_color?: string | null
           branding_level?: string | null
           created_at?: string | null
+          custom_font_name?: string | null
+          custom_font_url?: string | null
           esignature_runs_per_user?: number | null
           esignature_runs_used?: number | null
           features?: Json
+          font_family?: string | null
           id?: string
           is_personal?: boolean | null
           lemonsqueezy_customer_id?: string | null
@@ -960,9 +966,12 @@ export type Database = {
           brand_color?: string | null
           branding_level?: string | null
           created_at?: string | null
+          custom_font_name?: string | null
+          custom_font_url?: string | null
           esignature_runs_per_user?: number | null
           esignature_runs_used?: number | null
           features?: Json
+          font_family?: string | null
           id?: string
           is_personal?: boolean | null
           lemonsqueezy_customer_id?: string | null
