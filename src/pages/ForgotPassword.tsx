@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Loader2, CheckCircle } from "lucide-react";
+import kenlyLogo from "@/assets/kenly-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -106,6 +107,10 @@ export default function ForgotPassword() {
       {/* Right side - Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
+          <div className="flex justify-center mb-6">
+            <img src={kenlyLogo} alt="Kenly" className="h-16 object-contain" />
+          </div>
+          
           {!emailSent ? (
             <>
               <div className="mb-8">

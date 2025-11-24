@@ -1,4 +1,5 @@
 import { LayoutDashboard, Users, FileText, Inbox, Settings, Bell, Sparkles, Building2, ChevronDown, CheckSquare } from "lucide-react";
+import kenlyLogo from "@/assets/kenly-logo.png";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -108,7 +109,7 @@ export function AppSidebar() {
         <div className="p-4">
           {!isCollapsed ? (
             <div className="space-y-3">
-              <h1 className="text-xl font-bold text-primary">Kenly</h1>
+              <img src={kenlyLogo} alt="Kenly" className="h-8 object-contain" />
               
               {/* Organization Switcher */}
               {organizations.length > 1 && orgId && !loading && (
@@ -134,7 +135,7 @@ export function AppSidebar() {
             </div>
           ) : (
             <div className="flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-primary" />
+              <img src={kenlyLogo} alt="Kenly" className="h-6 object-contain" />
             </div>
           )}
         </div>
