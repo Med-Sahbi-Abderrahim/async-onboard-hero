@@ -320,46 +320,104 @@ const Index = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
-              Simple, Transparent Pricing
+              Simple, Per-User Pricing
             </h2>
             <p className="mb-16 text-lg text-muted-foreground sm:text-xl text-balance">
-              Start free and scale as you grow. No hidden fees.
+              Unlimited clients and team members. Scale as you grow. No hidden fees.
             </p>
           </div>
-          <div className="mx-auto max-w-md">
+          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
+            {/* Basic Plan */}
+            <Card className="border-2 shadow-soft transition-all duration-300 hover:shadow-medium">
+              <CardContent className="p-8">
+                <div className="mb-6 text-center">
+                  <div className="mb-2 text-sm font-medium text-muted-foreground">Basic</div>
+                  <div className="mb-2">
+                    <span className="text-4xl font-bold">$29</span>
+                    <span className="text-lg text-muted-foreground">/user/mo</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">Essential tools</div>
+                </div>
+                <div className="mb-8 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">Unlimited clients</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">Unlimited team members</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">10 GB storage per user</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">25 automation runs per user</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">10 e-signature runs per user</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">Standard Kenly branding</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">Standard email support</span>
+                  </div>
+                </div>
+                <Link to="/signup" className="w-full">
+                  <Button variant="outline" size="lg" className="w-full">
+                    Get Started
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Pro Plan */}
             <Card className="border-2 border-primary shadow-strong">
               <CardContent className="p-8">
                 <div className="mb-6 text-center">
-                  <div className="mb-2 text-sm font-medium text-primary">Starting at</div>
-                  <div className="mb-2 text-5xl font-bold">
-                    $29<span className="text-2xl text-muted-foreground">/month</span>
+                  <div className="mb-2 inline-block rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+                    Recommended
                   </div>
-                  <div className="text-sm text-muted-foreground">Free plan available</div>
+                  <div className="mb-2 text-sm font-medium text-primary">Pro</div>
+                  <div className="mb-2">
+                    <span className="text-4xl font-bold">$49</span>
+                    <span className="text-lg text-muted-foreground">/user/mo</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">Advanced features</div>
                 </div>
-                <div className="mb-8 space-y-4">
+                <div className="mb-8 space-y-3">
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">Unlimited client workflows</span>
+                    <span className="text-sm">Unlimited clients</span>
                   </div>
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">Custom branded forms</span>
+                    <span className="text-sm">Unlimited team members</span>
                   </div>
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">File uploads & storage</span>
+                    <span className="text-sm">100 GB storage per user</span>
                   </div>
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">Automated follow-ups</span>
+                    <span className="text-sm">500 automation runs per user</span>
                   </div>
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">AI client summaries</span>
+                    <span className="text-sm">100 e-signature runs per user</span>
                   </div>
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">Airtable & Google Sheets integration</span>
+                    <span className="text-sm">Custom branding (colors + logo)</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">Remove "Powered by Kenly" badge</span>
                   </div>
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
@@ -369,6 +427,59 @@ const Index = () => {
                 <Link to="/signup" className="w-full">
                   <Button variant="hero" size="lg" className="w-full">
                     Start Free Trial
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Enterprise Plan */}
+            <Card className="border-2 shadow-soft transition-all duration-300 hover:shadow-medium">
+              <CardContent className="p-8">
+                <div className="mb-6 text-center">
+                  <div className="mb-2 text-sm font-medium text-muted-foreground">Enterprise</div>
+                  <div className="mb-2">
+                    <span className="text-4xl font-bold">$199</span>
+                    <span className="text-lg text-muted-foreground">/user/mo</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">Complete solution</div>
+                </div>
+                <div className="mb-8 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">Unlimited clients</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">Unlimited team members</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">1 TB storage per user</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">Unlimited automations</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">Unlimited e-signatures</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">Full branding removal</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">SLA with guaranteed uptime</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <span className="text-sm">Dedicated support channel</span>
+                  </div>
+                </div>
+                <Link to="/signup" className="w-full">
+                  <Button variant="outline" size="lg" className="w-full">
+                    Contact Sales
                   </Button>
                 </Link>
               </CardContent>
