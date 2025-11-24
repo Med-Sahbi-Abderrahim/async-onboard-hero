@@ -1,0 +1,134 @@
+# Kenly - AI-Powered Client Onboarding Platform
+
+## Overview
+Kenly is a professional client portal and onboarding automation platform designed for agencies and service-based businesses. It streamlines the client intake process by providing a centralized workspace where clients can complete forms, upload files, sign contracts, and track project progress.
+
+## Purpose
+Kenly solves the problem of chaotic client onboarding by replacing scattered tools (email, Google Forms, Dropbox, Slack) with a single branded platform. It reduces the time agencies spend on manual follow-ups and administrative work, allowing them to focus on billable projects.
+
+## Core Features
+
+### Client Onboarding
+- **Custom Intake Forms**: Build branded, customizable forms tailored to specific workflows
+- **Smart File Uploads**: Automated file collection and organization with secure storage
+- **Automated Follow-ups**: Intelligent reminder system that sends gentle notifications to clients
+- **Progress Tracking**: Real-time dashboards showing onboarding completion status
+
+### Collaboration & Communication
+- **Client Portal**: Branded workspace where clients access all project information
+- **Task Management**: Assign and track tasks for both agency team and clients
+- **Meeting Scheduling**: Integrated calendar for booking client meetings
+- **File Sharing**: Secure document storage and sharing with version control
+
+### Automation & AI
+- **AI Client Summaries**: Automatically generates insights from client form responses
+- **Workflow Automation**: Trigger actions based on form submissions and status changes
+- **Email Notifications**: Automated confirmation emails and status update notifications
+- **Reminder System**: Scheduled follow-ups for incomplete submissions
+
+### Business Tools
+- **Contract Management**: Upload, share, and track contract signing status
+- **Invoice Tracking**: Monitor payment status and due dates
+- **Team Collaboration**: Multi-user access with role-based permissions (Owner, Admin, Member)
+- **Branding Customization**: Add logo, custom colors, and fonts to match agency identity
+
+## Target Audience
+
+### Primary Users
+- **Creative Agencies**: Design studios, branding agencies, marketing firms
+- **Digital Agencies**: Web development, SEO, and digital marketing companies
+- **Consulting Firms**: Business consultants requiring structured client intake
+- **Freelancers**: Independent professionals managing multiple clients
+
+### User Roles
+- **Agency Owners/Admins**: Manage organization settings, team members, and billing
+- **Team Members**: Create forms, manage clients, and track submissions
+- **Clients**: Access portal, complete forms, upload files, and track progress
+
+## Pricing Tiers
+
+### Basic Plan - $29/user/month
+- Unlimited clients and team members
+- 10 GB storage per user
+- 25 automation runs per user
+- 10 e-signature runs per user
+- Custom intake forms
+- Basic branding (logo only)
+- Email support
+
+### Pro Plan - $49/user/month
+- Everything in Basic
+- 50 GB storage per user
+- 100 automation runs per user
+- 50 e-signature runs per user
+- Full branding customization (logo, colors, fonts)
+- Priority email & chat support
+- Advanced analytics
+
+### Enterprise Plan - Custom Pricing
+- Everything in Pro
+- Unlimited storage
+- Unlimited automation runs
+- Unlimited e-signature runs
+- Dedicated account manager
+- Custom integrations
+- SLA guarantee
+
+## Technical Information
+
+### Technology Stack
+- Frontend: React, TypeScript, Vite
+- UI Framework: Tailwind CSS, shadcn-ui components
+- Backend: Supabase (PostgreSQL database, Authentication, Storage, Edge Functions)
+- Email Service: Resend for transactional emails
+- Payment Processing: LemonSqueezy for subscription management
+
+### Key Capabilities
+- Real-time data synchronization
+- Secure file storage with access control
+- Row-level security (RLS) for data protection
+- Responsive design (mobile, tablet, desktop)
+- Dark mode support
+- Usage-based limits tied to subscription plans
+
+## Use Cases
+
+1. **Design Agency Onboarding**: Collect brand guidelines, assets, and creative briefs
+2. **Development Projects**: Gather technical requirements, credentials, and project specs
+3. **Marketing Campaigns**: Intake forms for campaign goals, target audience, and assets
+4. **Consulting Engagements**: Client questionnaires, discovery forms, and documentation
+5. **Freelance Projects**: Streamlined client intake without manual email chains
+
+## Benefits
+
+### For Agencies
+- Reduces onboarding time from weeks to days
+- Eliminates 8-12 hours per week of manual follow-ups
+- Creates professional first impression with branded portal
+- Centralizes all client information in one place
+- Scales efficiently as client base grows
+
+### For Clients
+- Clear visibility into onboarding progress
+- Single link for all project requirements
+- Professional, branded experience
+- Automated reminders prevent delays
+- Easy file upload and form submission
+
+## Data & Privacy
+- All client data stored securely with encryption
+- Row-level security ensures data isolation between organizations
+- Compliance with data protection best practices
+- Secure file storage with access controls
+- Activity logging for audit trails
+
+## Contact & Support
+- Website: https://kenly.app
+- Sign Up: Free trial available, no credit card required
+- Support: Email and chat support based on plan tier
+
+---
+
+Last Updated: 2025-11-24
+Product Type: SaaS - Client Portal & Onboarding Automation
+Industry: Agency Management, Client Onboarding
