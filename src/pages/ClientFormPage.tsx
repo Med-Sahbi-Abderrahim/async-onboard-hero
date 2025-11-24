@@ -5,6 +5,8 @@ import { ClientFormRenderer } from "@/components/client-form/ClientFormRenderer"
 import { ClientFormAuth } from "@/components/client-form/ClientFormAuth";
 import { ClientFormSuccess } from "@/components/client-form/ClientFormSuccess";
 import { Loader2 } from "lucide-react";
+import { BrandedFooter } from "@/components/BrandedFooter";
+import { BrandedHeader } from "@/components/BrandedHeader";
 
 export default function ClientFormPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -140,19 +142,41 @@ export default function ClientFormPage() {
   }
 
   if (submitted) {
-    return <ClientFormSuccess form={form} />;
+    return (
+      <div className="min-h-screen flex flex-col">
+        <BrandedHeader organizationId={form.organization_id} />
+        <div className="flex-1">
+          <ClientFormSuccess form={form} />
+        </div>
+        <BrandedFooter organizationId={form.organization_id} />
+      </div>
+    );
   }
 
   if (!authenticated) {
-    return <ClientFormAuth form={form} onAuthenticated={handleAuthenticated} />;
+    return (
+      <div className="min-h-screen flex flex-col">
+        <BrandedHeader organizationId={form.organization_id} />
+        <div className="flex-1">
+          <ClientFormAuth form={form} onAuthenticated={handleAuthenticated} />
+        </div>
+        <BrandedFooter organizationId={form.organization_id} />
+      </div>
+    );
   }
 
   return (
-    <ClientFormRenderer
-      form={form}
-      client={client}
-      existingSubmission={submission}
-      onSubmitted={handleSubmitted}
-    />
+    <div className="min-h-screen flex flex-col">
+      <BrandedHeader organizationId={form.organization_id} />
+      <div className="flex-1">
+        <ClientFormRenderer
+          form={form}
+          client={client}
+          existingSubmission={submission}
+          onSubmitted={handleSubmitted}
+        />
+      </div>
+      <BrandedFooter organizationId={form.organization_id} />
+    </div>
   );
 }

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { useFileDownload } from "@/hooks/useFileDownload";
+import { BrandedFooter } from "@/components/BrandedFooter";
 
 export default function ClientPortalFiles() {
   const navigate = useNavigate();
@@ -302,6 +303,10 @@ export default function ClientPortalFiles() {
         currentPlan={currentPlan}
         organizationId={client?.organization_id || ''}
       />
+      
+      {client?.organization_id && (
+        <BrandedFooter organizationId={client.organization_id} />
+      )}
     </div>
   );
 }

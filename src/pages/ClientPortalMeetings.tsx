@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ArrowLeft, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { BrandedFooter } from "@/components/BrandedFooter";
 
 export default function ClientPortalMeetings() {
   const navigate = useNavigate();
   const [meetings, setMeetings] = useState<any[]>([]);
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
 
   useEffect(() => {
     loadMeetings();
@@ -21,12 +23,14 @@ export default function ClientPortalMeetings() {
     // First get the client record for this organization
     const { data: clientData } = await supabase
       .from("clients")
-      .select("id")
+      .select("id, organization_id")
       .eq("user_id", user.id)
       .is("deleted_at", null)
       .single();
 
     if (!clientData) return;
+
+    setOrganizationId(clientData.organization_id);
 
     const { data, error } = await supabase
       .from("meetings")
@@ -121,6 +125,8 @@ export default function ClientPortalMeetings() {
           )}
         </div>
       </div>
+      
+      {organizationId && <BrandedFooter organizationId={organizationId} />}
     </div>
   );
 }

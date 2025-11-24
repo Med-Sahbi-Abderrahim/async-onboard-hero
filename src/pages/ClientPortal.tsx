@@ -8,6 +8,9 @@ import { FileText, FileUp, CreditCard, Calendar, MessageSquare, Building, CheckC
 import { ClientProgressCard } from "@/components/progress/ClientProgressCard";
 import { WelcomeModal } from "@/components/WelcomeModal";
 import { useToast } from "@/hooks/use-toast";
+import { BrandedFooter } from "@/components/BrandedFooter";
+import { BrandedHeader } from "@/components/BrandedHeader";
+import { useOrgBranding } from "@/hooks/useOrgBranding";
 
 export default function ClientPortal() {
   const navigate = useNavigate();
@@ -17,6 +20,7 @@ export default function ClientPortal() {
   const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
   const [hasMultipleOrgs, setHasMultipleOrgs] = useState(false);
+  const { branding } = useOrgBranding(orgId);
 
   useEffect(() => {
     loadClientData();
@@ -140,8 +144,11 @@ export default function ClientPortal() {
         clientName={client?.full_name}
       />
       
-      <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
-        <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
+      <div className="min-h-screen gradient-hero animate-fade-in flex flex-col">
+        <BrandedHeader organizationId={client.organization_id} />
+        
+        <div className="flex-1 p-4 md:p-8">
+          <div className="max-w-6xl mx-auto space-y-6 md:space-y-8">
         {/* Header with Organization Switcher */}
         {hasMultipleOrgs && (
           <div className="flex justify-end animate-slide-up">
@@ -239,7 +246,10 @@ export default function ClientPortal() {
             </div>
           </CardContent>
         </Card>
+          </div>
         </div>
+        
+        <BrandedFooter organizationId={client.organization_id} />
       </div>
     </>
   );

@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Loader2, Save } from "lucide-react";
 import { ClientFormField } from "./ClientFormField";
 import { useFormAutosave } from "@/hooks/useFormAutosave";
 import { z } from 'zod';
+import { useOrgBranding } from "@/hooks/useOrgBranding";
 
 interface ClientFormRendererProps {
   form: any;
@@ -24,7 +25,12 @@ export function ClientFormRenderer({
 }: ClientFormRendererProps) {
   const fields = form.fields || [];
   const branding = form.custom_branding || {};
-  const primaryColor = branding.primary_color || "#4F46E5";
+  const { branding: orgBranding } = useOrgBranding(form.organization_id);
+  
+  // Use custom color only if plan allows it
+  const primaryColor = orgBranding?.allowCustomColors && branding.primary_color 
+    ? branding.primary_color 
+    : undefined;
   
   const [currentStep, setCurrentStep] = useState(0);
   const [responses, setResponses] = useState<Record<string, any>>(
