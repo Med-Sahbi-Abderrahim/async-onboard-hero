@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Building } from 'lucide-react';
+import { Loader2, Building, Eye, Upload } from 'lucide-react';
+import { BrandingPreviewModal } from './BrandingPreviewModal';
 
 interface Organization {
   id: string;
@@ -21,9 +22,12 @@ export function OrganizationSettings() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [orgName, setOrgName] = useState('');
   const [brandColor, setBrandColor] = useState('#4F46E5');
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -52,6 +56,7 @@ export function OrganizationSettings() {
       setOrganization(org);
       setOrgName(org.name);
       setBrandColor(org.brand_color || '#4F46E5');
+      setLogoUrl(org.logo_url);
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -60,6 +65,42 @@ export function OrganizationSettings() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `logos/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('organization-assets')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('organization-assets')
+        .getPublicUrl(filePath);
+
+      setLogoUrl(publicUrl);
+      toast({
+        title: 'Logo uploaded',
+        description: 'Your logo has been uploaded successfully.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Upload failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -73,6 +114,7 @@ export function OrganizationSettings() {
         .update({
           name: orgName,
           brand_color: brandColor,
+          logo_url: logoUrl,
         })
         .eq('id', organization.id);
 
@@ -149,6 +191,37 @@ export function OrganizationSettings() {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="logo-upload">Organization Logo</Label>
+            <div className="flex items-center gap-4">
+              {logoUrl && (
+                <img 
+                  src={logoUrl} 
+                  alt="Organization Logo" 
+                  className="h-12 w-12 object-contain rounded border" 
+                />
+              )}
+              <Button
+                variant="outline"
+                disabled={uploading}
+                onClick={() => document.getElementById('org-logo-upload')?.click()}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {uploading ? 'Uploading...' : logoUrl ? 'Change Logo' : 'Upload Logo'}
+              </Button>
+              <input
+                id="org-logo-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleLogoUpload}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Upload your organization logo to display in the client portal
+            </p>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="brandColor">Brand Color</Label>
             <div className="flex gap-3">
               <Input
@@ -164,14 +237,35 @@ export function OrganizationSettings() {
                 placeholder="#4F46E5"
               />
             </div>
+            <p className="text-xs text-muted-foreground">
+              Choose a color that matches your brand
+            </p>
           </div>
 
-          <Button onClick={handleSaveOrganization} disabled={saving || !orgName.trim()}>
-            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Changes
-          </Button>
+          <div className="flex gap-3">
+            <Button onClick={handleSaveOrganization} disabled={saving || !orgName.trim()}>
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Changes
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowPreview(true)}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              Preview Portal
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      <BrandingPreviewModal
+        open={showPreview}
+        onOpenChange={setShowPreview}
+        organizationId={organization.id}
+        organizationName={orgName}
+        logoUrl={logoUrl}
+        brandColor={brandColor}
+      />
     </div>
   );
 }
