@@ -9,8 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 interface UpgradeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  limitType: "clients" | "storage" | "forms" | "features";
-  currentPlan: "free" | "starter" | "pro";
+  limitType: "clients" | "storage" | "forms" | "features" | "automation" | "esignature";
+  currentPlan: "free" | "starter" | "pro" | "enterprise";
   organizationId: string;
 }
 
@@ -20,31 +20,50 @@ const limitMessages = {
     description: "You've reached the maximum number of client portals for your plan.",
     free: "Your Free plan includes 1 client portal.",
     starter: "Your Starter plan includes up to 5 client portals.",
+    pro: "Upgrade to Enterprise for unlimited portals.",
   },
   storage: {
     title: "Storage Limit Reached",
     description: "You've reached your storage limit and cannot upload more files.",
     free: "Your Free plan includes 1 GB of storage.",
     starter: "Your Starter plan includes 3 GB of storage.",
+    pro: "Upgrade to Enterprise for more storage.",
   },
   forms: {
     title: "Form Limit Reached",
     description: "You've reached the maximum number of forms for your plan.",
     free: "Your Free plan includes limited forms.",
     starter: "Your Starter plan includes more forms.",
+    pro: "Upgrade to Enterprise for unlimited forms.",
   },
   features: {
     title: "Feature Unavailable",
     description: "This feature is not available on your current plan.",
     free: "Upgrade to unlock premium features.",
     starter: "Upgrade to Pro to unlock all features.",
+    pro: "Upgrade to Enterprise for advanced features.",
+  },
+  automation: {
+    title: "Automation Runs Limit Reached",
+    description: "You've used all your automation runs for this month.",
+    free: "Your Free plan includes 0 automation runs.",
+    starter: "Your Starter plan includes limited automation runs.",
+    pro: "Your Pro plan includes 500 automation runs per user.",
+  },
+  esignature: {
+    title: "E-signature Limit Reached",
+    description: "You've used all your e-signature runs for this month.",
+    free: "Your Free plan includes 0 e-signature runs.",
+    starter: "Your Starter plan includes limited e-signature runs.",
+    pro: "Your Pro plan includes 100 e-signature runs per user.",
   },
 };
 
 const upgradePlans = {
-  free: { name: "Starter", price: "$29", icon: Zap, features: ["5 client portals", "3 GB storage", "Custom branding"] },
-  starter: { name: "Pro", price: "$49", icon: Crown, features: ["Unlimited portals", "10 GB storage", "White-label", "Automations"] },
-  pro: { name: "Pro", price: "$49", icon: Crown, features: ["You're on the highest plan"] },
+  free: { name: "Starter", price: "$29", icon: Zap, features: ["5 client portals", "3 GB storage", "Custom branding", "25 automation runs/user"] },
+  starter: { name: "Pro", price: "$49", icon: Crown, features: ["Unlimited portals", "10 GB storage", "White-label", "500 automation runs/user"] },
+  pro: { name: "Enterprise", price: "Custom", icon: Crown, features: ["Unlimited everything", "Dedicated support", "Custom integrations"] },
+  enterprise: { name: "Enterprise", price: "Custom", icon: Crown, features: ["You're on the highest plan"] },
 };
 
 export function UpgradeModal({ open, onOpenChange, limitType, currentPlan, organizationId }: UpgradeModalProps) {
@@ -55,7 +74,13 @@ export function UpgradeModal({ open, onOpenChange, limitType, currentPlan, organ
   const Icon = upgrade.icon;
 
   const handleUpgrade = async () => {
-    if (currentPlan === "pro") return;
+    if (currentPlan === "pro" || currentPlan === "enterprise") {
+      toast({
+        title: "Contact Sales",
+        description: "Please contact our sales team for Enterprise upgrades.",
+      });
+      return;
+    }
 
     setIsUpgrading(true);
     try {
@@ -112,7 +137,7 @@ export function UpgradeModal({ open, onOpenChange, limitType, currentPlan, organ
           </div>
 
           {/* Upgrade Plan */}
-          {currentPlan !== "pro" && (
+          {currentPlan !== "enterprise" && (
             <div className="p-6 bg-gradient-to-br from-primary/5 to-accent/5 rounded-lg border border-primary/20">
               <div className="flex items-center gap-2 mb-3">
                 <Badge className="bg-gradient-to-r from-primary to-primary-glow">Recommended</Badge>
@@ -122,7 +147,7 @@ export function UpgradeModal({ open, onOpenChange, limitType, currentPlan, organ
                   <h4 className="text-xl font-bold">{upgrade.name} Plan</h4>
                   <p className="text-2xl font-bold text-primary mt-1">
                     {upgrade.price}
-                    <span className="text-sm font-normal text-muted-foreground">/month</span>
+                    {upgrade.price !== "Custom" && <span className="text-sm font-normal text-muted-foreground">/month</span>}
                   </p>
                 </div>
                 <div className="rounded-full bg-primary/10 p-3">
@@ -145,14 +170,14 @@ export function UpgradeModal({ open, onOpenChange, limitType, currentPlan, organ
             <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancel
             </Button>
-            {currentPlan !== "pro" ? (
+            {currentPlan !== "enterprise" && currentPlan !== "pro" ? (
               <Button onClick={handleUpgrade} disabled={isUpgrading} className="flex-1 bg-gradient-to-r from-primary to-primary-glow">
                 {isUpgrading ? "Processing..." : `Upgrade to ${upgrade.name}`}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (
-              <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-                Contact Support
+              <Button variant="outline" onClick={handleUpgrade} className="flex-1">
+                Contact Sales
               </Button>
             )}
           </div>
