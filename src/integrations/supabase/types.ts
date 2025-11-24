@@ -907,6 +907,7 @@ export type Database = {
           max_portals: number
           max_storage_gb: number
           name: string | null
+          organization_owner_id: string | null
           plan: string
           price_per_user: number | null
           slug: string | null
@@ -938,6 +939,7 @@ export type Database = {
           max_portals?: number
           max_storage_gb?: number
           name?: string | null
+          organization_owner_id?: string | null
           plan?: string
           price_per_user?: number | null
           slug?: string | null
@@ -969,6 +971,7 @@ export type Database = {
           max_portals?: number
           max_storage_gb?: number
           name?: string | null
+          organization_owner_id?: string | null
           plan?: string
           price_per_user?: number | null
           slug?: string | null
@@ -1357,6 +1360,10 @@ export type Database = {
       }
       is_organization_member: {
         Args: { p_org_id: string; p_user_id: string }
+        Returns: boolean
+      }
+      is_organization_owner: {
+        Args: { org_id: string; user_id: string }
         Returns: boolean
       }
       use_early_access_invite: { Args: { invite_code: string }; Returns: Json }

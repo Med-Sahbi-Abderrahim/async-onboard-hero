@@ -28,6 +28,7 @@ interface Organization {
   esignature_runs_used: number;
   branding_level: string;
   support_level: string;
+  organization_owner_id: string;
   features: {
     custom_branding: boolean;
     automations: boolean;
@@ -45,6 +46,8 @@ export default function Billing() {
   const [loading, setLoading] = useState(true);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [clientCount, setClientCount] = useState(0);
+  const [isOwner, setIsOwner] = useState(false);
+  const [ownerEmail, setOwnerEmail] = useState<string>("");
 
   useEffect(() => {
     if (user) {
@@ -70,13 +73,30 @@ export default function Billing() {
           price_per_user, active_user_count, storage_per_user_gb,
           automation_runs_per_user, automation_runs_used,
           esignature_runs_per_user, esignature_runs_used,
-          branding_level, support_level
+          branding_level, support_level, organization_owner_id
         `)
         .eq("id", membership.organization_id)
         .single();
 
       if (error) throw error;
       setOrganization(org as Organization);
+      
+      // Check if current user is the owner
+      const userIsOwner = org.organization_owner_id === user?.id;
+      setIsOwner(userIsOwner);
+      
+      // If not owner, fetch owner's email
+      if (!userIsOwner && org.organization_owner_id) {
+        const { data: ownerData } = await supabase
+          .from("users")
+          .select("email")
+          .eq("id", org.organization_owner_id)
+          .single();
+        
+        if (ownerData) {
+          setOwnerEmail(ownerData.email || "organization owner");
+        }
+      }
 
       // Get client count
       const { count } = await supabase
@@ -210,6 +230,23 @@ export default function Billing() {
         </Button>
       </div>
 
+      {/* Non-Owner Message */}
+      {!isOwner && (
+        <Card className="border-amber-500 bg-amber-50 dark:bg-amber-950/20 animate-slide-up">
+          <CardHeader>
+            <CardTitle className="text-base text-amber-700 dark:text-amber-400">
+              Billing Managed by Organization Owner
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Billing and subscription settings are managed by your organization owner{ownerEmail && `: ${ownerEmail}`}.
+              Only the owner can upgrade plans, manage payment methods, or view invoices.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Current Plan Card */}
       <Card className="overflow-hidden animate-slide-up bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
         <CardHeader>
@@ -244,12 +281,12 @@ export default function Billing() {
               </div>
             </div>
             <div className="flex gap-2">
-              {organization.plan !== "enterprise" && (
+              {isOwner && organization.plan !== "enterprise" && (
                 <Button onClick={handleUpgrade} className="shadow-medium">
                   Upgrade Plan
                 </Button>
               )}
-              {organization.lemonsqueezy_subscription_id && (
+              {isOwner && organization.lemonsqueezy_subscription_id && (
                 <Button onClick={handleManageBilling} variant="outline">
                   Manage Billing
                 </Button>
@@ -392,8 +429,8 @@ export default function Billing() {
         </Card>
       )}
 
-      {/* Payment Integration Info */}
-      {!organization.lemonsqueezy_subscription_id && (
+      {/* Payment Integration Info - Only show to owner */}
+      {isOwner && !organization.lemonsqueezy_subscription_id && (
         <Card className="border-primary/20 bg-card/80 backdrop-blur-sm animate-slide-up" style={{ animationDelay: "0.3s" }}>
           <CardHeader>
             <CardTitle className="text-base">🍋 Secure Payments with Lemon Squeezy</CardTitle>
@@ -402,6 +439,8 @@ export default function Billing() {
             <p className="text-sm text-muted-foreground">
               Ready to upgrade? Click "Upgrade Plan" to securely checkout via Lemon Squeezy. 
               You'll be able to manage your subscription, update payment methods, and access invoices anytime.
+              <br /><br />
+              <strong>Note:</strong> As the organization owner, you are billed for all active users in your organization: {organization.active_user_count} {organization.active_user_count === 1 ? 'user' : 'users'}.
             </p>
           </CardContent>
         </Card>
