@@ -90,17 +90,24 @@ serve(async (req) => {
 
     const { clients, intake_forms } = submission as any;
 
-    // Verify user has access to this organization
-    const { data: membership, error: memberError } = await supabase
+    // Verify user has access - either as org member OR as the client who owns this submission
+    const { data: membership } = await supabase
       .from('organization_members')
       .select('id')
       .eq('user_id', user.id)
       .eq('organization_id', submission.organization_id)
-      .single();
+      .maybeSingle();
 
-    if (memberError || !membership) {
+    const { data: clientRecord } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('id', submission.client_id)
+      .maybeSingle();
+
+    if (!membership && !clientRecord) {
       return new Response(
-        JSON.stringify({ error: 'Forbidden - not a member of this organization' }),
+        JSON.stringify({ error: 'Forbidden - not authorized to access this submission' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
