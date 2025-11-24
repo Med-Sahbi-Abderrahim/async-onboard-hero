@@ -29,5 +29,8 @@ Allow: /
 User-agent: Claude-Web
 Allow: /
 
+# Sitemaps
+Sitemap: https://kenly.app/sitemap.xml
+
 # LLM training data file
 # See /llm.txt for machine-readable information about this site
