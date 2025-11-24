@@ -9,62 +9,65 @@ import { useToast } from "@/hooks/use-toast";
 
 const plans = [
   {
-    name: "Free",
-    price: "$0",
-    period: "forever",
-    description: "Perfect for trying out Kenly",
+    name: "Basic",
+    price: "$29",
+    period: "per user/month",
+    description: "Essential tools for small teams",
     icon: Sparkles,
-    iconColor: "text-gray-500",
+    iconColor: "text-primary",
     features: [
-      { text: "1 active client portal", included: true },
-      { text: "1 GB file storage", included: true },
-      { text: "Basic email notifications", included: true },
-      { text: "Kenly branding required", included: true },
-      { text: "Custom branding", included: false },
-      { text: "Workflow automations", included: false },
-      { text: "Integrations", included: false },
+      { text: "Unlimited clients", included: true },
+      { text: "Unlimited team members", included: true },
+      { text: "10 GB storage per user", included: true },
+      { text: "25 automation runs per user", included: true },
+      { text: "10 e-signature runs per user", included: true },
+      { text: "Standard Kenly branding (color palette)", included: true },
+      { text: '"Powered by Kenly" badge', included: true },
+      { text: "Standard email support", included: true },
     ],
     cta: "Get Started",
     highlighted: false,
   },
   {
-    name: "Starter",
-    price: "$29",
-    period: "per month",
-    description: "For growing businesses",
-    icon: Zap,
-    iconColor: "text-primary",
-    features: [
-      { text: "Up to 5 client portals", included: true },
-      { text: "3 GB file storage", included: true },
-      { text: "Custom branding (logo + colors)", included: true },
-      { text: "Files, contracts, meetings & feedback", included: true },
-      { text: "Basic email notifications", included: true },
-      { text: "Kenly footer branding", included: true },
-      { text: "Workflow automations", included: false },
-    ],
-    cta: "Upgrade to Starter",
-    highlighted: false,
-  },
-  {
     name: "Pro",
     price: "$49",
-    period: "per month",
-    description: "For teams that want it all",
-    icon: Crown,
+    period: "per user/month",
+    description: "Advanced features for growing teams",
+    icon: Zap,
     iconColor: "text-accent",
     badge: "Recommended",
     features: [
-      { text: "Unlimited client portals", included: true },
-      { text: "10 GB file storage", included: true },
-      { text: "Full custom branding", included: true },
-      { text: "Workflow automations", included: true },
-      { text: "Integrations (Google Drive, Notion)", included: true },
-      { text: "Priority email support", included: true },
-      { text: "Remove Kenly branding (white-label)", included: true },
+      { text: "Unlimited clients", included: true },
+      { text: "Unlimited team members", included: true },
+      { text: "100 GB storage per user", included: true },
+      { text: "500 automation runs per user", included: true },
+      { text: "100 e-signature runs per user", included: true },
+      { text: "Custom branding (colors + logo)", included: true },
+      { text: 'Remove "Powered by Kenly" badge', included: true },
+      { text: "Priority support", included: true },
     ],
     cta: "Upgrade to Pro",
     highlighted: true,
+  },
+  {
+    name: "Enterprise",
+    price: "$199",
+    period: "per user/month",
+    description: "Complete solution for large organizations",
+    icon: Crown,
+    iconColor: "text-amber-500",
+    features: [
+      { text: "Unlimited clients", included: true },
+      { text: "Unlimited team members", included: true },
+      { text: "1 TB storage per user", included: true },
+      { text: "Unlimited automation runs", included: true },
+      { text: "Unlimited e-signatures", included: true },
+      { text: "Full branding removal (no Kenly trace)", included: true },
+      { text: "SLA with guaranteed uptime", included: true },
+      { text: "Dedicated support channel", included: true },
+    ],
+    cta: "Contact Sales",
+    highlighted: false,
   },
 ];
 
@@ -108,7 +111,22 @@ export default function Pricing() {
         throw new Error("No organization found");
       }
 
-      const plan = planName === "Starter" ? "starter" : "pro";
+      const planMap: Record<string, string> = {
+        "Basic": "starter",
+        "Pro": "pro",
+        "Enterprise": "enterprise"
+      };
+      
+      const plan = planMap[planName] || "starter";
+
+      if (planName === "Enterprise") {
+        // For Enterprise, show contact info instead of checkout
+        toast({
+          title: "Contact Sales",
+          description: "Please contact our sales team for Enterprise pricing and setup.",
+        });
+        return;
+      }
 
       const { data, error } = await supabase.functions.invoke("create-lemon-squeezy-checkout", {
         body: { plan, organizationId: membership.organization_id },
@@ -140,7 +158,7 @@ export default function Pricing() {
             plan
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Start free, upgrade as you grow. No hidden fees, cancel anytime.
+            Simple per-user pricing. Unlimited clients and team members. Scale as you grow.
           </p>
         </div>
 
@@ -220,8 +238,8 @@ export default function Pricing() {
             <CardContent className="p-8">
               <h3 className="text-xl font-semibold mb-4">Need help choosing?</h3>
               <p className="text-muted-foreground mb-6">
-                All plans include secure client portals, form submissions, and essential collaboration tools. Start with
-                Free and upgrade anytime as your needs grow.
+                All plans include unlimited clients, unlimited team members, and essential collaboration tools. 
+                Your monthly cost is calculated as: <strong>number of active users × price per user</strong>.
               </p>
               <Button asChild variant="ghost">
                 <button onClick={async () => {
