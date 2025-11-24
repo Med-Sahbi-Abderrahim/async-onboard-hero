@@ -12,19 +12,30 @@ import { EarlyAccessBanner } from "@/components/EarlyAccessBanner";
 
 interface Organization {
   id: string;
-  plan: "free" | "starter" | "pro";
+  plan: "free" | "starter" | "pro" | "enterprise";
   max_portals: number;
   max_storage_gb: number;
   storage_used_bytes: number;
   subscription_status?: string;
   subscription_renewal_date?: string;
   lemonsqueezy_subscription_id?: string;
+  price_per_user: number;
+  active_user_count: number;
+  storage_per_user_gb: number;
+  automation_runs_per_user: number;
+  automation_runs_used: number;
+  esignature_runs_per_user: number;
+  esignature_runs_used: number;
+  branding_level: string;
+  support_level: string;
   features: {
     custom_branding: boolean;
     automations: boolean;
     integrations: boolean;
     white_label: boolean;
     priority_support: boolean;
+    sla?: boolean;
+    dedicated_support?: boolean;
   };
 }
 
@@ -53,7 +64,14 @@ export default function Billing() {
 
       const { data: org, error } = await supabase
         .from("organizations")
-        .select("id, plan, max_portals, max_storage_gb, storage_used_bytes, features, subscription_status, subscription_renewal_date, lemonsqueezy_subscription_id")
+        .select(`
+          id, plan, max_portals, max_storage_gb, storage_used_bytes, features, 
+          subscription_status, subscription_renewal_date, lemonsqueezy_subscription_id,
+          price_per_user, active_user_count, storage_per_user_gb,
+          automation_runs_per_user, automation_runs_used,
+          esignature_runs_per_user, esignature_runs_used,
+          branding_level, support_level
+        `)
         .eq("id", membership.organization_id)
         .single();
 
@@ -84,9 +102,11 @@ export default function Billing() {
       case "free":
         return <Sparkles className="h-5 w-5 text-muted-foreground" />;
       case "starter":
-        return <Zap className="h-5 w-5 text-primary" />;
+        return <Sparkles className="h-5 w-5 text-primary" />;
       case "pro":
-        return <Crown className="h-5 w-5 text-accent" />;
+        return <Zap className="h-5 w-5 text-accent" />;
+      case "enterprise":
+        return <Crown className="h-5 w-5 text-amber-500" />;
       default:
         return <Sparkles className="h-5 w-5" />;
     }
@@ -96,17 +116,14 @@ export default function Billing() {
     return plan.charAt(0).toUpperCase() + plan.slice(1);
   };
 
-  const getPlanPrice = (plan: string) => {
-    switch (plan) {
-      case "free":
-        return "$0";
-      case "starter":
-        return "$29";
-      case "pro":
-        return "$49";
-      default:
-        return "$0";
-    }
+  const getPlanPrice = (plan: string, pricePerUser: number, activeUsers: number) => {
+    if (plan === "free") return "$0";
+    const monthlyCost = (pricePerUser * activeUsers) / 100;
+    return `$${monthlyCost.toFixed(0)}`;
+  };
+
+  const getPricePerUser = (pricePerUser: number) => {
+    return `$${(pricePerUser / 100).toFixed(0)}`;
   };
 
   const handleUpgrade = async () => {
@@ -206,13 +223,19 @@ export default function Billing() {
                   {getPlanName(organization.plan)} Plan
                 </CardTitle>
                 <CardDescription className="text-base mt-1">
-                  {getPlanPrice(organization.plan)} / month
+                  {getPricePerUser(organization.price_per_user)} per user/month
                   {organization.subscription_status && organization.subscription_status !== 'active' && (
                     <Badge variant="outline" className="ml-2 text-xs">
                       {organization.subscription_status}
                     </Badge>
                   )}
                 </CardDescription>
+                <p className="text-sm font-semibold text-foreground mt-2">
+                  Monthly Cost: {getPlanPrice(organization.plan, organization.price_per_user, organization.active_user_count)}
+                  <span className="text-muted-foreground font-normal ml-1">
+                    ({organization.active_user_count} {organization.active_user_count === 1 ? 'user' : 'users'})
+                  </span>
+                </p>
                 {organization.subscription_renewal_date && organization.subscription_status === 'active' && (
                   <p className="text-sm text-muted-foreground mt-2">
                     Renews on {new Date(organization.subscription_renewal_date).toLocaleDateString()}
@@ -221,7 +244,7 @@ export default function Billing() {
               </div>
             </div>
             <div className="flex gap-2">
-              {organization.plan !== "pro" && (
+              {organization.plan !== "enterprise" && (
                 <Button onClick={handleUpgrade} className="shadow-medium">
                   Upgrade Plan
                 </Button>
@@ -236,21 +259,18 @@ export default function Billing() {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Usage Stats */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Client Portals Usage */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Active Users */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-primary" />
-                  <span className="font-medium">Client Portals</span>
+                  <span className="font-medium">Active Users</span>
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  {clientCount} / {organization.max_portals === 999999 ? "∞" : organization.max_portals}
+                  {organization.active_user_count}
                 </span>
               </div>
-              {organization.max_portals !== 999999 && (
-                <Progress value={clientPercentage} className="h-2" />
-              )}
             </div>
 
             {/* Storage Usage */}
@@ -258,13 +278,36 @@ export default function Billing() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <HardDrive className="h-4 w-4 text-primary" />
-                  <span className="font-medium">File Storage</span>
+                  <span className="font-medium">Storage</span>
                 </div>
                 <span className="text-sm text-muted-foreground">
                   {storageUsedGB.toFixed(2)} GB / {organization.max_storage_gb} GB
                 </span>
               </div>
               <Progress value={storagePercentage} className="h-2" />
+            </div>
+
+            {/* Automation Runs */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-primary" />
+                  <span className="font-medium">Automations</span>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {organization.automation_runs_used} / {
+                    organization.automation_runs_per_user * organization.active_user_count === 999999 * organization.active_user_count 
+                      ? "∞" 
+                      : organization.automation_runs_per_user * organization.active_user_count
+                  }
+                </span>
+              </div>
+              {organization.automation_runs_per_user * organization.active_user_count !== 999999 * organization.active_user_count && (
+                <Progress 
+                  value={(organization.automation_runs_used / (organization.automation_runs_per_user * organization.active_user_count)) * 100} 
+                  className="h-2" 
+                />
+              )}
             </div>
           </div>
 

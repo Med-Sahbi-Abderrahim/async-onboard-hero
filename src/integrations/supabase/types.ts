@@ -890,8 +890,14 @@ export type Database = {
       }
       organizations: {
         Row: {
+          active_user_count: number | null
+          automation_runs_per_user: number | null
+          automation_runs_used: number | null
           brand_color: string | null
+          branding_level: string | null
           created_at: string | null
+          esignature_runs_per_user: number | null
+          esignature_runs_used: number | null
           features: Json
           id: string
           is_personal: boolean | null
@@ -902,18 +908,27 @@ export type Database = {
           max_storage_gb: number
           name: string | null
           plan: string
+          price_per_user: number | null
           slug: string | null
+          storage_per_user_gb: number | null
           storage_used_bytes: number
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_renewal_date: string | null
           subscription_status: string | null
           subscription_tier: string | null
+          support_level: string | null
           trial_ends_at: string | null
         }
         Insert: {
+          active_user_count?: number | null
+          automation_runs_per_user?: number | null
+          automation_runs_used?: number | null
           brand_color?: string | null
+          branding_level?: string | null
           created_at?: string | null
+          esignature_runs_per_user?: number | null
+          esignature_runs_used?: number | null
           features?: Json
           id?: string
           is_personal?: boolean | null
@@ -924,18 +939,27 @@ export type Database = {
           max_storage_gb?: number
           name?: string | null
           plan?: string
+          price_per_user?: number | null
           slug?: string | null
+          storage_per_user_gb?: number | null
           storage_used_bytes?: number
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_renewal_date?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
+          support_level?: string | null
           trial_ends_at?: string | null
         }
         Update: {
+          active_user_count?: number | null
+          automation_runs_per_user?: number | null
+          automation_runs_used?: number | null
           brand_color?: string | null
+          branding_level?: string | null
           created_at?: string | null
+          esignature_runs_per_user?: number | null
+          esignature_runs_used?: number | null
           features?: Json
           id?: string
           is_personal?: boolean | null
@@ -946,13 +970,16 @@ export type Database = {
           max_storage_gb?: number
           name?: string | null
           plan?: string
+          price_per_user?: number | null
           slug?: string | null
+          storage_per_user_gb?: number | null
           storage_used_bytes?: number
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_renewal_date?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
+          support_level?: string | null
           trial_ends_at?: string | null
         }
         Relationships: []
@@ -1264,6 +1291,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_monthly_cost: { Args: { org_id: string }; Returns: number }
       calculate_submission_completion: {
         Args: { form_fields: Json; submission_responses: Json }
         Returns: number
