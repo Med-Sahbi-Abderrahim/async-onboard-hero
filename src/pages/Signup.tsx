@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
 import { getAuthRedirectUrl } from "@/lib/auth-utils";
+import kenlyLogo from "@/assets/kenly-logo.jpg";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
@@ -232,6 +233,14 @@ export default function Signup() {
       {/* Right side - Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
+          {/* Kenly Logo */}
+          <div className="flex justify-center mb-6">
+            <div className="flex items-center gap-2">
+              <img src={kenlyLogo} alt="Kenly" className="h-12 w-12 object-contain" />
+              <span className="text-2xl font-bold">Kenly</span>
+            </div>
+          </div>
+          
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-foreground mb-2">Create your account</h2>
             <p className="text-muted-foreground">
