@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Crown, Zap, ArrowRight, X } from "lucide-react";
+import { Crown, Zap, ArrowRight, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -60,10 +60,10 @@ const limitMessages = {
 };
 
 const upgradePlans = {
-  free: { name: "Starter", price: "$29", icon: Zap, features: ["5 client portals", "3 GB storage", "Custom branding", "25 automation runs/user"] },
-  starter: { name: "Pro", price: "$49", icon: Crown, features: ["Unlimited portals", "10 GB storage", "White-label", "500 automation runs/user"] },
-  pro: { name: "Enterprise", price: "Custom", icon: Crown, features: ["Unlimited everything", "Dedicated support", "Custom integrations"] },
-  enterprise: { name: "Enterprise", price: "Custom", icon: Crown, features: ["You're on the highest plan"] },
+  free: { name: "Basic", price: "$29", icon: Sparkles, features: ["Unlimited clients", "Unlimited team members", "10 GB storage per user", "25 automation runs per user", "Custom branding"] },
+  starter: { name: "Pro", price: "$49", icon: Zap, features: ["Unlimited clients", "Unlimited team members", "100 GB storage per user", "500 automation runs per user", "White-label branding"] },
+  pro: { name: "Enterprise", price: "$199", icon: Crown, features: ["Unlimited clients", "Unlimited team members", "1 TB storage per user", "Unlimited automations", "Dedicated support"] },
+  enterprise: { name: "Enterprise", price: "$199", icon: Crown, features: ["You're on the highest plan"] },
 };
 
 export function UpgradeModal({ open, onOpenChange, limitType, currentPlan, organizationId }: UpgradeModalProps) {
@@ -147,7 +147,7 @@ export function UpgradeModal({ open, onOpenChange, limitType, currentPlan, organ
                   <h4 className="text-xl font-bold">{upgrade.name} Plan</h4>
                   <p className="text-2xl font-bold text-primary mt-1">
                     {upgrade.price}
-                    {upgrade.price !== "Custom" && <span className="text-sm font-normal text-muted-foreground">/month</span>}
+                    <span className="text-sm font-normal text-muted-foreground">/user/month</span>
                   </p>
                 </div>
                 <div className="rounded-full bg-primary/10 p-3">
