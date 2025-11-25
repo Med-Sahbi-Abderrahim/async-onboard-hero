@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { NotificationsDropdown } from '@/components/NotificationsDropdown';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { RoleSwitcher } from '@/components/RoleSwitcher';
 import { useUser } from '@/contexts/UserContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -71,6 +72,7 @@ export function Header() {
         <h1 className="text-xl md:text-2xl font-semibold truncate">{pageTitle}</h1>
 
         <div className="ml-auto flex items-center gap-2">
+          <RoleSwitcher />
           <ThemeToggle />
           <NotificationsDropdown />
 
