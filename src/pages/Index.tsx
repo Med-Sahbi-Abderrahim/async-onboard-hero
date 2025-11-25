@@ -910,7 +910,7 @@ const Index = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-primary transition-transform duration-300 hover:scale-110" />
+              <img src={kenlyLogo} alt="Kenly" className="h-5 w-5 object-contain transition-transform duration-300 hover:scale-110" />
               <span className="font-semibold">Kenly</span>
             </div>
             <p className="text-center text-sm text-muted-foreground md:text-left">
