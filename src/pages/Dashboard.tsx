@@ -25,45 +25,39 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchStats = async () => {
+      if (!orgId) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        // Get user's organizations
-        const { data: orgData } = await supabase
-          .from("organization_members")
-          .select("organization_id")
-          .eq("user_id", profile?.id);
+        console.log('Fetching stats for organization:', orgId);
 
-        if (!orgData || orgData.length === 0) {
-          setLoading(false);
-          return;
-        }
-
-        const orgIds = orgData.map((o) => o.organization_id);
-
-        // Fetch stats in parallel
+        // Fetch stats for the specific organization from URL
         const [clientsResult, formsResult, submissionsResult, tasksResult] = await Promise.all([
           supabase
             .from("clients")
             .select("id", { count: "exact", head: true })
-            .in("organization_id", orgIds)
+            .eq("organization_id", orgId)
             .is("deleted_at", null),
 
           supabase
             .from("intake_forms")
             .select("id", { count: "exact", head: true })
-            .in("organization_id", orgIds)
+            .eq("organization_id", orgId)
             .eq("status", "active")
             .is("deleted_at", null),
 
           supabase
             .from("form_submissions")
             .select("id", { count: "exact", head: true })
-            .in("organization_id", orgIds)
+            .eq("organization_id", orgId)
             .gte("created_at", new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()),
 
           supabase
             .from("tasks")
             .select("id", { count: "exact", head: true })
-            .in("organization_id", orgIds)
+            .eq("organization_id", orgId)
             .in("status", ["pending", "in_progress"])
             .is("deleted_at", null),
         ]);
@@ -81,10 +75,8 @@ export default function Dashboard() {
       }
     };
 
-    if (profile?.id) {
-      fetchStats();
-    }
-  }, [profile?.id]);
+    fetchStats();
+  }, [orgId]);
 
   const hasNoData = stats.totalClients === 0 && stats.activeForms === 0 && stats.submissionsThisMonth === 0 && stats.pendingTasks === 0;
 

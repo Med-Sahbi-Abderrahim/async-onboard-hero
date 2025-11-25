@@ -9,10 +9,12 @@ import { SubmissionDetails } from "@/components/submissions/SubmissionDetails";
 import { ImportSubmissionsModal } from "@/components/submissions/ImportSubmissionsModal";
 import { useToast } from "@/hooks/use-toast";
 import { EmptyState } from "@/components/ui/empty-state";
+import { useOrgId } from "@/hooks/useOrgId";
 import * as XLSX from 'xlsx';
 
 export default function Submissions() {
   const { toast } = useToast();
+  const orgId = useOrgId();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [page, setPage] = useState(1);
@@ -25,6 +27,7 @@ export default function Submissions() {
     statusFilter,
     page,
     pageSize: 20,
+    orgId,
   });
 
   const handleViewDetails = (submission: Submission) => {

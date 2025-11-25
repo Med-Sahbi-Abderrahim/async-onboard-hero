@@ -28,39 +28,20 @@ interface UseSubmissionsOptions {
   statusFilter?: string;
   page?: number;
   pageSize?: number;
+  orgId?: string;
 }
 
 export function useSubmissions(options: UseSubmissionsOptions = {}) {
-  const { searchQuery = "", statusFilter = "all", page = 1, pageSize = 20 } = options;
+  const { searchQuery = "", statusFilter = "all", page = 1, pageSize = 20, orgId } = options;
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
-
-  // Get user's organization
-  useEffect(() => {
-    const fetchOrganization = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data } = await supabase
-        .from("organization_members")
-        .select("organization_id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (data) {
-        setOrganizationId(data.organization_id);
-      }
-    };
-
-    fetchOrganization();
-  }, []);
 
   // Fetch submissions
   const fetchSubmissions = async () => {
-    if (!organizationId) return;
+    if (!orgId) return;
     
+    console.log('Fetching submissions for organization:', orgId);
     setLoading(true);
 
     let query = supabase
@@ -89,7 +70,7 @@ export function useSubmissions(options: UseSubmissionsOptions = {}) {
         `,
         { count: "exact" }
       )
-      .eq("organization_id", organizationId)
+      .eq("organization_id", orgId)
       .order("created_at", { ascending: false });
 
     // Apply status filter
@@ -124,11 +105,11 @@ export function useSubmissions(options: UseSubmissionsOptions = {}) {
 
   useEffect(() => {
     fetchSubmissions();
-  }, [organizationId, searchQuery, statusFilter, page, pageSize]);
+  }, [orgId, searchQuery, statusFilter, page, pageSize]);
 
   // Set up real-time subscription
   useEffect(() => {
-    if (!organizationId) return;
+    if (!orgId) return;
 
     const channel = supabase
       .channel("form_submissions_changes")
@@ -138,7 +119,7 @@ export function useSubmissions(options: UseSubmissionsOptions = {}) {
           event: "*",
           schema: "public",
           table: "form_submissions",
-          filter: `organization_id=eq.${organizationId}`,
+          filter: `organization_id=eq.${orgId}`,
         },
         async (payload) => {
           console.log("Real-time update:", payload);
@@ -197,7 +178,7 @@ export function useSubmissions(options: UseSubmissionsOptions = {}) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [organizationId]);
+  }, [orgId]);
 
   return {
     submissions,
