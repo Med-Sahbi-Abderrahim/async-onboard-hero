@@ -1,7 +1,7 @@
 import { LayoutDashboard, Users, FileText, Inbox, Settings, Bell, Sparkles, Building2, ChevronDown, CheckSquare } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import kenlyLogo from "@/assets/kenly-logo.jpg";
+import kenlyLogo from "@/assets/kenly-logo.png";
 import {
   Sidebar,
   SidebarContent,
