@@ -92,25 +92,16 @@ export default function ClientDetail() {
   }, [id, user]);
 
   const fetchClientData = async () => {
-    if (!user || !id) return;
+    if (!user || !id || !orgId) return;
 
     setLoading(true);
     try {
-      // Get user's organization
-      const { data: memberData } = await supabase
-        .from("organization_members")
-        .select("organization_id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (!memberData) return;
-
-      // Fetch client
+      // Fetch client using orgId from URL
       const { data: clientData, error: clientError } = await supabase
         .from("clients")
         .select("*")
         .eq("id", id)
-        .eq("organization_id", memberData.organization_id)
+        .eq("organization_id", orgId)
         .is("deleted_at", null)
         .single();
 

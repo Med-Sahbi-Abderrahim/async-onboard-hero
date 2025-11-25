@@ -325,6 +325,7 @@ export default function Clients() {
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
         onClientCreated={handleClientCreated}
+        orgId={orgId || ''}
       />
 
       <ImportClientsModal
