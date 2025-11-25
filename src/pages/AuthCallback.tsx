@@ -115,7 +115,7 @@ export default function AuthCallback() {
           
           if (finalContext === 'agency' && finalOrgId) {
             // AGENCY CONTEXT: Redirect to dashboard
-            console.log("Agency context - redirecting to dashboard");
+            console.log("Agency context - redirecting to dashboard for org:", finalOrgId);
             
             // Verify user is a member of this organization
             const { data: memberData } = await supabase
@@ -126,12 +126,34 @@ export default function AuthCallback() {
               .maybeSingle();
             
             if (!memberData) {
+              // User isn't a member of the specified org, check all their orgs
+              const { data: allMemberships } = await supabase
+                .from('organization_members')
+                .select('organization_id')
+                .eq('user_id', session.user.id);
+              
+              if (!allMemberships || allMemberships.length === 0) {
+                toast({
+                  title: "No Organization Access",
+                  description: "You don't belong to any organization yet.",
+                  variant: "destructive",
+                });
+                navigate("/no-organization", { replace: true });
+                return;
+              }
+              
+              if (allMemberships.length === 1) {
+                // Redirect to their only org
+                navigate(`/dashboard/${allMemberships[0].organization_id}`, { replace: true });
+                return;
+              }
+              
+              // Multiple orgs - show selection
               toast({
-                title: "Access Denied",
-                description: "You don't have access to this organization.",
-                variant: "destructive",
+                title: "Organization Not Found",
+                description: "Please select an organization to continue",
               });
-              navigate("/login", { replace: true });
+              navigate("/select-organization", { replace: true });
               return;
             }
             
@@ -154,17 +176,15 @@ export default function AuthCallback() {
           }
           
           // NO CONTEXT: Determine default route
-          // First check if user is an organization member
-          const { data: orgMember } = await supabase
+          // Check ALL organization memberships
+          const { data: orgMemberships } = await supabase
             .from('organization_members')
             .select('organization_id')
-            .eq('user_id', session.user.id)
-            .limit(1)
-            .maybeSingle();
+            .eq('user_id', session.user.id);
           
-          if (orgMember) {
-            // User is an agency member - redirect to their dashboard
-            console.log("Default: Agency member - redirecting to dashboard");
+          if (orgMemberships && orgMemberships.length > 0) {
+            // User is an agency member
+            console.log(`Default: Agency member with ${orgMemberships.length} organization(s)`);
             
             try {
               await supabase
@@ -175,11 +195,21 @@ export default function AuthCallback() {
               console.error("Error updating last_seen_at:", error);
             }
             
-            toast({
-              title: "Welcome!",
-              description: "Your email has been verified successfully",
-            });
-            navigate(`/dashboard/${orgMember.organization_id}`, { replace: true });
+            if (orgMemberships.length === 1) {
+              // Only one organization - redirect directly
+              toast({
+                title: "Welcome!",
+                description: "Your email has been verified successfully",
+              });
+              navigate(`/dashboard/${orgMemberships[0].organization_id}`, { replace: true });
+            } else {
+              // Multiple organizations - show selection screen
+              toast({
+                title: "Welcome!",
+                description: "Please select an organization to continue",
+              });
+              navigate('/select-organization', { replace: true });
+            }
             return;
           }
           

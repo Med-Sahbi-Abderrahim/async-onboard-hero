@@ -184,7 +184,11 @@ export default function Signup() {
             title: "Account created!",
             description: inviteCode ? "Welcome! Your early access has been activated." : "Welcome to Kenly!",
           });
-          navigate('/select-organization');
+          if (memberships.length === 1) {
+            navigate(`/dashboard/${memberships[0].organization_id}`);
+          } else {
+            navigate('/select-organization');
+          }
         } else {
           // Check if user is a client
           const { data: clientData } = await supabase
