@@ -858,6 +858,8 @@ export type Database = {
           id: string
           invitation_accepted_at: string | null
           invited_by: string | null
+          invited_email: string | null
+          invited_full_name: string | null
           organization_id: string
           permissions: Json
           role: Database["public"]["Enums"]["user_role"]
@@ -869,6 +871,8 @@ export type Database = {
           id?: string
           invitation_accepted_at?: string | null
           invited_by?: string | null
+          invited_email?: string | null
+          invited_full_name?: string | null
           organization_id: string
           permissions?: Json
           role?: Database["public"]["Enums"]["user_role"]
@@ -880,6 +884,8 @@ export type Database = {
           id?: string
           invitation_accepted_at?: string | null
           invited_by?: string | null
+          invited_email?: string | null
+          invited_full_name?: string | null
           organization_id?: string
           permissions?: Json
           role?: Database["public"]["Enums"]["user_role"]
