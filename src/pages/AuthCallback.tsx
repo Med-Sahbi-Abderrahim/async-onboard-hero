@@ -106,7 +106,10 @@ export default function AuthCallback() {
                 title: "Welcome!",
                 description: "Your email has been verified successfully",
               });
-              navigate(`/dashboard/${orgMemberships[0].organization_id}`, { replace: true });
+              // Small delay to ensure session propagates to UserContext
+              setTimeout(() => {
+                navigate(`/dashboard/${orgMemberships[0].organization_id}`, { replace: true });
+              }, 100);
               return;
             } else {
               // Multiple organizations - ALWAYS show selection screen
@@ -114,7 +117,10 @@ export default function AuthCallback() {
                 title: "Welcome!",
                 description: "Please select an organization to continue",
               });
-              navigate('/select-organization', { replace: true });
+              // Small delay to ensure session propagates to UserContext
+              setTimeout(() => {
+                navigate('/select-organization', { replace: true });
+              }, 100);
               return;
             }
           }

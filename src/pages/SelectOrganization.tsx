@@ -23,20 +23,21 @@ export default function SelectOrganization() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (userLoading) return;
-
-    if (!session?.user) {
-      navigate('/login');
-      return;
-    }
-
     const fetchOrganizations = async () => {
       try {
+        // Get session directly from Supabase to avoid timing issues
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        
+        if (!currentSession?.user) {
+          navigate('/login');
+          return;
+        }
+
         // Fetch organizations user is a member of
         const { data: memberships, error: memberError } = await supabase
           .from('organization_members')
           .select('organization_id, role, organizations(id, name, logo_url, brand_color)')
-          .eq('user_id', session.user.id);
+          .eq('user_id', currentSession.user.id);
 
         if (memberError) throw memberError;
 
@@ -75,7 +76,7 @@ export default function SelectOrganization() {
     };
 
     fetchOrganizations();
-  }, [session, userLoading, navigate]);
+  }, [navigate]);
 
   const handleSelectOrganization = (orgId: string) => {
     navigate(`/dashboard/${orgId}`);
