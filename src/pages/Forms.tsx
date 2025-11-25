@@ -52,29 +52,21 @@ export default function Forms() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    if (orgId) {
       fetchForms();
     }
-  }, [user]);
+  }, [orgId]);
 
   const fetchForms = async () => {
-    if (!user) return;
+    if (!orgId) return;
 
     try {
-      const { data: orgMember } = await supabase
-        .from("organization_members")
-        .select("organization_id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (!orgMember) {
-        throw new Error("No organization found");
-      }
+      console.log('Fetching forms for organization:', orgId);
 
       const { data, error } = await supabase
         .from("intake_forms")
         .select("id, title, description, status, submission_count, view_count, created_at, slug")
-        .eq("organization_id", orgMember.organization_id)
+        .eq("organization_id", orgId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
 

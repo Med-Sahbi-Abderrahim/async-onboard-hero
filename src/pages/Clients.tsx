@@ -14,6 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { TableSkeleton } from '@/components/ui/loading-skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { useOrgId } from '@/hooks/useOrgId';
 import * as XLSX from 'xlsx';
 
 interface Client {
@@ -32,6 +33,7 @@ export default function Clients() {
   const { user } = useUser();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const orgId = useOrgId();
   const [clients, setClients] = useState<Client[]>([]);
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,37 +43,27 @@ export default function Clients() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [newClient, setNewClient] = useState<Client | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [organizationId, setOrganizationId] = useState<string>('');
   const itemsPerPage = 20;
 
   useEffect(() => {
     fetchClients();
-  }, [user]);
+  }, [orgId]);
 
   useEffect(() => {
     filterClients();
   }, [searchQuery, clients]);
 
   const fetchClients = async () => {
-    if (!user) return;
+    if (!orgId) return;
 
     setLoading(true);
     try {
-      // Get user's organization
-      const { data: memberData } = await supabase
-        .from('organization_members')
-        .select('organization_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!memberData) return;
-
-      setOrganizationId(memberData.organization_id);
+      console.log('Fetching clients for organization:', orgId);
 
       const { data, error } = await supabase
         .from('clients')
         .select('*')
-        .eq('organization_id', memberData.organization_id)
+        .eq('organization_id', orgId)
         .is('deleted_at', null)
         .order('created_at', { ascending: false });
 
@@ -293,7 +285,7 @@ export default function Clients() {
                     </TableCell>
                     <TableCell>{formatLastActivity(client.last_activity_at)}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="outline" size="sm" onClick={() => navigate(`/clients/${organizationId}/${client.id}`)}>
+                      <Button variant="outline" size="sm" onClick={() => navigate(`/clients/${orgId}/${client.id}`)}>
                         View
                       </Button>
                     </TableCell>
@@ -338,7 +330,7 @@ export default function Clients() {
       <ImportClientsModal
         open={isImportModalOpen}
         onOpenChange={setIsImportModalOpen}
-        organizationId={organizationId}
+        organizationId={orgId || ''}
         userId={user?.id || ''}
         onImportComplete={fetchClients}
       />
