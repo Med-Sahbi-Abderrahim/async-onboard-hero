@@ -46,7 +46,7 @@ export function useUserRoles(): UserRoles {
             )
           `)
           .eq('user_id', user.id)
-          .eq('deleted_at', null);
+          .is('deleted_at', null);
 
         // Check if user is an organization member
         const { data: memberData } = await supabase
