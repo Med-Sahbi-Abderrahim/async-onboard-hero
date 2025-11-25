@@ -48,22 +48,181 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Kenly",
-      "applicationCategory": "BusinessApplication",
-      "description": "AI-powered client onboarding platform that automates intake forms, file uploads, contract management, and follow-ups for creative and digital agencies.",
-      "url": "https://kenly.io",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "provider": {
-        "@type": "Organization",
-        "name": "Kenly",
-        "url": "https://kenly.io"
-      }
+      "@graph": [
+        {
+          "@type": "Organization",
+          "name": "Kenly",
+          "url": "https://kenly.io",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://kenly.io/apple-touch-icon.png",
+            "width": 180,
+            "height": 180
+          },
+          "description": "AI-powered client onboarding and management solutions for agencies and service-based businesses. Streamline intake forms, file uploads, contract management, and automated follow-ups.",
+          "foundingDate": "2024",
+          "sameAs": [
+            "https://twitter.com/kenly"
+          ],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "Customer Support",
+            "availableLanguage": "English",
+            "email": "support@kenly.io"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Kenly",
+          "applicationCategory": "BusinessApplication",
+          "applicationSubCategory": "Client Management Software",
+          "description": "AI-powered client onboarding platform that automates intake forms, file uploads, contract management, and follow-ups for creative and digital agencies.",
+          "url": "https://kenly.io",
+          "operatingSystem": "Web Browser",
+          "browserRequirements": "Requires JavaScript. Requires HTML5.",
+          "softwareVersion": "1.0",
+          "offers": [
+            {
+              "@type": "Offer",
+              "name": "Basic Plan",
+              "price": "29",
+              "priceCurrency": "USD",
+              "priceSpecification": {
+                "@type": "UnitPriceSpecification",
+                "price": "29",
+                "priceCurrency": "USD",
+                "unitText": "MONTH",
+                "billingIncrement": 1
+              },
+              "availability": "https://schema.org/InStock"
+            },
+            {
+              "@type": "Offer",
+              "name": "Pro Plan",
+              "price": "49",
+              "priceCurrency": "USD",
+              "priceSpecification": {
+                "@type": "UnitPriceSpecification",
+                "price": "49",
+                "priceCurrency": "USD",
+                "unitText": "MONTH",
+                "billingIncrement": 1
+              },
+              "availability": "https://schema.org/InStock"
+            },
+            {
+              "@type": "Offer",
+              "name": "Enterprise Plan",
+              "price": "0",
+              "priceCurrency": "USD",
+              "description": "Custom pricing available",
+              "availability": "https://schema.org/InStock"
+            }
+          ],
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "5",
+            "ratingCount": "3",
+            "bestRating": "5",
+            "worstRating": "1"
+          },
+          "featureList": [
+            "Custom Intake Forms",
+            "Smart File Uploads",
+            "Automated Follow-ups",
+            "AI Client Summaries",
+            "Task Management",
+            "Contract Management",
+            "Invoice Tracking",
+            "Team Collaboration",
+            "Progress Tracking",
+            "Branded Client Portal"
+          ],
+          "screenshot": "https://storage.googleapis.com/gpt-engineer-file-uploads/dWvqdtRAVib2R32OIdhn88PchYE2/social-images/social-1763487156994-dfff6f05129d42b1ae07a864d874096e.jpg",
+          "provider": {
+            "@id": "https://kenly.io#organization"
+          }
+        },
+        {
+          "@type": "Product",
+          "name": "Kenly Client Onboarding Platform",
+          "description": "Professional client portal and onboarding automation platform for agencies. Streamline client intake with branded forms, file uploads, automated reminders, and progress tracking.",
+          "brand": {
+            "@type": "Brand",
+            "name": "Kenly"
+          },
+          "offers": {
+            "@type": "AggregateOffer",
+            "lowPrice": "29",
+            "highPrice": "49",
+            "priceCurrency": "USD",
+            "offerCount": "3",
+            "availability": "https://schema.org/InStock"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "5",
+            "reviewCount": "3",
+            "bestRating": "5",
+            "worstRating": "1"
+          },
+          "category": "Business Software",
+          "image": "https://storage.googleapis.com/gpt-engineer-file-uploads/dWvqdtRAVib2R32OIdhn88PchYE2/social-images/social-1763487156994-dfff6f05129d42b1ae07a864d874096e.jpg"
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How long does it take to set up?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Most agencies are up and running in under 30 minutes. Simply add your branding, customize your intake forms, and send your first client link. No complex setup or technical knowledge required."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I customize the portal with my branding?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes! Pro and Enterprise plans let you add your logo, brand colors, and custom fonts. Enterprise plans can completely remove Kenly branding for a fully white-labeled experience."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What happens if a client doesn't complete their onboarding?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Kenly automatically sends gentle reminder emails based on your schedule. You can track completion progress in real-time and see exactly what's blocking each client from moving forward."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is there a limit to the number of clients?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. All plans include unlimited clients and team members. You only pay per active user on your team, not per client portal."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I integrate Kenly with my existing tools?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes! Kenly integrates with popular tools through webhooks and automation workflows. Pro and Enterprise plans include advanced automation capabilities to connect with your existing tech stack."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What kind of support do you offer?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "All plans include email support. Pro plans get priority support with faster response times. Enterprise plans receive a dedicated support channel with guaranteed SLAs and personalized onboarding assistance."
+              }
+            }
+          ]
+        }
+      ]
     }
     </script>
 </head>
