@@ -37,37 +37,42 @@ export function useUserRoles(): UserRoles {
         // Check if user is a client
         const { data: clientData } = await supabase
           .from('clients')
-          .select(`
-            id,
-            organization_id,
-            organizations (
-              id,
-              name
-            )
-          `)
+          .select('id, organization_id')
           .eq('user_id', user.id)
           .is('deleted_at', null);
 
         // Check if user is an organization member
         const { data: memberData } = await supabase
           .from('organization_members')
-          .select(`
-            organization_id,
-            organizations (
-              id,
-              name
-            )
-          `)
+          .select('organization_id')
           .eq('user_id', user.id);
 
+        // Fetch organization details separately to avoid RLS issues
+        const clientOrgIds = clientData?.map(c => c.organization_id) || [];
+        const memberOrgIds = memberData?.map(m => m.organization_id) || [];
+        const allOrgIds = [...new Set([...clientOrgIds, ...memberOrgIds])];
+
+        let orgNames: Record<string, string> = {};
+        if (allOrgIds.length > 0) {
+          const { data: orgsData } = await supabase
+            .from('organizations')
+            .select('id, name')
+            .in('id', allOrgIds);
+          
+          orgNames = (orgsData || []).reduce((acc: Record<string, string>, org) => {
+            acc[org.id] = org.name || 'Unnamed Organization';
+            return acc;
+          }, {});
+        }
+
         const clientOrgs = clientData?.map((c: any) => ({
-          id: c.organizations.id,
-          name: c.organizations.name || 'Unnamed Organization',
+          id: c.organization_id,
+          name: orgNames[c.organization_id] || 'Unnamed Organization',
         })) || [];
 
         const businessOrgs = memberData?.map((m: any) => ({
-          id: m.organizations.id,
-          name: m.organizations.name || 'Unnamed Organization',
+          id: m.organization_id,
+          name: orgNames[m.organization_id] || 'Unnamed Organization',
         })) || [];
 
         setRoles({
