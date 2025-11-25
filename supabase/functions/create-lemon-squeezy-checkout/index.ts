@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 interface CheckoutRequest {
-  plan: 'starter' | 'pro';
+  plan: 'starter' | 'pro' | 'enterprise';
   organizationId: string;
 }
 
@@ -59,16 +59,23 @@ Deno.serve(async (req) => {
       throw new Error('Organization not found');
     }
 
-    // Define variant IDs for each plan (you'll need to replace these with your actual Lemon Squeezy variant IDs)
-    const variantIds = {
-      starter: Deno.env.get('LEMONSQUEEZY_STARTER_VARIANT_ID') || '',
-      pro: Deno.env.get('LEMONSQUEEZY_PRO_VARIANT_ID') || '',
+    // Define variant IDs for each plan - these must match your Lemon Squeezy product variants
+    // Basic ($29/user): LEMONSQUEEZY_STARTER_VARIANT_ID
+    // Pro ($49/user): LEMONSQUEEZY_PRO_VARIANT_ID
+    // Enterprise ($199/user): LEMONSQUEEZY_ENTERPRISE_VARIANT_ID
+    const variantIds: Record<string, string> = {
+      starter: Deno.env.get('LEMONSQUEEZY_STARTER_VARIANT_ID') || '', // Basic plan - $29/user/month
+      pro: Deno.env.get('LEMONSQUEEZY_PRO_VARIANT_ID') || '',         // Pro plan - $49/user/month
+      enterprise: Deno.env.get('LEMONSQUEEZY_ENTERPRISE_VARIANT_ID') || '', // Enterprise - $199/user/month
     };
 
     const variantId = variantIds[plan];
     if (!variantId) {
-      throw new Error('Invalid plan selected');
+      console.error('Missing variant ID for plan:', plan);
+      throw new Error(`Invalid plan selected: ${plan}. Please configure variant ID in Supabase secrets.`);
     }
+
+    console.log('Creating checkout for plan:', plan, 'organization:', organizationId);
 
     const storeId = Deno.env.get('LEMONSQUEEZY_STORE_ID');
     const apiKey = Deno.env.get('LEMONSQUEEZY_API_KEY');
@@ -124,7 +131,7 @@ Deno.serve(async (req) => {
     const checkoutData = await checkoutResponse.json();
     const checkoutUrl = checkoutData.data.attributes.url;
 
-    console.log('Checkout session created:', checkoutUrl);
+    console.log('Checkout session created successfully for plan:', plan, 'URL:', checkoutUrl);
 
     return new Response(
       JSON.stringify({ url: checkoutUrl }),

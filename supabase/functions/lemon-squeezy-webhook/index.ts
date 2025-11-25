@@ -72,11 +72,21 @@ Deno.serve(async (req) => {
       case 'subscription_created':
       case 'subscription_updated': {
         const subscription = payload.data.attributes;
-        const planName = subscription.variant_name?.toLowerCase() || 'free';
+        const variantName = subscription.variant_name?.toLowerCase() || '';
+        const productName = subscription.product_name?.toLowerCase() || '';
+        const combinedName = `${variantName} ${productName}`;
         
+        console.log('Processing subscription for variant:', subscription.variant_name, 'product:', subscription.product_name);
+        
+        // Map variant names to plan types (database uses 'starter' for Basic plan)
         let plan = 'free';
-        if (planName.includes('starter')) plan = 'starter';
-        else if (planName.includes('pro')) plan = 'pro';
+        if (combinedName.includes('basic') || combinedName.includes('starter')) {
+          plan = 'starter'; // $29/user - maps to "Basic" in UI
+        } else if (combinedName.includes('pro')) {
+          plan = 'pro'; // $49/user
+        } else if (combinedName.includes('enterprise')) {
+          plan = 'enterprise'; // $199/user
+        }
 
         const updateData = {
           plan,
@@ -86,7 +96,7 @@ Deno.serve(async (req) => {
           subscription_renewal_date: subscription.renews_at,
         };
 
-        console.log('Updating organization:', updateData);
+        console.log('Updating organization with plan:', plan, updateData);
 
         const { error: updateError } = await supabase
           .from('organizations')
@@ -98,7 +108,7 @@ Deno.serve(async (req) => {
           throw updateError;
         }
 
-        console.log('Organization updated successfully');
+        console.log('Organization updated successfully to', plan, 'plan');
         break;
       }
 
