@@ -33,7 +33,7 @@ export function useTeamManagement(organizationId: string | undefined) {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('invite-team-member', {
+      const response = await supabase.functions.invoke('invite-team-member', {
         body: {
           email,
           full_name: fullName,
@@ -42,7 +42,15 @@ export function useTeamManagement(organizationId: string | undefined) {
         },
       });
 
-      if (error) throw error;
+      // Check for errors in the response
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to invite team member');
+      }
+
+      // Check for application-level errors in the response data
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
 
       toast({
         title: 'Success',
@@ -68,7 +76,7 @@ export function useTeamManagement(organizationId: string | undefined) {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('update-member-role', {
+      const response = await supabase.functions.invoke('update-member-role', {
         body: {
           member_id: memberId,
           new_role: newRole,
@@ -76,7 +84,13 @@ export function useTeamManagement(organizationId: string | undefined) {
         },
       });
 
-      if (error) throw error;
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to update member role');
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
 
       toast({
         title: 'Success',
@@ -102,14 +116,20 @@ export function useTeamManagement(organizationId: string | undefined) {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('remove-team-member', {
+      const response = await supabase.functions.invoke('remove-team-member', {
         body: {
           member_id: memberId,
           organization_id: organizationId,
         },
       });
 
-      if (error) throw error;
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to remove team member');
+      }
+
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
 
       toast({
         title: 'Success',
