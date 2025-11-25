@@ -201,7 +201,7 @@ Deno.serve(async (req) => {
         };
 
     const { error: emailError } = await resend.emails.send({
-      from: 'Kenly <onboarding@resend.dev>',
+      from: 'Kenly <noreply@kenly.io>',
       to: email,
       subject: emailContent.subject,
       html: emailContent.html,
