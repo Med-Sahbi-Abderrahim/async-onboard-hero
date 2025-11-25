@@ -39,7 +39,7 @@ export function TeamSettings() {
     try {
       const { data, error } = await supabase
         .from('organization_members')
-        .select('id, user_id, role, created_at, invitation_accepted_at')
+        .select('id, user_id, role, created_at, invitation_accepted_at, invited_email, invited_full_name')
         .eq('organization_id', orgId);
 
       if (error) throw error;
@@ -53,9 +53,14 @@ export function TeamSettings() {
             .eq('id', member.user_id)
             .single();
 
+          // Use invited_email/invited_full_name for pending invites if user data doesn't exist
           return {
             ...member,
-            users: userData || { full_name: '', email: '', avatar_url: null },
+            users: userData || { 
+              full_name: member.invited_full_name || 'Pending User', 
+              email: member.invited_email || 'No email', 
+              avatar_url: null 
+            },
           };
         })
       );

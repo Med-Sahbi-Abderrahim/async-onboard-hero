@@ -8,6 +8,8 @@ export interface TeamMember {
   role: 'owner' | 'admin' | 'member';
   created_at: string;
   invitation_accepted_at: string | null;
+  invited_email?: string | null;
+  invited_full_name?: string | null;
   users: {
     full_name: string;
     email: string;

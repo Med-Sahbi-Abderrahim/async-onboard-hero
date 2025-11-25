@@ -63,14 +63,26 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Get organization details for email
+    const { data: orgData } = await supabaseAdmin
+      .from('organizations')
+      .select('name')
+      .eq('id', organization_id)
+      .single();
+
+    const orgName = orgData?.name || 'the team';
+    const appUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://kenly.io';
+
     // Check if user already exists in Supabase Auth
     const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();
     const userExists = existingUser.users.find(u => u.email === email);
 
     let userId: string;
+    let isExistingUser = false;
 
     if (userExists) {
       userId = userExists.id;
+      isExistingUser = true;
       console.log('User already exists:', userId);
 
       // Check if already a member
@@ -88,7 +100,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Add to organization_members
+      // Add to organization_members for existing user
       const { error: memberError } = await supabaseAdmin
         .from('organization_members')
         .insert({
@@ -96,6 +108,8 @@ Deno.serve(async (req) => {
           user_id: userId,
           role,
           invited_by: user.id,
+          invited_email: email,
+          invited_full_name: full_name,
           invitation_accepted_at: new Date().toISOString(),
         });
 
@@ -103,58 +117,25 @@ Deno.serve(async (req) => {
         console.error('Error adding member:', memberError);
         throw memberError;
       }
-
-      // Send custom email for existing user
-      const resend = new Resend(resendApiKey);
-      const { data: orgData } = await supabaseAdmin
-        .from('organizations')
-        .select('name')
-        .eq('id', organization_id)
-        .single();
-
-      const orgName = orgData?.name || 'the team';
-      const appUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://localhost:5173';
-      const loginUrl = `${appUrl}/login?context=agency&orgId=${organization_id}`;
-
-      await resend.emails.send({
-        from: 'ClientForm <noreply@clientform.app>',
-        to: email,
-        subject: `You've been added to ${orgName}'s team`,
-        html: `
-          <h2>Welcome to ${orgName}!</h2>
-          <p>You've been added as a <strong>${role}</strong> to the team.</p>
-          <p>You can now log in and start collaborating:</p>
-          <p><a href="${loginUrl}" style="background: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Log In to Dashboard</a></p>
-          <p>Your role gives you the following permissions:</p>
-          <ul>
-            ${role === 'admin' ? '<li>Manage team members</li><li>Manage clients and forms</li><li>View all submissions</li>' : '<li>View and manage clients</li><li>Create and edit forms</li><li>View submissions</li>'}
-          </ul>
-        `,
-      });
     } else {
-      // Invite new user via Supabase Auth
-      console.log('Inviting new user via Supabase Auth');
-      const appUrl = Deno.env.get('PUBLIC_APP_URL') || 'https://localhost:5173';
-      const redirectUrl = `${appUrl}/auth/callback?context=agency&orgId=${organization_id}`;
-
-      const { data: inviteData, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-        redirectTo: redirectUrl,
-        data: {
+      // Create new user in auth (without sending Supabase's email)
+      console.log('Creating new user account');
+      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        email_confirm: false,
+        user_metadata: {
           full_name,
-          organization_id,
-          role,
-          invited_by: user.id,
         },
       });
 
-      if (inviteError) {
-        console.error('Error inviting user:', inviteError);
-        throw inviteError;
+      if (createError) {
+        console.error('Error creating user:', createError);
+        throw createError;
       }
 
-      userId = inviteData.user.id;
+      userId = newUser.user.id;
 
-      // Add to organization_members (invitation will be accepted on first login)
+      // Add to organization_members with pending status
       const { error: memberError } = await supabaseAdmin
         .from('organization_members')
         .insert({
@@ -162,12 +143,75 @@ Deno.serve(async (req) => {
           user_id: userId,
           role,
           invited_by: user.id,
+          invited_email: email,
+          invited_full_name: full_name,
+          // invitation_accepted_at is null for pending invites
         });
 
       if (memberError) {
         console.error('Error adding member:', memberError);
         throw memberError;
       }
+
+      // Generate password reset/set link for new user
+      const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'magiclink',
+        email,
+        options: {
+          redirectTo: `${appUrl}/auth/callback?context=agency&orgId=${organization_id}`,
+        },
+      });
+
+      if (resetError) {
+        console.error('Error generating magic link:', resetError);
+      }
+    }
+
+    // Send invitation email via Resend for ALL invitations
+    const resend = new Resend(resendApiKey);
+    const loginUrl = `${appUrl}/login?context=agency&orgId=${organization_id}`;
+    
+    const emailContent = isExistingUser 
+      ? {
+          subject: `You've been added to ${orgName}'s team`,
+          html: `
+            <h2>Welcome to ${orgName}!</h2>
+            <p>You've been added as a <strong>${role}</strong> to the team.</p>
+            <p>You can now log in and start collaborating:</p>
+            <p><a href="${loginUrl}" style="background: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Log In to Dashboard</a></p>
+            <p>Your role gives you the following permissions:</p>
+            <ul>
+              ${role === 'admin' ? '<li>Manage team members</li><li>Manage clients and forms</li><li>View all submissions</li>' : '<li>View and manage clients</li><li>Create and edit forms</li><li>View submissions</li>'}
+            </ul>
+          `,
+        }
+      : {
+          subject: `You've been invited to join ${orgName}`,
+          html: `
+            <h2>Welcome to ${orgName}!</h2>
+            <p>You've been invited to join as a <strong>${role}</strong>.</p>
+            <p>Click the button below to set up your account and get started:</p>
+            <p><a href="${loginUrl}" style="background: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Accept Invitation & Sign Up</a></p>
+            <p>Your role will give you the following permissions:</p>
+            <ul>
+              ${role === 'admin' ? '<li>Manage team members</li><li>Manage clients and forms</li><li>View all submissions</li>' : '<li>View and manage clients</li><li>Create and edit forms</li><li>View submissions</li>'}
+            </ul>
+            <p style="color: #666; font-size: 14px; margin-top: 20px;">If you didn't expect this invitation, you can safely ignore this email.</p>
+          `,
+        };
+
+    const { error: emailError } = await resend.emails.send({
+      from: 'Kenly <noreply@clientform.app>',
+      to: email,
+      subject: emailContent.subject,
+      html: emailContent.html,
+    });
+
+    if (emailError) {
+      console.error('Error sending email:', emailError);
+      // Don't fail the invitation if email fails
+    } else {
+      console.log('Invitation email sent successfully to:', email);
     }
 
     // Log activity
