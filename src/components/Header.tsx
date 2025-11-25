@@ -17,11 +17,7 @@ import { useUser } from '@/contexts/UserContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useOrgId } from '@/hooks/useOrgId';
-
-interface Organization {
-  id: string;
-  name: string;
-}
+import { OrganizationSwitcher } from '@/components/OrganizationSwitcher';
 
 const getPageTitle = (pathname: string): string => {
   // Remove orgId from path for title matching
@@ -72,6 +68,7 @@ export function Header() {
         <h1 className="text-xl md:text-2xl font-semibold truncate">{pageTitle}</h1>
 
         <div className="ml-auto flex items-center gap-2">
+          <OrganizationSwitcher />
           <RoleSwitcher />
           <ThemeToggle />
           <NotificationsDropdown />

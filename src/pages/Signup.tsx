@@ -61,22 +61,20 @@ export default function Signup() {
       } = await supabase.auth.getSession();
       
       if (session) {
-        // Find user's first organization
-        const { data: orgMember } = await supabase
+        // Check organizations
+        const { data: memberships } = await supabase
           .from('organization_members')
           .select('organization_id')
-          .eq('user_id', session.user.id)
-          .limit(1)
-          .maybeSingle();
-        
-        if (orgMember) {
-          navigate(`/dashboard/${orgMember.organization_id}`);
+          .eq('user_id', session.user.id);
+
+        if (memberships && memberships.length > 0) {
+          navigate('/select-organization');
         } else {
           // Check if user is a client
           const { data: clientData } = await supabase
             .from('clients')
             .select('organization_id')
-            .eq('email', session.user.email)
+            .eq('user_id', session.user.id)
             .limit(1)
             .maybeSingle();
           
@@ -174,36 +172,37 @@ export default function Signup() {
           description: "We've sent you a confirmation link. Please verify your email to continue.",
         });
       } else if (data.session) {
-        // Auto-logged in - find user's organization
-        toast({
-          title: "Account created!",
-          description: inviteCode ? "Welcome to Kenly! Your early access has been activated." : "Welcome to Kenly!",
-        });
-        
-        // Find user's first organization
-        const { data: orgMember } = await supabase
+        // Auto-logged in - check for organization access
+        // Check if user has organization memberships
+        const { data: memberships } = await supabase
           .from('organization_members')
           .select('organization_id')
-          .eq('user_id', data.session.user.id)
-          .limit(1)
-          .maybeSingle();
-        
-        if (orgMember) {
-          navigate(`/dashboard/${orgMember.organization_id}`);
+          .eq('user_id', data.session.user.id);
+
+        if (memberships && memberships.length > 0) {
+          toast({
+            title: "Account created!",
+            description: inviteCode ? "Welcome! Your early access has been activated." : "Welcome to Kenly!",
+          });
+          navigate('/select-organization');
         } else {
           // Check if user is a client
           const { data: clientData } = await supabase
             .from('clients')
             .select('organization_id')
-            .eq('email', data.session.user.email)
+            .eq('user_id', data.session.user.id)
             .limit(1)
             .maybeSingle();
           
           if (clientData) {
+            toast({
+              title: "Account created!",
+              description: "Welcome to your client portal!",
+            });
             navigate(`/client-portal/${clientData.organization_id}`);
           } else {
-            // Fallback - shouldn't happen but redirect to root
-            navigate("/");
+            // User has no organization access
+            navigate('/no-organization');
           }
         }
       }

@@ -46,6 +46,8 @@ import EditForm from "./pages/EditForm";
 import Tasks from "./pages/Tasks";
 import EarlyAccessAdmin from "./pages/EarlyAccessAdmin";
 import ClientDashboard from "./pages/ClientDashboard";
+import SelectOrganization from "./pages/SelectOrganization";
+import NoOrganization from "./pages/NoOrganization";
 
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,6 +81,12 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             {/* callback after email confirmation*/}
             <Route path="/auth/callback" element={<AuthCallback />} />
+            
+            {/* Organization selection for multi-org users */}
+            <Route path="/select-organization" element={<ProtectedRoute><SelectOrganization /></ProtectedRoute>} />
+            
+            {/* No organization access page */}
+            <Route path="/no-organization" element={<ProtectedRoute><NoOrganization /></ProtectedRoute>} />
 
             {/* Protected Agency Routes with Dashboard Layout - Support orgId parameter */}
             <Route

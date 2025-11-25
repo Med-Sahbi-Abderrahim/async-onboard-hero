@@ -80,22 +80,20 @@ export default function Login() {
         } else if (storedContext === 'agency' && storedOrgId) {
           navigate(`/dashboard/${storedOrgId}`);
         } else {
-          // No context - find user's first organization
-          const { data: orgMember } = await supabase
+          // No context - check organizations
+          const { data: memberships } = await supabase
             .from('organization_members')
             .select('organization_id')
-            .eq('user_id', session.user.id)
-            .limit(1)
-            .maybeSingle();
-          
-          if (orgMember) {
-            navigate(`/dashboard/${orgMember.organization_id}`);
+            .eq('user_id', session.user.id);
+
+          if (memberships && memberships.length > 0) {
+            navigate('/select-organization');
           } else {
             // Check if user is a client
             const { data: clientData } = await supabase
               .from('clients')
               .select('organization_id')
-              .eq('email', session.user.email)
+              .eq('user_id', session.user.id)
               .limit(1)
               .maybeSingle();
             
@@ -147,30 +145,29 @@ export default function Login() {
       } else if (storedContext === 'agency' && storedOrgId) {
         navigate(`/dashboard/${storedOrgId}`);
       } else {
-        // No context - find user's first organization
-        const { data: orgMember } = await supabase
+        // No context - check organizations
+        const { data: memberships } = await supabase
           .from('organization_members')
           .select('organization_id')
-          .eq('user_id', data.user.id)
-          .limit(1)
-          .maybeSingle();
-        
-        if (orgMember) {
-          navigate(`/dashboard/${orgMember.organization_id}`);
+          .eq('user_id', data.user.id);
+
+        if (memberships && memberships.length > 0) {
+          // User has organizations - navigate to selector or first org
+          navigate('/select-organization');
         } else {
-          // Check if user is only a client
+          // Check if user is a client
           const { data: clientData } = await supabase
             .from('clients')
             .select('organization_id')
-            .eq('email', data.user.email)
+            .eq('user_id', data.user.id)
             .limit(1)
             .maybeSingle();
           
           if (clientData) {
             navigate(`/client-portal/${clientData.organization_id}`);
           } else {
-            // User has no organization or client record - shouldn't happen
-            navigate("/");
+            // User has no organization access
+            navigate('/no-organization');
           }
         }
       }
