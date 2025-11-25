@@ -10,11 +10,15 @@ interface UserProfile {
   preferences?: any;
 }
 
+type UserMode = 'business' | 'client';
+
 interface UserContextType {
   user: User | null;
   session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
+  userMode: UserMode;
+  setUserMode: (mode: UserMode) => void;
   refreshProfile: () => Promise<void>;
 }
 
@@ -25,6 +29,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userMode, setUserModeState] = useState<UserMode>(() => {
+    // Load from localStorage on init
+    const saved = localStorage.getItem('kenly_user_mode');
+    return (saved === 'client' ? 'client' : 'business') as UserMode;
+  });
+
+  const setUserMode = (mode: UserMode) => {
+    localStorage.setItem('kenly_user_mode', mode);
+    setUserModeState(mode);
+  };
 
   const refreshProfile = async () => {
     if (!session?.user) return;
@@ -103,7 +117,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, session, profile, loading, refreshProfile }}>
+    <UserContext.Provider value={{ user, session, profile, loading, userMode, setUserMode, refreshProfile }}>
       {children}
     </UserContext.Provider>
   );
