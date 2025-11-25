@@ -71,39 +71,35 @@ export default function Login() {
       } = await supabase.auth.getSession();
       
       if (session) {
-        // User is already logged in - redirect based on context
-        const storedContext = localStorage.getItem('auth_context');
-        const storedOrgId = localStorage.getItem('auth_org_id');
-        
-        if (storedContext === 'client' && storedOrgId) {
-          navigate(`/client-portal/${storedOrgId}`);
-        } else if (storedContext === 'agency' && storedOrgId) {
-          navigate(`/dashboard/${storedOrgId}`);
-        } else {
-          // No context - check organizations
-          const { data: memberships } = await supabase
-            .from('organization_members')
-            .select('organization_id')
-            .eq('user_id', session.user.id);
+        // User is already logged in - check organization count
+        const { data: memberships } = await supabase
+          .from('organization_members')
+          .select('organization_id')
+          .eq('user_id', session.user.id);
 
-          if (memberships && memberships.length > 0) {
-            if (memberships.length === 1) {
-              navigate(`/dashboard/${memberships[0].organization_id}`);
+        if (memberships && memberships.length > 0) {
+          if (memberships.length === 1) {
+            navigate(`/dashboard/${memberships[0].organization_id}`);
+          } else {
+            // Multiple orgs - always show selection
+            navigate('/select-organization');
+          }
+        } else {
+          // Check if user is a client
+          const { data: clientData } = await supabase
+            .from('clients')
+            .select('organization_id')
+            .eq('user_id', session.user.id)
+            .is('deleted_at', null);
+          
+          if (clientData && clientData.length > 0) {
+            if (clientData.length === 1) {
+              navigate(`/client-portal/${clientData[0].organization_id}`);
             } else {
-              navigate('/select-organization');
+              navigate('/client-dashboard');
             }
           } else {
-            // Check if user is a client
-            const { data: clientData } = await supabase
-              .from('clients')
-              .select('organization_id')
-              .eq('user_id', session.user.id)
-              .limit(1)
-              .maybeSingle();
-            
-            if (clientData) {
-              navigate(`/client-portal/${clientData.organization_id}`);
-            }
+            navigate('/no-organization');
           }
         }
       }
@@ -140,50 +136,43 @@ export default function Login() {
         description: "Successfully logged in",
       });
 
-      // Read stored context to determine redirect
-      const storedContext = localStorage.getItem('auth_context');
-      const storedOrgId = localStorage.getItem('auth_org_id');
-      
-      if (storedContext === 'client' && storedOrgId) {
-        navigate(`/client-portal/${storedOrgId}`);
-      } else if (storedContext === 'agency' && storedOrgId) {
-        navigate(`/dashboard/${storedOrgId}`);
-      } else {
-        // No context - check organizations
-        const { data: memberships } = await supabase
-          .from('organization_members')
-          .select('organization_id')
-          .eq('user_id', data.user.id);
-
-        if (memberships && memberships.length > 0) {
-          if (memberships.length === 1) {
-            // User has only one org - redirect directly
-            navigate(`/dashboard/${memberships[0].organization_id}`);
-          } else {
-            // User has multiple orgs - show selector
-            navigate('/select-organization');
-          }
-        } else {
-          // Check if user is a client
-          const { data: clientData } = await supabase
-            .from('clients')
-            .select('organization_id')
-            .eq('user_id', data.user.id)
-            .limit(1)
-            .maybeSingle();
-          
-          if (clientData) {
-            navigate(`/client-portal/${clientData.organization_id}`);
-          } else {
-            // User has no organization access
-            navigate('/no-organization');
-          }
-        }
-      }
-      
-      // Clear stored context after use
+      // Clear any stored context
       localStorage.removeItem('auth_context');
       localStorage.removeItem('auth_org_id');
+      
+      // Check organizations - always use current org count as source of truth
+      const { data: memberships } = await supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', data.user.id);
+
+      if (memberships && memberships.length > 0) {
+        if (memberships.length === 1) {
+          // User has only one org - redirect directly
+          navigate(`/dashboard/${memberships[0].organization_id}`);
+        } else {
+          // User has multiple orgs - always show selector
+          navigate('/select-organization');
+        }
+      } else {
+        // Check if user is a client
+        const { data: clientData } = await supabase
+          .from('clients')
+          .select('organization_id')
+          .eq('user_id', data.user.id)
+          .is('deleted_at', null);
+        
+        if (clientData && clientData.length > 0) {
+          if (clientData.length === 1) {
+            navigate(`/client-portal/${clientData[0].organization_id}`);
+          } else {
+            navigate('/client-dashboard');
+          }
+        } else {
+          // User has no organization access
+          navigate('/no-organization');
+        }
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
