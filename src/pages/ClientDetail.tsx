@@ -232,7 +232,11 @@ export default function ClientDetail() {
     }
 
     try {
-      const { error } = await supabase.from("clients").delete().eq("id", id);
+      // Use soft delete to avoid foreign key constraint issues
+      const { error } = await supabase
+        .from("clients")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", id);
 
       if (error) throw error;
 
@@ -280,7 +284,7 @@ export default function ClientDetail() {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/clients">Clients</BreadcrumbLink>
+            <BreadcrumbLink href={`/clients/${orgId}`}>Clients</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator>
             <ChevronRight />
