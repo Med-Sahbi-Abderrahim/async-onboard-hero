@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
-import kenlyLogo from "@/assets/kenly-logo.jpg";
+import kenlyLogo from "@/assets/kenly-logo.png";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),

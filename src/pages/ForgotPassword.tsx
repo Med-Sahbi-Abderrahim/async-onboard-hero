@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
 import { getAuthRedirectUrl } from "@/lib/auth-utils";
-import kenlyLogo from "@/assets/kenly-logo.jpg";
+import kenlyLogo from "@/assets/kenly-logo.png";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),

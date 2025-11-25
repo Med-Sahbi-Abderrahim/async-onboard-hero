@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
 import { getAuthRedirectUrl } from "@/lib/auth-utils";
-import kenlyLogo from "@/assets/kenly-logo.jpg";
+import kenlyLogo from "@/assets/kenly-logo.png";
 
 const signupSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Clock, Database, FileText, Sparkles, Upload, Zap, ArrowRight } from "lucide-react";
-import kenlyLogo from "@/assets/kenly-logo.jpg";
+import kenlyLogo from "@/assets/kenly-logo.png";
 
 const Index = () => {
   const structuredData = {
