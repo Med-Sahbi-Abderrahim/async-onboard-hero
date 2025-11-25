@@ -23,26 +23,30 @@ export function OrgRedirect() {
       }
 
       try {
-        const { data, error } = await supabase
+        const { data: memberships, error } = await supabase
           .from('organization_members')
           .select('organization_id')
-          .eq('user_id', session.user.id)
-          .limit(1)
-          .single();
+          .eq('user_id', session.user.id);
 
-        if (error || !data) {
-          console.error('Error fetching organization:', error);
+        if (error) {
+          console.error('Error fetching organizations:', error);
           setRedirectTo('/login');
-        } else {
-          // Construct new path with orgId
+        } else if (!memberships || memberships.length === 0) {
+          // No organizations - redirect to no-organization page
+          setRedirectTo('/no-organization');
+        } else if (memberships.length === 1) {
+          // Single organization - redirect directly
           const pathSegments = location.pathname.split('/').filter(Boolean);
-          const newPath = `/${pathSegments[0]}/${data.organization_id}${
+          const newPath = `/${pathSegments[0]}/${memberships[0].organization_id}${
             pathSegments.length > 1 ? '/' + pathSegments.slice(1).join('/') : ''
           }`;
           setRedirectTo(newPath);
+        } else {
+          // Multiple organizations - go to selector
+          setRedirectTo('/select-organization');
         }
       } catch (error) {
-        console.error('Error fetching organization:', error);
+        console.error('Error fetching organizations:', error);
         setRedirectTo('/login');
       } finally {
         setLoading(false);
