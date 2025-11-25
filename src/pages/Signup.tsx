@@ -68,18 +68,27 @@ export default function Signup() {
           .eq('user_id', session.user.id);
 
         if (memberships && memberships.length > 0) {
-          navigate('/select-organization');
+          if (memberships.length === 1) {
+            navigate(`/dashboard/${memberships[0].organization_id}`);
+          } else {
+            navigate('/select-organization');
+          }
         } else {
           // Check if user is a client
           const { data: clientData } = await supabase
             .from('clients')
             .select('organization_id')
             .eq('user_id', session.user.id)
-            .limit(1)
-            .maybeSingle();
+            .is('deleted_at', null);
           
-          if (clientData) {
-            navigate(`/client-portal/${clientData.organization_id}`);
+          if (clientData && clientData.length > 0) {
+            if (clientData.length === 1) {
+              navigate(`/client-portal/${clientData[0].organization_id}`);
+            } else {
+              navigate('/client-dashboard');
+            }
+          } else {
+            navigate('/no-organization');
           }
         }
       }
