@@ -149,8 +149,8 @@ Deno.serve(async (req) => {
     // Send custom invitation email for existing users with context-aware link
     if (sendCustomEmail) {
       const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
-      // Context-aware login URL for clients
-      const loginUrl = `${publicAppUrl}/login?context=client&orgId=${requestData.organization_id}`;
+      // Direct portal URL for existing clients being added to new org
+      const loginUrl = `${publicAppUrl}/client-portal/${clientData.id}`;
       
       try {
         const { error: emailError } = await resend.emails.send({
