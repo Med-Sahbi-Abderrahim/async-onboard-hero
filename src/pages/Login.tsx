@@ -87,7 +87,11 @@ export default function Login() {
             .eq('user_id', session.user.id);
 
           if (memberships && memberships.length > 0) {
-            navigate('/select-organization');
+            if (memberships.length === 1) {
+              navigate(`/dashboard/${memberships[0].organization_id}`);
+            } else {
+              navigate('/select-organization');
+            }
           } else {
             // Check if user is a client
             const { data: clientData } = await supabase
@@ -152,8 +156,13 @@ export default function Login() {
           .eq('user_id', data.user.id);
 
         if (memberships && memberships.length > 0) {
-          // User has organizations - navigate to selector or first org
-          navigate('/select-organization');
+          if (memberships.length === 1) {
+            // User has only one org - redirect directly
+            navigate(`/dashboard/${memberships[0].organization_id}`);
+          } else {
+            // User has multiple orgs - show selector
+            navigate('/select-organization');
+          }
         } else {
           // Check if user is a client
           const { data: clientData } = await supabase
