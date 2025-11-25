@@ -44,24 +44,36 @@ export function TeamSettings() {
 
       if (error) throw error;
 
-      // Fetch user details separately
+      // Fetch user details separately with proper error handling
       const membersWithUsers = await Promise.all(
         (data || []).map(async (member) => {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('full_name, email, avatar_url')
-            .eq('id', member.user_id)
-            .single();
+          try {
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('full_name, email, avatar_url')
+              .eq('id', member.user_id)
+              .maybeSingle();
 
-          // Use invited_email/invited_full_name for pending invites if user data doesn't exist
-          return {
-            ...member,
-            users: userData || { 
-              full_name: member.invited_full_name || 'Pending User', 
-              email: member.invited_email || 'No email', 
-              avatar_url: null 
-            },
-          };
+            // Use invited_email/invited_full_name for pending invites if user data doesn't exist
+            return {
+              ...member,
+              users: userData || { 
+                full_name: member.invited_full_name || 'Pending User', 
+                email: member.invited_email || 'No email', 
+                avatar_url: null 
+              },
+            };
+          } catch (err) {
+            // Fallback to invited data if user query fails
+            return {
+              ...member,
+              users: { 
+                full_name: member.invited_full_name || 'Pending User', 
+                email: member.invited_email || 'No email', 
+                avatar_url: null 
+              },
+            };
+          }
         })
       );
 

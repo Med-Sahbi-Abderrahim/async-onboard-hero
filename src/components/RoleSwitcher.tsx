@@ -18,19 +18,8 @@ export function RoleSwitcher() {
   const { userMode, setUserMode } = useUser();
   const { isClient, isBusinessMember, clientOrganizations, businessOrganizations, loading } = useUserRoles();
 
-  // Debug logging
-  console.log('RoleSwitcher Debug:', {
-    loading,
-    isClient,
-    isBusinessMember,
-    clientOrganizations,
-    businessOrganizations,
-    userMode
-  });
-
   // Only show if user has both roles
   if (loading || (!isClient || !isBusinessMember)) {
-    console.log('RoleSwitcher hidden because:', { loading, isClient, isBusinessMember });
     return null;
   }
 
