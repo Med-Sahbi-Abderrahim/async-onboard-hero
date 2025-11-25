@@ -33,20 +33,27 @@ export default function SelectOrganization() {
           return;
         }
 
+        console.log('Fetching organizations for user:', currentSession.user.id);
+
         // Fetch organizations user is a member of
         const { data: memberships, error: memberError } = await supabase
           .from('organization_members')
-          .select('organization_id, role, organizations(id, name, logo_url, brand_color)')
+          .select('organization_id, role')
           .eq('user_id', currentSession.user.id);
 
-        if (memberError) throw memberError;
+        if (memberError) {
+          console.error('Error fetching memberships:', memberError);
+          throw memberError;
+        }
 
-      if (!memberships || memberships.length === 0) {
-        // No organizations - show message
-        toast.error('You are not a member of any organization');
-        navigate('/no-organization');
-        return;
-      }
+        console.log('Found memberships:', memberships);
+
+        if (!memberships || memberships.length === 0) {
+          // No organizations - show message
+          toast.error('You are not a member of any organization');
+          navigate('/no-organization');
+          return;
+        }
 
         // If only one organization, redirect directly
         if (memberships.length === 1) {
@@ -55,17 +62,35 @@ export default function SelectOrganization() {
           return;
         }
 
-        // Multiple organizations - show selector
+        // Fetch organization details separately
+        const orgIds = memberships.map(m => m.organization_id);
+        const { data: orgsData, error: orgsError } = await supabase
+          .from('organizations')
+          .select('id, name, logo_url, brand_color')
+          .in('id', orgIds);
+
+        if (orgsError) {
+          console.error('Error fetching organizations:', orgsError);
+          throw orgsError;
+        }
+
+        console.log('Organization details:', orgsData);
+
+        // Map organizations with roles
         const orgs = memberships
-          .map((m: any) => ({
-            id: m.organization_id,
-            name: m.organizations?.name || 'Unnamed Organization',
-            logo_url: m.organizations?.logo_url,
-            brand_color: m.organizations?.brand_color,
-            role: m.role,
-          }))
+          .map((m) => {
+            const orgData = orgsData?.find(o => o.id === m.organization_id);
+            return {
+              id: m.organization_id,
+              name: orgData?.name || 'Unnamed Organization',
+              logo_url: orgData?.logo_url || null,
+              brand_color: orgData?.brand_color || null,
+              role: m.role,
+            };
+          })
           .filter((org) => org.id);
 
+        console.log('Final organizations to display:', orgs);
         setOrganizations(orgs);
       } catch (error) {
         console.error('Error fetching organizations:', error);
