@@ -9,8 +9,29 @@ import {
 } from "@/components/ui/accordion";
 import { CheckCircle2, Clock, Database, FileText, Sparkles, Upload, Zap, ArrowRight } from "lucide-react";
 import kenlyLogo from "@/assets/kenly-logo.png";
+import { motion } from "framer-motion";
 
 const Index = () => {
+  // Animation variants
+  const fadeInUp = {
+    initial: { opacity: 0, y: 30 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, margin: "-50px" },
+    transition: { duration: 0.5 }
+  };
+
+  const staggerContainer = {
+    initial: {},
+    whileInView: { transition: { staggerChildren: 0.1 } },
+    viewport: { once: true, margin: "-50px" }
+  };
+
+  const staggerItem = {
+    initial: { opacity: 0, y: 20 },
+    whileInView: { opacity: 1, y: 0 },
+    transition: { duration: 0.4 }
+  };
+
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -186,93 +207,158 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="gradient-hero py-20 sm:py-32">
+      <motion.section 
+        className="gradient-hero py-20 sm:py-32"
+        {...fadeInUp}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground">
+            <motion.div 
+              className="mb-6 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-foreground"
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
               <Sparkles className="h-4 w-4" />
               AI-Powered Client Onboarding
-            </div>
-            <h1 className="mb-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance">
+            </motion.div>
+            <motion.h1 
+              className="mb-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl text-balance"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
+            >
               The Client Portal that onboards your clients for you
-            </h1>
-            <p className="mb-10 text-lg text-muted-foreground sm:text-xl md:text-2xl text-balance">
+            </motion.h1>
+            <motion.p 
+              className="mb-10 text-lg text-muted-foreground sm:text-xl md:text-2xl text-balance"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+            >
               A professional workspace where clients complete contracts, upload assets, and track progress—automatically
               keeping your projects on schedule from day one.
-            </p>
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            </motion.p>
+            <motion.div 
+              className="flex flex-col items-center justify-center gap-4 sm:flex-row"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+            >
               <Link to="/signup" className="w-full sm:w-auto">
-                <Button variant="hero" size="xl" className="w-full">
+                <Button variant="hero" size="xl" className="w-full transition-all duration-300 hover:scale-105 hover:shadow-lg">
                   Create your first Portal
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/login" className="w-full sm:w-auto">
-                <Button variant="outline" size="xl" className="w-full">
+                <Button variant="outline" size="xl" className="w-full transition-all duration-300 hover:scale-105">
                   View a Demo Project
                 </Button>
               </Link>
-            </div>
-            <p className="mt-6 text-sm text-muted-foreground">
+            </motion.div>
+            <motion.p 
+              className="mt-6 text-sm text-muted-foreground"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
+            >
               <u>No credit card required.</u> Free to start. Cancel anytime.
-            </p>
+            </motion.p>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Problem Section */}
-      <section id="problem" className="py-20 sm:py-32">
+      <motion.section 
+        id="problem" 
+        className="py-20 sm:py-32"
+        {...fadeInUp}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
+          <motion.div 
+            className="mx-auto max-w-3xl text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               Client Onboarding Shouldn't Be This Hard
             </h2>
             <p className="mb-16 text-lg text-muted-foreground sm:text-xl text-balance">
               Every new client means hours of manual work, endless email threads, and delayed project starts.
             </p>
-          </div>
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-            <Card className="border-2 transition-all duration-300 hover:shadow-medium">
-              <CardContent className="p-8">
-                <div className="mb-4 inline-flex rounded-lg bg-destructive/10 p-3">
-                  <Clock className="h-6 w-6 text-destructive" />
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">Hours Wasted Weekly</h3>
-                <p className="text-muted-foreground">
-                  Agencies spend 8–12 hours per week chasing clients for forms, files, and basic information.
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="border-2 transition-all duration-300 hover:shadow-medium">
-              <CardContent className="p-8">
-                <div className="mb-4 inline-flex rounded-lg bg-destructive/10 p-3">
-                  <Database className="h-6 w-6 text-destructive" />
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">Scattered Tools</h3>
-                <p className="text-muted-foreground">
-                  Email, Google Forms, Dropbox, Slack — information is everywhere except where you need it.
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="border-2 transition-all duration-300 hover:shadow-medium">
-              <CardContent className="p-8">
-                <div className="mb-4 inline-flex rounded-lg bg-destructive/10 p-3">
-                  <FileText className="h-6 w-6 text-destructive" />
-                </div>
-                <h3 className="mb-3 text-xl font-semibold">Poor First Impression</h3>
-                <p className="text-muted-foreground">
-                  Chaotic onboarding makes you look unprofessional before the real work even begins.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+          </motion.div>
+          <motion.div 
+            className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3"
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true }}
+          >
+            <motion.div variants={staggerItem}>
+              <Card className="border-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group h-full">
+                <CardContent className="p-8">
+                  <div className="mb-4 inline-flex rounded-lg bg-destructive/10 p-3 transition-colors duration-300 group-hover:bg-destructive/20">
+                    <Clock className="h-6 w-6 text-destructive transition-transform duration-300 group-hover:scale-110" />
+                  </div>
+                  <h3 className="mb-3 text-xl font-semibold">Hours Wasted Weekly</h3>
+                  <p className="text-muted-foreground">
+                    Agencies spend 8–12 hours per week chasing clients for forms, files, and basic information.
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div variants={staggerItem}>
+              <Card className="border-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group h-full">
+                <CardContent className="p-8">
+                  <div className="mb-4 inline-flex rounded-lg bg-destructive/10 p-3 transition-colors duration-300 group-hover:bg-destructive/20">
+                    <Database className="h-6 w-6 text-destructive transition-transform duration-300 group-hover:scale-110" />
+                  </div>
+                  <h3 className="mb-3 text-xl font-semibold">Scattered Tools</h3>
+                  <p className="text-muted-foreground">
+                    Email, Google Forms, Dropbox, Slack — information is everywhere except where you need it.
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div variants={staggerItem}>
+              <Card className="border-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group h-full">
+                <CardContent className="p-8">
+                  <div className="mb-4 inline-flex rounded-lg bg-destructive/10 p-3 transition-colors duration-300 group-hover:bg-destructive/20">
+                    <FileText className="h-6 w-6 text-destructive transition-transform duration-300 group-hover:scale-110" />
+                  </div>
+                  <h3 className="mb-3 text-xl font-semibold">Poor First Impression</h3>
+                  <p className="text-muted-foreground">
+                    Chaotic onboarding makes you look unprofessional before the real work even begins.
+                  </p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Solution Section */}
-      <section id="solution" className="gradient-accent py-20 sm:py-32">
+      <motion.section 
+        id="solution" 
+        className="gradient-accent py-20 sm:py-32"
+        {...fadeInUp}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
+          <motion.div 
+            className="mx-auto max-w-3xl text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               One Link. Complete Onboarding.
             </h2>
@@ -280,59 +366,89 @@ const Index = () => {
               Send clients a single branded link. They fill out forms, upload files, and you get everything organized
               instantly.
             </p>
-          </div>
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="shadow-soft transition-all duration-300 hover:shadow-medium">
-              <CardContent className="p-6 text-center">
-                <div className="mb-4 inline-flex rounded-full bg-primary/10 p-4">
-                  <FileText className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="mb-2 text-lg font-semibold">Custom Intake Forms</h3>
-                <p className="text-sm text-muted-foreground">Build branded forms tailored to your workflow</p>
-              </CardContent>
-            </Card>
-            <Card className="shadow-soft transition-all duration-300 hover:shadow-medium">
-              <CardContent className="p-6 text-center">
-                <div className="mb-4 inline-flex rounded-full bg-primary/10 p-4">
-                  <Upload className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="mb-2 text-lg font-semibold">Smart File Uploads</h3>
-                <p className="text-sm text-muted-foreground">Collect files with automatic organization</p>
-              </CardContent>
-            </Card>
-            <Card className="shadow-soft transition-all duration-300 hover:shadow-medium">
-              <CardContent className="p-6 text-center">
-                <div className="mb-4 inline-flex rounded-full bg-primary/10 p-4">
-                  <Zap className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="mb-2 text-lg font-semibold">Automated Follow-ups</h3>
-                <p className="text-sm text-muted-foreground">Gentle reminders without manual work</p>
-              </CardContent>
-            </Card>
-            <Card className="shadow-soft transition-all duration-300 hover:shadow-medium">
-              <CardContent className="p-6 text-center">
-                <div className="mb-4 inline-flex rounded-full bg-primary/10 p-4">
-                  <Sparkles className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="mb-2 text-lg font-semibold">AI Client Summaries</h3>
-                <p className="text-sm text-muted-foreground">Instant insights from client responses</p>
-              </CardContent>
-            </Card>
-          </div>
+          </motion.div>
+          <motion.div 
+            className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2 lg:grid-cols-4"
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true }}
+          >
+            <motion.div variants={staggerItem}>
+              <Card className="shadow-soft transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group h-full">
+                <CardContent className="p-6 text-center">
+                  <div className="mb-4 inline-flex rounded-full bg-primary/10 p-4 transition-all duration-300 group-hover:bg-primary/20 group-hover:scale-110">
+                    <FileText className="h-8 w-8 text-primary transition-colors duration-300 group-hover:text-primary" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold">Custom Intake Forms</h3>
+                  <p className="text-sm text-muted-foreground">Build branded forms tailored to your workflow</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div variants={staggerItem}>
+              <Card className="shadow-soft transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group h-full">
+                <CardContent className="p-6 text-center">
+                  <div className="mb-4 inline-flex rounded-full bg-primary/10 p-4 transition-all duration-300 group-hover:bg-primary/20 group-hover:scale-110">
+                    <Upload className="h-8 w-8 text-primary transition-colors duration-300 group-hover:text-primary" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold">Smart File Uploads</h3>
+                  <p className="text-sm text-muted-foreground">Collect files with automatic organization</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div variants={staggerItem}>
+              <Card className="shadow-soft transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group h-full">
+                <CardContent className="p-6 text-center">
+                  <div className="mb-4 inline-flex rounded-full bg-primary/10 p-4 transition-all duration-300 group-hover:bg-primary/20 group-hover:scale-110">
+                    <Zap className="h-8 w-8 text-primary transition-colors duration-300 group-hover:text-primary" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold">Automated Follow-ups</h3>
+                  <p className="text-sm text-muted-foreground">Gentle reminders without manual work</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div variants={staggerItem}>
+              <Card className="shadow-soft transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group h-full">
+                <CardContent className="p-6 text-center">
+                  <div className="mb-4 inline-flex rounded-full bg-primary/10 p-4 transition-all duration-300 group-hover:bg-primary/20 group-hover:scale-110">
+                    <Sparkles className="h-8 w-8 text-primary transition-colors duration-300 group-hover:text-primary" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold">AI Client Summaries</h3>
+                  <p className="text-sm text-muted-foreground">Instant insights from client responses</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="py-20 sm:py-32">
+      <motion.section 
+        id="how-it-works" 
+        className="py-20 sm:py-32"
+        {...fadeInUp}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
+          <motion.div 
+            className="mx-auto max-w-3xl text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <h2 className="mb-16 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               How It Works
             </h2>
-          </div>
-          <div className="mx-auto grid max-w-5xl gap-12 md:grid-cols-2">
-            <div className="flex gap-6">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
+          </motion.div>
+          <motion.div 
+            className="mx-auto grid max-w-5xl gap-12 md:grid-cols-2"
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true }}
+          >
+            <motion.div className="flex gap-6" variants={staggerItem}>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground transition-all duration-300 hover:scale-110 hover:shadow-lg">
                 1
               </div>
               <div>
@@ -342,9 +458,9 @@ const Index = () => {
                   agency's identity.
                 </p>
               </div>
-            </div>
-            <div className="flex gap-6">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
+            </motion.div>
+            <motion.div className="flex gap-6" variants={staggerItem}>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground transition-all duration-300 hover:scale-110 hover:shadow-lg">
                 2
               </div>
               <div>
@@ -354,9 +470,9 @@ const Index = () => {
                   delays.
                 </p>
               </div>
-            </div>
-            <div className="flex gap-6">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
+            </motion.div>
+            <motion.div className="flex gap-6" variants={staggerItem}>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground transition-all duration-300 hover:scale-110 hover:shadow-lg">
                 3
               </div>
               <div>
@@ -366,9 +482,9 @@ const Index = () => {
                   follow-ups.
                 </p>
               </div>
-            </div>
-            <div className="flex gap-6">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
+            </motion.div>
+            <motion.div className="flex gap-6" variants={staggerItem}>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground transition-all duration-300 hover:scale-110 hover:shadow-lg">
                 4
               </div>
               <div>
@@ -377,87 +493,125 @@ const Index = () => {
                   Everything you need is collected, organized, and ready when it's time to start—no delays, no excuses.
                 </p>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Testimonials Section */}
-      <section className="gradient-accent py-20 sm:py-32">
+      <motion.section 
+        className="gradient-accent py-20 sm:py-32"
+        {...fadeInUp}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
+          <motion.div 
+            className="mx-auto max-w-3xl text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <h2 className="mb-16 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               Loved by Agencies
             </h2>
-          </div>
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
-            <Card className="shadow-soft">
-              <CardContent className="p-8">
-                <p className="mb-6 text-muted-foreground">
-                  "Kenly cut our onboarding time from 2 weeks to 2 days. It's like having a dedicated operations
-                  person."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                    SC
+          </motion.div>
+          <motion.div 
+            className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3"
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true }}
+          >
+            <motion.div variants={staggerItem}>
+              <Card className="shadow-soft transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full">
+                <CardContent className="p-8">
+                  <p className="mb-6 text-muted-foreground">
+                    "Kenly cut our onboarding time from 2 weeks to 2 days. It's like having a dedicated operations
+                    person."
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                      SC
+                    </div>
+                    <div>
+                      <div className="font-semibold">Sarah Chen</div>
+                      <div className="text-sm text-muted-foreground">Founder, DesignLab Studio</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-semibold">Sarah Chen</div>
-                    <div className="text-sm text-muted-foreground">Founder, DesignLab Studio</div>
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div variants={staggerItem}>
+              <Card className="shadow-soft transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full">
+                <CardContent className="p-8">
+                  <p className="mb-6 text-muted-foreground">
+                    "Our clients love how professional and easy the process is. It sets the tone for the entire project."
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                      MR
+                    </div>
+                    <div>
+                      <div className="font-semibold">Michael Rodriguez</div>
+                      <div className="text-sm text-muted-foreground">Creative Director, Pixel & Co</div>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="shadow-soft">
-              <CardContent className="p-8">
-                <p className="mb-6 text-muted-foreground">
-                  "Our clients love how professional and easy the process is. It sets the tone for the entire project."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                    MR
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div variants={staggerItem}>
+              <Card className="shadow-soft transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full">
+                <CardContent className="p-8">
+                  <p className="mb-6 text-muted-foreground">
+                    "We stopped losing projects to slow starts. Kenly gets us working faster and looking better."
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                      JP
+                    </div>
+                    <div>
+                      <div className="font-semibold">Jennifer Park</div>
+                      <div className="text-sm text-muted-foreground">CEO, Growth Marketing Pro</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-semibold">Michael Rodriguez</div>
-                    <div className="text-sm text-muted-foreground">Creative Director, Pixel & Co</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="shadow-soft">
-              <CardContent className="p-8">
-                <p className="mb-6 text-muted-foreground">
-                  "We stopped losing projects to slow starts. Kenly gets us working faster and looking better."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                    JP
-                  </div>
-                  <div>
-                    <div className="font-semibold">Jennifer Park</div>
-                    <div className="text-sm text-muted-foreground">CEO, Growth Marketing Pro</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 sm:py-32">
+      <motion.section 
+        id="pricing" 
+        className="py-20 sm:py-32"
+        {...fadeInUp}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
+          <motion.div 
+            className="mx-auto max-w-3xl text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               Simple, Per-User Pricing
             </h2>
             <p className="mb-16 text-lg text-muted-foreground sm:text-xl text-balance">
               Unlimited clients and team members. Scale as you grow. No hidden fees.
             </p>
-          </div>
-          <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3">
+          </motion.div>
+          <motion.div 
+            className="mx-auto grid max-w-6xl gap-8 md:grid-cols-3"
+            variants={staggerContainer}
+            initial="initial"
+            whileInView="whileInView"
+            viewport={{ once: true }}
+          >
             {/* Basic Plan */}
-            <Card className="border-2 shadow-soft transition-all duration-300 hover:shadow-medium">
+            <motion.div variants={staggerItem}>
+              <Card className="border-2 shadow-soft transition-all duration-300 hover:shadow-lg hover:-translate-y-2 h-full">
               <CardContent className="p-8">
                 <div className="mb-6 text-center">
                   <div className="mb-2 text-sm font-medium text-muted-foreground">Basic</div>
@@ -468,45 +622,47 @@ const Index = () => {
                   <div className="text-sm text-muted-foreground">Essential tools</div>
                 </div>
                 <div className="mb-8 space-y-3">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">Unlimited clients</span>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">Unlimited clients</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">Unlimited team members</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">10 GB storage per user</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">25 automation runs per user</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">10 e-signature runs per user</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">Standard Kenly branding</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">Standard email support</span>
+                    </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">Unlimited team members</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">10 GB storage per user</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">25 automation runs per user</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">10 e-signature runs per user</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">Standard Kenly branding</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">Standard email support</span>
-                  </div>
-                </div>
-                <Link to="/signup" className="w-full">
-                  <Button variant="outline" size="lg" className="w-full">
-                    Get Started
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+                  <Link to="/signup" className="w-full">
+                    <Button variant="outline" size="lg" className="w-full transition-all duration-300 hover:scale-105">
+                      Get Started
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Pro Plan */}
-            <Card className="border-2 border-primary shadow-strong">
+            <motion.div variants={staggerItem}>
+              <Card className="border-2 border-primary shadow-strong transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full">
               <CardContent className="p-8">
                 <div className="mb-6 text-center">
                   <div className="mb-2 inline-block rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
@@ -520,49 +676,51 @@ const Index = () => {
                   <div className="text-sm text-muted-foreground">Advanced features</div>
                 </div>
                 <div className="mb-8 space-y-3">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">Unlimited clients</span>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">Unlimited clients</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">Unlimited team members</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">100 GB storage per user</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">500 automation runs per user</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">100 e-signature runs per user</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">Custom branding (colors + logo)</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">Remove "Powered by Kenly" badge</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
+                      <span className="text-sm">Priority support</span>
+                    </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">Unlimited team members</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">100 GB storage per user</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">500 automation runs per user</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">100 e-signature runs per user</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">Custom branding (colors + logo)</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">Remove "Powered by Kenly" badge</span>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm">Priority support</span>
-                  </div>
-                </div>
-                <Link to="/signup" className="w-full">
-                  <Button variant="hero" size="lg" className="w-full">
-                    Start Free Trial
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+                  <Link to="/signup" className="w-full">
+                    <Button variant="hero" size="lg" className="w-full transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                      Start Free Trial
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Enterprise Plan */}
-            <Card className="border-2 shadow-soft transition-all duration-300 hover:shadow-medium">
+            <motion.div variants={staggerItem}>
+              <Card className="border-2 shadow-soft transition-all duration-300 hover:shadow-lg hover:-translate-y-2 h-full">
               <CardContent className="p-8">
                 <div className="mb-6 text-center">
                   <div className="mb-2 text-sm font-medium text-muted-foreground">Enterprise</div>
@@ -594,41 +752,58 @@ const Index = () => {
                     <span className="text-sm">Unlimited e-signatures</span>
                   </div>
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
                     <span className="text-sm">Full branding removal</span>
                   </div>
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
                     <span className="text-sm">SLA with guaranteed uptime</span>
                   </div>
                   <div className="flex items-start gap-3">
-                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary transition-transform duration-300 hover:scale-110" />
                     <span className="text-sm">Dedicated support channel</span>
                   </div>
                 </div>
                 <Link to="/signup" className="w-full">
-                  <Button variant="outline" size="lg" className="w-full">
+                  <Button variant="outline" size="lg" className="w-full transition-all duration-300 hover:scale-105">
                     Contact Sales
                   </Button>
                 </Link>
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* FAQ Section */}
-      <section id="faq" className="py-20 sm:py-32">
+      <motion.section 
+        id="faq" 
+        className="py-20 sm:py-32"
+        {...fadeInUp}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center mb-16">
+          <motion.div 
+            className="mx-auto max-w-3xl text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               Frequently Asked Questions
             </h2>
             <p className="text-lg text-muted-foreground sm:text-xl text-balance">
               Everything you need to know about Kenly
             </p>
-          </div>
-          <div className="mx-auto max-w-3xl">
+          </motion.div>
+          <motion.div 
+            className="mx-auto max-w-3xl"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+          >
             <Accordion type="single" collapsible className="w-full space-y-4">
               <AccordionItem value="item-1" className="border rounded-lg px-6 bg-card">
                 <AccordionTrigger className="text-left hover:no-underline">
@@ -684,14 +859,23 @@ const Index = () => {
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Final CTA Section */}
-      <section className="gradient-hero py-20 sm:py-32">
+      <motion.section 
+        className="gradient-hero py-20 sm:py-32"
+        {...fadeInUp}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-3xl text-center">
+          <motion.div 
+            className="mx-auto max-w-3xl text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               Ready to Transform Your Onboarding?
             </h2>
@@ -700,46 +884,52 @@ const Index = () => {
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link to="/signup" className="w-full sm:w-auto">
-                <Button variant="hero" size="xl" className="w-full">
+                <Button variant="hero" size="xl" className="w-full transition-all duration-300 hover:scale-105 hover:shadow-lg">
                   Get Started Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/login" className="w-full sm:w-auto">
-                <Button variant="outline" size="xl" className="w-full">
+                <Button variant="outline" size="xl" className="w-full transition-all duration-300 hover:scale-105">
                   Sign In
                 </Button>
               </Link>
             </div>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Footer */}
-      <footer className="border-t bg-muted/30 py-12">
+      <motion.footer 
+        className="border-t bg-muted/30 py-12"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2">
-              <Zap className="h-5 w-5 text-primary" />
+              <Zap className="h-5 w-5 text-primary transition-transform duration-300 hover:scale-110" />
               <span className="font-semibold">Kenly</span>
             </div>
             <p className="text-center text-sm text-muted-foreground md:text-left">
               © 2025 Kenly. All rights reserved. Built for agencies that move fast.
             </p>
             <div className="flex gap-6 text-sm text-muted-foreground">
-              <a href="#" className="transition-colors hover:text-primary">
+              <a href="#" className="transition-all duration-300 hover:text-primary hover:scale-105">
                 Privacy
               </a>
-              <a href="#" className="transition-colors hover:text-primary">
+              <a href="#" className="transition-all duration-300 hover:text-primary hover:scale-105">
                 Terms
               </a>
-              <a href="#" className="transition-colors hover:text-primary">
+              <a href="#" className="transition-all duration-300 hover:text-primary hover:scale-105">
                 Contact
               </a>
             </div>
           </div>
         </div>
-      </footer>
+      </motion.footer>
     </div>
   );
 };
