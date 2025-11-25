@@ -1,6 +1,12 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { CheckCircle2, Clock, Database, FileText, Sparkles, Upload, Zap, ArrowRight } from "lucide-react";
 import kenlyLogo from "@/assets/kenly-logo.png";
 
@@ -155,6 +161,12 @@ const Index = () => {
                 className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
               >
                 Pricing
+              </a>
+              <a
+                href="#faq"
+                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
+                FAQ
               </a>
             </div>
             <div className="flex items-center gap-3">
@@ -601,6 +613,77 @@ const Index = () => {
                 </Link>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-20 sm:py-32">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center mb-16">
+            <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-muted-foreground sm:text-xl text-balance">
+              Everything you need to know about Kenly
+            </p>
+          </div>
+          <div className="mx-auto max-w-3xl">
+            <Accordion type="single" collapsible className="w-full space-y-4">
+              <AccordionItem value="item-1" className="border rounded-lg px-6 bg-card">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  <span className="font-semibold">How long does it take to set up?</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  Most agencies are up and running in under 30 minutes. Simply add your branding, customize your intake forms, and send your first client link. No complex setup or technical knowledge required.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-2" className="border rounded-lg px-6 bg-card">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  <span className="font-semibold">Can I customize the portal with my branding?</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  Yes! Pro and Enterprise plans let you add your logo, brand colors, and custom fonts. Enterprise plans can completely remove Kenly branding for a fully white-labeled experience.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-3" className="border rounded-lg px-6 bg-card">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  <span className="font-semibold">What happens if a client doesn't complete their onboarding?</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  Kenly automatically sends gentle reminder emails based on your schedule. You can track completion progress in real-time and see exactly what's blocking each client from moving forward.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-4" className="border rounded-lg px-6 bg-card">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  <span className="font-semibold">Is there a limit to the number of clients?</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  No. All plans include unlimited clients and team members. You only pay per active user on your team, not per client portal.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-5" className="border rounded-lg px-6 bg-card">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  <span className="font-semibold">Can I integrate Kenly with my existing tools?</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  Yes! Kenly integrates with popular tools through webhooks and automation workflows. Pro and Enterprise plans include advanced automation capabilities to connect with your existing tech stack.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="item-6" className="border rounded-lg px-6 bg-card">
+                <AccordionTrigger className="text-left hover:no-underline">
+                  <span className="font-semibold">What kind of support do you offer?</span>
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  All plans include email support. Pro plans get priority support with faster response times. Enterprise plans receive a dedicated support channel with guaranteed SLAs and personalized onboarding assistance.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </div>
       </section>
