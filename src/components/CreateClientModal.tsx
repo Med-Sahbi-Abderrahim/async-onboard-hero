@@ -27,9 +27,10 @@ interface CreateClientModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onClientCreated: (client: any) => void;
+  orgId: string;
 }
 
-export function CreateClientModal({ open, onOpenChange, onClientCreated }: CreateClientModalProps) {
+export function CreateClientModal({ open, onOpenChange, onClientCreated, orgId }: CreateClientModalProps) {
   const { user } = useUser();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,31 +49,20 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated }: Creat
   });
 
   const onSubmit = async (data: ClientFormData) => {
-    if (!user) return;
+    if (!user || !orgId) return;
 
     setIsSubmitting(true);
     try {
-      // Get user's organization
-      const { data: memberData } = await supabase
-        .from('organization_members')
-        .select('organization_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!memberData) {
-        throw new Error('Organization not found');
-      }
-
       // Store org ID for upgrade modal
       if (!organizationId) {
-        setOrganizationId(memberData.organization_id);
+        setOrganizationId(orgId);
       }
 
       // Get organization plan
       const { data: orgData } = await supabase
         .from('organizations')
         .select('plan, max_portals')
-        .eq('id', memberData.organization_id)
+        .eq('id', orgId)
         .single();
 
       if (orgData) {
@@ -81,7 +71,7 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated }: Creat
 
       // Check client limit using RPC function
       const { data: canCreate, error: limitError } = await supabase
-        .rpc('can_create_client', { org_id: memberData.organization_id });
+        .rpc('can_create_client', { org_id: orgId });
 
       if (limitError) throw limitError;
 
@@ -106,7 +96,7 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated }: Creat
             company_name: data.company_name || null,
             phone: data.phone || null,
             tags: tagsArray,
-            organization_id: memberData.organization_id,
+            organization_id: orgId,
             invited_by: user.id,
           },
         }
