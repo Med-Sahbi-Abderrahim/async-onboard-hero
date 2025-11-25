@@ -233,21 +233,15 @@ export default function ClientDetail() {
 
     try {
       // Use soft delete to avoid foreign key constraint issues
-      const { error, data } = await supabase
+      const { error } = await supabase
         .from("clients")
         .update({ deleted_at: new Date().toISOString() })
         .eq("id", id)
-        .eq("organization_id", orgId)
-        .select()
-        .single();
+        .eq("organization_id", orgId);
 
       if (error) {
-        console.error("Delete client error details:", error);
+        console.error("Delete client error:", error);
         throw error;
-      }
-
-      if (!data) {
-        throw new Error("Client not found or you don't have permission to delete it");
       }
 
       toast({
