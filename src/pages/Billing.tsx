@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Users, HardDrive, Sparkles, Zap, Crown, ArrowRight } from "lucide-react";
+import { useOrgId } from "@/hooks/useOrgId";
+import { Loader2, Users, HardDrive, Sparkles, Zap, Crown, ArrowRight, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { EarlyAccessBanner } from "@/components/EarlyAccessBanner";
 
@@ -43,27 +45,46 @@ interface Organization {
 export default function Billing() {
   const { user } = useUser();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const orgId = useOrgId();
   const [loading, setLoading] = useState(true);
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [clientCount, setClientCount] = useState(0);
   const [isOwner, setIsOwner] = useState(false);
+  const [userRole, setUserRole] = useState<string>("");
   const [ownerEmail, setOwnerEmail] = useState<string>("");
 
   useEffect(() => {
-    if (user) {
+    if (user && orgId) {
       fetchBillingInfo();
     }
-  }, [user]);
+  }, [user, orgId]);
 
   const fetchBillingInfo = async () => {
+    if (!orgId) return;
+
     try {
+      console.log('Fetching billing info for organization:', orgId);
+
+      // Get user's role in this organization
       const { data: membership } = await supabase
         .from("organization_members")
-        .select("organization_id")
+        .select("role")
         .eq("user_id", user?.id)
+        .eq("organization_id", orgId)
         .single();
 
-      if (!membership) return;
+      if (!membership) {
+        toast({
+          title: "Access Denied",
+          description: "You don't have access to this organization",
+          variant: "destructive",
+        });
+        navigate(`/dashboard/${orgId}`);
+        return;
+      }
+
+      setUserRole(membership.role);
 
       const { data: org, error } = await supabase
         .from("organizations")
@@ -75,7 +96,7 @@ export default function Billing() {
           esignature_runs_per_user, esignature_runs_used,
           branding_level, support_level, organization_owner_id
         `)
-        .eq("id", membership.organization_id)
+        .eq("id", orgId)
         .single();
 
       if (error) throw error;
@@ -102,11 +123,12 @@ export default function Billing() {
       const { count } = await supabase
         .from("clients")
         .select("*", { count: "exact", head: true })
-        .eq("organization_id", membership.organization_id)
+        .eq("organization_id", orgId)
         .is("deleted_at", null);
 
       setClientCount(count || 0);
     } catch (error: any) {
+      console.error('Error fetching billing info:', error);
       toast({
         title: "Error",
         description: error.message,
@@ -146,7 +168,17 @@ export default function Billing() {
     return `$${(pricePerUser / 100).toFixed(0)}`;
   };
 
+  // Restrict actions to owners only
   const handleUpgrade = async () => {
+    if (!isOwner) {
+      toast({
+        title: "Access Denied",
+        description: "Only the organization owner can manage billing and subscriptions",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
       const plan = organization?.plan === 'free' ? 'starter' : 'pro';
@@ -187,6 +219,14 @@ export default function Billing() {
   };
 
   const handleManageBilling = () => {
+    if (!isOwner) {
+      toast({
+        title: "Access Denied",
+        description: "Only the organization owner can manage billing",
+        variant: "destructive",
+      });
+      return;
+    }
     // Open Lemon Squeezy customer portal
     const customerPortalUrl = `https://app.lemonsqueezy.com/my-orders`;
     window.open(customerPortalUrl, '_blank');
@@ -230,18 +270,24 @@ export default function Billing() {
         </Button>
       </div>
 
-      {/* Non-Owner Message */}
+      {/* Non-Owner Warning with Role Badge */}
       {!isOwner && (
         <Card className="border-amber-500 bg-amber-50 dark:bg-amber-950/20 animate-slide-up">
           <CardHeader>
-            <CardTitle className="text-base text-amber-700 dark:text-amber-400">
-              Billing Managed by Organization Owner
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                <Lock className="h-5 w-5" />
+                Billing Managed by Organization Owner
+              </CardTitle>
+              <Badge variant="outline" className="bg-muted">
+                Your Role: {userRole}
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Billing and subscription settings are managed by your organization owner{ownerEmail && `: ${ownerEmail}`}.
-              Only the owner can upgrade plans, manage payment methods, or view invoices.
+              Billing and subscription settings are restricted to organization owners{ownerEmail && `: ${ownerEmail}`}.
+              As a {userRole}, you can view usage information but cannot modify plans, manage payment methods, or access invoices.
             </p>
           </CardContent>
         </Card>

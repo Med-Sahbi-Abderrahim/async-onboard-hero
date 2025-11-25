@@ -2,21 +2,23 @@ import { ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { User, Users, Bell, CreditCard, Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useOrgId } from '@/hooks/useOrgId';
 
 interface SettingsLayoutProps {
   children: ReactNode;
 }
 
-const settingsNavItems = [
-  { title: 'Profile', path: '/settings/profile', icon: User },
-  { title: 'Organization', path: '/settings/organization', icon: Building },
-  { title: 'Team Members', path: '/settings/team', icon: Users },
-  { title: 'Notifications', path: '/settings/notifications', icon: Bell },
-  { title: 'Billing', path: '/billing', icon: CreditCard },
-];
-
 export function SettingsLayout({ children }: SettingsLayoutProps) {
   const location = useLocation();
+  const orgId = useOrgId();
+
+  const settingsNavItems = [
+    { title: 'Profile', path: `/settings/${orgId}/profile`, icon: User },
+    { title: 'Organization', path: `/settings/${orgId}/organization`, icon: Building },
+    { title: 'Team Members', path: `/settings/${orgId}/team`, icon: Users },
+    { title: 'Notifications', path: `/settings/${orgId}/notifications`, icon: Bell },
+    { title: 'Billing', path: `/billing/${orgId}`, icon: CreditCard },
+  ];
 
   return (
     <div className="space-y-6">
