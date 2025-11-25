@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Clock, Database, FileText, Sparkles, Upload, Zap, ArrowRight } from "lucide-react";
+import kenlyLogo from "@/assets/kenly-logo.jpg";
 
 const Index = () => {
   const structuredData = {
@@ -127,7 +128,7 @@ const Index = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-2">
-              <Zap className="h-6 w-6 text-primary" />
+              <img src={kenlyLogo} alt="Kenly" className="h-8 w-8 object-contain" />
               <span className="text-xl font-bold">Kenly</span>
             </div>
             <div className="hidden items-center gap-8 md:flex">
