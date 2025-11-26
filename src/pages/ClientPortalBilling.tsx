@@ -3,14 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, ArrowLeft, CheckCircle } from "lucide-react";
+import { CreditCard, ArrowLeft, CheckCircle, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { BrandedFooter } from "@/components/BrandedFooter";
+import { AddInvoiceModal } from "@/components/SharedModals";
+import { useInvoices } from "@/hooks/useSharedData";
 
 export default function ClientPortalBilling() {
   const navigate = useNavigate();
-  const [invoices, setInvoices] = useState<any[]>([]);
+  const [clientId, setClientId] = useState<string | null>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const { invoices, loading } = useInvoices(clientId || undefined, organizationId || undefined, true);
 
   useEffect(() => {
     loadInvoices();
@@ -32,20 +36,8 @@ export default function ClientPortalBilling() {
 
     if (!clientData) return;
 
+    setClientId(clientData.id);
     setOrganizationId(clientData.organization_id);
-
-    const { data, error } = await supabase
-      .from("invoices")
-      .select("*")
-      .eq("client_id", clientData.id)
-      .is("deleted_at", null)
-      .order("due_date", { ascending: false });
-
-    if (error) {
-      console.error("Error loading invoices:", error);
-      return;
-    }
-    setInvoices(data || []);
   };
 
   const statusColors: Record<string, string> = {
@@ -75,10 +67,14 @@ export default function ClientPortalBilling() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl md:text-4xl font-bold">Billing</h1>
             <p className="text-sm text-muted-foreground">View your invoices and payments</p>
           </div>
+          <Button onClick={() => setShowAddModal(true)} className="hover:scale-105 transition-transform">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Invoice
+          </Button>
         </div>
 
         <div className="space-y-4">
@@ -147,6 +143,18 @@ export default function ClientPortalBilling() {
       </div>
 
       {organizationId && <BrandedFooter organizationId={organizationId} />}
+      
+      {showAddModal && clientId && organizationId && (
+        <AddInvoiceModal
+          clientId={clientId}
+          organizationId={organizationId}
+          onClose={() => setShowAddModal(false)}
+          onSuccess={() => {
+            setShowAddModal(false);
+            loadInvoices();
+          }}
+        />
+      )}
     </div>
   );
 }

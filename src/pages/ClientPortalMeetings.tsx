@@ -3,14 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ArrowLeft, ExternalLink } from "lucide-react";
+import { Calendar, ArrowLeft, ExternalLink, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { BrandedFooter } from "@/components/BrandedFooter";
+import { AddMeetingModal } from "@/components/SharedModals";
+import { useMeetings } from "@/hooks/useSharedData";
 
 export default function ClientPortalMeetings() {
   const navigate = useNavigate();
-  const [meetings, setMeetings] = useState<any[]>([]);
+  const [clientId, setClientId] = useState<string | null>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const { meetings, loading } = useMeetings(clientId || undefined, organizationId || undefined, true);
 
   useEffect(() => {
     loadMeetings();
@@ -32,20 +36,8 @@ export default function ClientPortalMeetings() {
 
     if (!clientData) return;
 
+    setClientId(clientData.id);
     setOrganizationId(clientData.organization_id);
-
-    const { data, error } = await supabase
-      .from("meetings")
-      .select("*")
-      .eq("client_id", clientData.id)
-      .is("deleted_at", null)
-      .order("scheduled_at", { ascending: true });
-
-    if (error) {
-      console.error("Error loading meetings:", error);
-      return;
-    }
-    setMeetings(data || []);
   };
 
   const statusColors = {
@@ -66,10 +58,14 @@ export default function ClientPortalMeetings() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl md:text-4xl font-bold">Meetings</h1>
             <p className="text-sm text-muted-foreground">Your scheduled meetings and calls</p>
           </div>
+          <Button onClick={() => setShowAddModal(true)} className="hover:scale-105 transition-transform">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Meeting
+          </Button>
         </div>
 
         <div className="space-y-4">
@@ -142,6 +138,18 @@ export default function ClientPortalMeetings() {
       </div>
 
       {organizationId && <BrandedFooter organizationId={organizationId} />}
+      
+      {showAddModal && clientId && organizationId && (
+        <AddMeetingModal
+          clientId={clientId}
+          organizationId={organizationId}
+          onClose={() => setShowAddModal(false)}
+          onSuccess={() => {
+            setShowAddModal(false);
+            loadMeetings();
+          }}
+        />
+      )}
     </div>
   );
 }
