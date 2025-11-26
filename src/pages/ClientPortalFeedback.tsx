@@ -88,7 +88,7 @@ export default function ClientPortalFeedback() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/client-portal")}
             className="hover:scale-110 transition-transform"
           >
             <ArrowLeft className="h-5 w-5" />
