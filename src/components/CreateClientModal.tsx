@@ -1,21 +1,57 @@
-import { useState } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Loader2 } from 'lucide-react';
-import { UpgradeModal } from './UpgradeModal';
-import { useOrgLimits } from '@/hooks/useOrgLimits';
+import { useState } from "react";
+import { useUser } from "@/contexts/UserContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Loader2 } from "lucide-react";
+import { UpgradeModal } from "./UpgradeModal";
+import { useOrgLimits } from "@/hooks/useOrgLimits";
+import { inviteClientToPortal } from "@/lib/client-invitation";
 
+// After client is created
+const handleCreateClient = async (formData) => {
+  // Create client record
+  const { data: newClient, error } = await supabase
+    .from("clients")
+    .insert({
+      email: formData.email,
+      full_name: formData.full_name,
+      organization_id: organizationId,
+      invited_by: user.id,
+      // user_id will be set when they accept invite
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  // AUTOMATICALLY send portal invite
+  const inviteResult = await inviteClientToPortal(formData.email, organizationId);
+
+  if (inviteResult.success) {
+    toast({
+      title: "✅ Client created and invited",
+      description: `Portal invite sent to ${formData.email}`,
+    });
+  } else {
+    toast({
+      title: "⚠️ Client created but invite failed",
+      description: "You can resend the invite from the client details page",
+      variant: "destructive",
+    });
+  }
+
+  return newClient;
+};
 const clientSchema = z.object({
-  email: z.string().email('Invalid email address').min(1, 'Email is required'),
-  full_name: z.string().min(1, 'Full name is required'),
+  email: z.string().email("Invalid email address").min(1, "Email is required"),
+  full_name: z.string().min(1, "Full name is required"),
   company_name: z.string().optional(),
   phone: z.string().optional(),
   tags: z.string().optional(),
@@ -35,8 +71,8 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated, orgId }
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [organizationId, setOrganizationId] = useState<string>('');
-  const [currentPlan, setCurrentPlan] = useState<'free' | 'starter' | 'pro'>('free');
+  const [organizationId, setOrganizationId] = useState<string>("");
+  const [currentPlan, setCurrentPlan] = useState<"free" | "starter" | "pro">("free");
   const { limits, canCreateClient, refresh } = useOrgLimits(organizationId);
 
   const {
@@ -60,18 +96,17 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated, orgId }
 
       // Get organization plan
       const { data: orgData } = await supabase
-        .from('organizations')
-        .select('plan, max_portals')
-        .eq('id', orgId)
+        .from("organizations")
+        .select("plan, max_portals")
+        .eq("id", orgId)
         .single();
 
       if (orgData) {
-        setCurrentPlan(orgData.plan as 'free' | 'starter' | 'pro');
+        setCurrentPlan(orgData.plan as "free" | "starter" | "pro");
       }
 
       // Check client limit using RPC function
-      const { data: canCreate, error: limitError } = await supabase
-        .rpc('can_create_client', { org_id: orgId });
+      const { data: canCreate, error: limitError } = await supabase.rpc("can_create_client", { org_id: orgId });
 
       if (limitError) throw limitError;
 
@@ -83,31 +118,31 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated, orgId }
 
       // Process tags
       const tagsArray = data.tags
-        ? data.tags.split(',').map((tag) => tag.trim()).filter(Boolean)
+        ? data.tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter(Boolean)
         : [];
 
       // Call edge function to create client with auth user
-      const { data: functionData, error: functionError } = await supabase.functions.invoke(
-        'invite-client',
-        {
-          body: {
-            email: data.email,
-            full_name: data.full_name,
-            company_name: data.company_name || null,
-            phone: data.phone || null,
-            tags: tagsArray,
-            organization_id: orgId,
-            invited_by: user.id,
-          },
-        }
-      );
+      const { data: functionData, error: functionError } = await supabase.functions.invoke("invite-client", {
+        body: {
+          email: data.email,
+          full_name: data.full_name,
+          company_name: data.company_name || null,
+          phone: data.phone || null,
+          tags: tagsArray,
+          organization_id: orgId,
+          invited_by: user.id,
+        },
+      });
 
       if (functionError) throw functionError;
-      if (!functionData?.client) throw new Error('Failed to create client');
+      if (!functionData?.client) throw new Error("Failed to create client");
 
       toast({
-        title: 'Success',
-        description: 'Client invited! They will receive a magic link via email.',
+        title: "Success",
+        description: "Client invited! They will receive a magic link via email.",
       });
 
       reset();
@@ -115,9 +150,9 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated, orgId }
       onClientCreated(functionData.client);
     } catch (error: any) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -128,89 +163,79 @@ export function CreateClientModal({ open, onOpenChange, onClientCreated, orgId }
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Invite Client</DialogTitle>
-          <DialogDescription>
-            Create a new client and generate a magic link for them to access their intake forms.
-          </DialogDescription>
-        </DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Invite Client</DialogTitle>
+            <DialogDescription>
+              Create a new client and generate a magic link for them to access their intake forms.
+            </DialogDescription>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="client@example.com"
-              {...register('email')}
-              disabled={isSubmitting}
-            />
-            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="client@example.com"
+                {...register("email")}
+                disabled={isSubmitting}
+              />
+              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="full_name">Full Name *</Label>
-            <Input
-              id="full_name"
-              placeholder="John Smith"
-              {...register('full_name')}
-              disabled={isSubmitting}
-            />
-            {errors.full_name && <p className="text-sm text-destructive">{errors.full_name.message}</p>}
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="full_name">Full Name *</Label>
+              <Input id="full_name" placeholder="John Smith" {...register("full_name")} disabled={isSubmitting} />
+              {errors.full_name && <p className="text-sm text-destructive">{errors.full_name.message}</p>}
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="company_name">Company Name</Label>
-            <Input
-              id="company_name"
-              placeholder="Acme Inc."
-              {...register('company_name')}
-              disabled={isSubmitting}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="company_name">Company Name</Label>
+              <Input id="company_name" placeholder="Acme Inc." {...register("company_name")} disabled={isSubmitting} />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="+1 (555) 123-4567"
-              {...register('phone')}
-              disabled={isSubmitting}
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+1 (555) 123-4567"
+                {...register("phone")}
+                disabled={isSubmitting}
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="tags">Tags</Label>
-            <Input
-              id="tags"
-              placeholder="vip, enterprise (comma-separated)"
-              {...register('tags')}
-              disabled={isSubmitting}
-            />
-            <p className="text-xs text-muted-foreground">Separate tags with commas</p>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags</Label>
+              <Input
+                id="tags"
+                placeholder="vip, enterprise (comma-separated)"
+                {...register("tags")}
+                disabled={isSubmitting}
+              />
+              <p className="text-xs text-muted-foreground">Separate tags with commas</p>
+            </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Invite Client
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Invite Client
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-    <UpgradeModal
-      open={showUpgradeModal}
-      onOpenChange={setShowUpgradeModal}
-      limitType="clients"
-      currentPlan={currentPlan}
-      organizationId={organizationId}
-    />
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        limitType="clients"
+        currentPlan={currentPlan}
+        organizationId={organizationId}
+      />
     </>
   );
 }
