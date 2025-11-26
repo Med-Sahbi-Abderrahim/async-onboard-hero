@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 // Import the mock client from the centralized location. Added the explicit .ts extension to resolve compilation error.
-import { mockSupabase } from '../lib/supabase.ts';
+import { supabase } from "../integrations/supabase/client";
 
 // --- TYPESCRIPT INTERFACES ---
 interface UserProfile {
@@ -17,8 +17,8 @@ interface AuthContextType {
     isAuthenticated: boolean;
     role: 'agency' | 'client' | null;
     // Note: The type is slightly adjusted to reference the imported client structure
-    signIn: typeof mockSupabase.auth.signInWithPassword; 
-    signOut: typeof mockSupabase.auth.signOut;
+    signIn: typeof supabase.auth.signInWithPassword; 
+    signOut: typeof supabase.auth.signOut;
     // Add signUp, resetPassword methods here
 }
 
@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     useEffect(() => {
         // Mock authentication state listener
-        const { data: { subscription } } = mockSupabase.auth.onAuthStateChange(
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
             (event, session) => {
                 setSession(session);
                 setUser(session?.user || null);
@@ -58,8 +58,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         isAuthenticated,
         role,
-        signIn: mockSupabase.auth.signInWithPassword,
-        signOut: mockSupabase.auth.signOut,
+        signIn: supabase.auth.signInWithPassword,
+        signOut: supabase.auth.signOut,
     };
 
     if (loading) {
