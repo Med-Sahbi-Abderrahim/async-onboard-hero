@@ -77,6 +77,7 @@ export default function ClientDetail() {
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     register,
@@ -92,7 +93,7 @@ export default function ClientDetail() {
   }, [id, user]);
 
   const fetchClientData = async () => {
-    if (!user || !id || !orgId) return;
+    if (!user || !id || !orgId || isDeleting) return;
 
     setLoading(true);
     try {
@@ -231,6 +232,8 @@ export default function ClientDetail() {
       return;
     }
 
+    setIsDeleting(true);
+
     try {
       // Use soft delete to avoid foreign key constraint issues
       const { error } = await supabase
@@ -249,9 +252,11 @@ export default function ClientDetail() {
         description: `"${client?.full_name || "Client"}" has been deleted successfully.`,
       });
 
-      navigate(`/clients/${orgId}`);
+      // Navigate immediately to prevent refetch
+      navigate(`/clients/${orgId}`, { replace: true });
     } catch (error: any) {
       console.error("Delete client error:", error);
+      setIsDeleting(false); // Reset only on error
       toast({
         title: "Failed to delete client",
         description: error.message || "You don't have permission to delete this client or an error occurred. Please try again.",
