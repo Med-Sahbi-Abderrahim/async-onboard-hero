@@ -1,57 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-
-// --- MOCK SUPABASE/FIREBASE CLIENT ---
-// In a real application, this would be imported from your backend integration file.
-const mockSupabase = {
-    auth: {
-        async signInWithPassword({ email, password }: { email: string, password: string }) {
-            console.log(`[MOCK AUTH] User attempting sign-in: ${email}`);
-            // Simulate API latency
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            if (email.includes('fail')) {
-                return { data: null, error: { message: "Invalid credentials (Mock failure)." } };
-            }
-            const user = { id: 'mock-user-123', email, role: email.includes('client') ? 'client' : 'agency' };
-            localStorage.setItem('mockUser', JSON.stringify(user));
-            return { data: { user }, error: null };
-        },
-        async signOut() {
-            console.log("[MOCK AUTH] User signed out.");
-            localStorage.removeItem('mockUser');
-            return { error: null };
-        },
-        onAuthStateChange(callback: (event: string, session: { user: any } | null) => void) {
-            // Mock persistent session check
-            const userJson = localStorage.getItem('mockUser');
-            const user = userJson ? JSON.parse(userJson) : null;
-            
-            // Initial call to simulate session load
-            const session = user ? { user } : null;
-            callback('INITIAL_SESSION', session);
-
-            // Simple listener logic (does not truly listen for external changes)
-            const handleStorageChange = (e: StorageEvent) => {
-                if (e.key === 'mockUser') {
-                    const newUser = e.newValue ? JSON.parse(e.newValue) : null;
-                    const newSession = newUser ? { user: newUser } : null;
-                    callback(newUser ? 'SIGNED_IN' : 'SIGNED_OUT', newSession);
-                }
-            };
-            
-            window.addEventListener('storage', handleStorageChange);
-
-            // Return unsubscribe function
-            return {
-                data: {
-                    subscription: {
-                        unsubscribe: () => window.removeEventListener('storage', handleStorageChange)
-                    }
-                }
-            };
-        }
-    }
-};
+// Import the mock client from the centralized location. Added the explicit .ts extension to resolve compilation error.
+import { mockSupabase } from '../lib/supabase.ts';
 
 // --- TYPESCRIPT INTERFACES ---
 interface UserProfile {
@@ -67,7 +16,8 @@ interface AuthContextType {
     loading: boolean;
     isAuthenticated: boolean;
     role: 'agency' | 'client' | null;
-    signIn: typeof mockSupabase.auth.signInWithPassword;
+    // Note: The type is slightly adjusted to reference the imported client structure
+    signIn: typeof mockSupabase.auth.signInWithPassword; 
     signOut: typeof mockSupabase.auth.signOut;
     // Add signUp, resetPassword methods here
 }
