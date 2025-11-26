@@ -32,17 +32,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Mock authentication state listener
+        // Get initial session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session?.user) {
+                const userProfile: UserProfile = {
+                    id: session.user.id,
+                    email: session.user.email || '',
+                    role: (session.user.user_metadata?.role as 'agency' | 'client') || 'client'
+                };
+                setSession({ user: userProfile });
+                setUser(userProfile);
+            }
+            setLoading(false);
+        });
+
+        // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            (event, session) => {
-                setSession(session);
-                setUser(session?.user || null);
-                setLoading(false);
-                
-                // For demonstration: force a refresh if signed in/out via mock storage
-                if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-                     window.location.reload(); 
+            (_event, session) => {
+                if (session?.user) {
+                    const userProfile: UserProfile = {
+                        id: session.user.id,
+                        email: session.user.email || '',
+                        role: (session.user.user_metadata?.role as 'agency' | 'client') || 'client'
+                    };
+                    setSession({ user: userProfile });
+                    setUser(userProfile);
+                } else {
+                    setSession(null);
+                    setUser(null);
                 }
+                setLoading(false);
             }
         );
 

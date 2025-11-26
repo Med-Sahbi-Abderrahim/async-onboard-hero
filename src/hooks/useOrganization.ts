@@ -97,7 +97,7 @@ export function useOrganization(): UseOrganizationReturn {
 
   useEffect(() => {
     fetchOrganization();
-  }, [session?.access_token, user?.id]);
+  }, [user?.id]);
 
   return {
     organization,
