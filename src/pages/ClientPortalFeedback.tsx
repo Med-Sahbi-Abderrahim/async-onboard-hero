@@ -17,8 +17,11 @@ export default function ClientPortalFeedback() {
   const [organizationId, setOrganizationId] = useState<string | null>(null);
 
   const smartBack = () => {
-    if (window.history.length > 2) {
-      navigate(-1);
+    const lastRoute = sessionStorage.getItem("lastClientPortalRoute");
+
+    // If we have a safe previous route inside client portal
+    if (lastRoute && lastRoute !== window.location.pathname) {
+      navigate(lastRoute);
     } else {
       navigate("/client-portal");
     }
