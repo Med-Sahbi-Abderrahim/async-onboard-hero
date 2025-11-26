@@ -47,6 +47,7 @@ import { AddContractModal } from "@/components/AddContractModal";
 import { AddInvoiceModal } from "@/components/AddInvoiceModal";
 import { TaskList } from "@/components/tasks/TaskList";
 import { ClientProgressCard } from "@/components/progress/ClientProgressCard";
+import { inviteClientToPortal, checkClientPortalAccess } from "@/lib/client-invitation";
 
 const editClientSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -79,6 +80,8 @@ export default function ClientDetail() {
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [hasPortalAccess, setHasPortalAccess] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
 
   const {
     register,
@@ -92,6 +95,14 @@ export default function ClientDetail() {
   useEffect(() => {
     fetchClientData();
   }, [id, user]);
+  useEffect(() => {
+    if (client?.id) {
+      checkClientPortalAccess(client.id).then((hasAccess) => {
+        setHasPortalAccess(hasAccess);
+        setCheckingAccess(false);
+      });
+    }
+  }, [client?.id]);
 
   const fetchClientData = async () => {
     if (!user || !id || !orgId || isDeleting) return;
@@ -130,10 +141,30 @@ export default function ClientDetail() {
 
       // Fetch meetings, files, contracts, invoices
       const [meetingsRes, filesRes, contractsRes, invoicesRes] = await Promise.all([
-        supabase.from("meetings").select("*").eq("client_id", id).is("deleted_at", null).order("scheduled_at", { ascending: false }),
-        supabase.from("client_files").select("*").eq("client_id", id).is("deleted_at", null).order("created_at", { ascending: false }),
-        supabase.from("contracts").select("*").eq("client_id", id).is("deleted_at", null).order("created_at", { ascending: false }),
-        supabase.from("invoices").select("*").eq("client_id", id).is("deleted_at", null).order("due_date", { ascending: false }),
+        supabase
+          .from("meetings")
+          .select("*")
+          .eq("client_id", id)
+          .is("deleted_at", null)
+          .order("scheduled_at", { ascending: false }),
+        supabase
+          .from("client_files")
+          .select("*")
+          .eq("client_id", id)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("contracts")
+          .select("*")
+          .eq("client_id", id)
+          .is("deleted_at", null)
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("invoices")
+          .select("*")
+          .eq("client_id", id)
+          .is("deleted_at", null)
+          .order("due_date", { ascending: false }),
       ]);
 
       setMeetings(meetingsRes.data || []);
@@ -179,6 +210,30 @@ export default function ClientDetail() {
       toast({
         title: "Error",
         description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSendInvite = async () => {
+    if (!client) return;
+
+    const result = await inviteClientToPortal(client.email, client.organization_id);
+
+    if (result.success) {
+      toast({
+        title: "✅ Invitation sent",
+        description: `Portal access link sent to ${client.email}`,
+      });
+
+      // Recheck access after a delay
+      setTimeout(() => {
+        checkClientPortalAccess(client.id).then(setHasPortalAccess);
+      }, 2000);
+    } else {
+      toast({
+        title: "⚠️ Failed to send invitation",
+        description: result.error,
         variant: "destructive",
       });
     }
@@ -263,7 +318,8 @@ export default function ClientDetail() {
       setIsDeleting(false); // Reset only on error
       toast({
         title: "Failed to delete client",
-        description: error.message || "You don't have permission to delete this client or an error occurred. Please try again.",
+        description:
+          error.message || "You don't have permission to delete this client or an error occurred. Please try again.",
         variant: "destructive",
       });
     }
@@ -370,6 +426,18 @@ export default function ClientDetail() {
               <Edit className="mr-2 h-4 w-4" />
               Edit Client
             </Button>
+            {!checkingAccess && !hasPortalAccess && (
+              <Button onClick={handleSendInvite} variant="secondary">
+                Send Portal Invite
+              </Button>
+            )}
+
+            {hasPortalAccess && (
+              <Button variant="outline" disabled>
+                Has Portal Access
+              </Button>
+            )}
+
             <Button onClick={handleDelete} variant="outline">
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
@@ -408,13 +476,17 @@ export default function ClientDetail() {
               ) : (
                 <div className="space-y-2">
                   {files.map((file) => (
-                    <div key={file.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
+                    <div
+                      key={file.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
+                    >
                       <div className="flex items-center gap-3 flex-1">
                         <FileText className="h-5 w-5 text-primary" />
                         <div className="flex-1">
                           <div className="font-medium">{file.file_name}</div>
                           <div className="text-xs text-muted-foreground">
-                            {(file.file_size / 1024 / 1024).toFixed(2)} MB • {format(new Date(file.created_at), "MMM dd, yyyy")}
+                            {(file.file_size / 1024 / 1024).toFixed(2)} MB •{" "}
+                            {format(new Date(file.created_at), "MMM dd, yyyy")}
                           </div>
                         </div>
                       </div>
@@ -448,11 +520,16 @@ export default function ClientDetail() {
                 </Button>
               </div>
               {meetings.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No meetings yet — click Add Meeting to schedule one</p>
+                <p className="text-muted-foreground text-center py-8">
+                  No meetings yet — click Add Meeting to schedule one
+                </p>
               ) : (
                 <div className="space-y-2">
                   {meetings.map((meeting) => (
-                    <div key={meeting.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
+                    <div
+                      key={meeting.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
+                    >
                       <div className="flex items-center gap-3">
                         <Video className="h-5 w-5 text-primary" />
                         <div>
@@ -478,11 +555,16 @@ export default function ClientDetail() {
                 </Button>
               </div>
               {contracts.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No contracts yet — click Add Contract to create one</p>
+                <p className="text-muted-foreground text-center py-8">
+                  No contracts yet — click Add Contract to create one
+                </p>
               ) : (
                 <div className="space-y-2">
                   {contracts.map((contract) => (
-                    <div key={contract.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
+                    <div
+                      key={contract.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
+                    >
                       <div className="flex items-center gap-3">
                         <FileText className="h-5 w-5 text-primary" />
                         <div>
@@ -508,17 +590,23 @@ export default function ClientDetail() {
                 </Button>
               </div>
               {invoices.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No invoices yet — click Add Invoice to create one</p>
+                <p className="text-muted-foreground text-center py-8">
+                  No invoices yet — click Add Invoice to create one
+                </p>
               ) : (
                 <div className="space-y-2">
                   {invoices.map((invoice) => (
-                    <div key={invoice.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors">
+                    <div
+                      key={invoice.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
+                    >
                       <div className="flex items-center gap-3">
                         <CreditCard className="h-5 w-5 text-primary" />
                         <div>
                           <div className="font-medium">Invoice #{invoice.invoice_number}</div>
                           <div className="text-xs text-muted-foreground">
-                            Due {format(new Date(invoice.due_date), "MMM dd, yyyy")} • ${(invoice.amount_cents / 100).toFixed(2)}
+                            Due {format(new Date(invoice.due_date), "MMM dd, yyyy")} • $
+                            {(invoice.amount_cents / 100).toFixed(2)}
                           </div>
                         </div>
                       </div>
@@ -530,11 +618,7 @@ export default function ClientDetail() {
             </TabsContent>
 
             <TabsContent value="tasks" className="space-y-4">
-              <TaskList 
-                clientId={id!}
-                organizationId={client.organization_id}
-                isClient={false}
-              />
+              <TaskList clientId={id!} organizationId={client.organization_id} isClient={false} />
             </TabsContent>
           </Tabs>
         </CardContent>
