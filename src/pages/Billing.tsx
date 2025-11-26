@@ -72,6 +72,7 @@ export default function Billing() {
         .select("role")
         .eq("user_id", user?.id)
         .eq("organization_id", orgId)
+        .is('deleted_at', null)
         .single();
 
       if (!membership) {

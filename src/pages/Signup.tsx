@@ -65,7 +65,8 @@ export default function Signup() {
         const { data: memberships } = await supabase
           .from('organization_members')
           .select('organization_id')
-          .eq('user_id', session.user.id);
+          .eq('user_id', session.user.id)
+          .is('deleted_at', null);
 
         if (memberships && memberships.length > 0) {
           if (memberships.length === 1) {
@@ -186,7 +187,8 @@ export default function Signup() {
         const { data: memberships } = await supabase
           .from('organization_members')
           .select('organization_id')
-          .eq('user_id', data.session.user.id);
+          .eq('user_id', data.session.user.id)
+          .is('deleted_at', null);
 
         if (memberships && memberships.length > 0) {
           toast({

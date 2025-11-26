@@ -34,6 +34,7 @@ export default function EarlyAccessAdmin() {
         .select("role")
         .eq("user_id", user.id)
         .eq("role", "owner")
+        .is('deleted_at', null)
         .single();
 
       if (!membership) {

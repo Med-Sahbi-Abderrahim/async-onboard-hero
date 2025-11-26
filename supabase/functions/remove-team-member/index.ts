@@ -104,10 +104,11 @@ Deno.serve(async (req) => {
       .eq('id', targetMember.user_id)
       .single();
 
-    // Remove the member
+    // Soft-delete the member (set deleted_at instead of hard-deleting)
+    // This preserves audit trail and allows recovery if needed
     const { error: deleteError } = await supabaseAdmin
       .from('organization_members')
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
       .eq('id', member_id);
 
     if (deleteError) {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { supabase } from '@/integrations/supabase/client';
+import { softDelete } from '@/lib/supabase/soft-delete';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -40,7 +41,8 @@ export function TeamSettings() {
       const { data, error } = await supabase
         .from('organization_members')
         .select('id, user_id, role, created_at, invitation_accepted_at, invited_email, invited_full_name')
-        .eq('organization_id', orgId);
+        .eq('organization_id', orgId)
+        .is('deleted_at', null);
 
       if (error) throw error;
 

@@ -66,7 +66,8 @@ export function AppSidebar() {
       const { data: memberships } = await supabase
         .from("organization_members")
         .select("organization_id")
-        .eq("user_id", user?.id);
+        .eq("user_id", user?.id)
+        .is("deleted_at", null);
 
       if (!memberships) return;
 

@@ -143,7 +143,11 @@ export default function Forms() {
 
     setDeleting(true);
     try {
-      const { error } = await supabase.from("intake_forms").delete().eq("id", formToDelete.id);
+      // Soft-delete the form by setting deleted_at instead of hard deleting
+      const { error } = await supabase
+        .from("intake_forms")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", formToDelete.id);
 
       if (error) throw error;
 

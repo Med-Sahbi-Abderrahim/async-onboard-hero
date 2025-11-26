@@ -37,7 +37,8 @@ export function OrganizationSwitcher() {
         const { data: memberships, error: memberError } = await supabase
           .from('organization_members')
           .select('organization_id')
-          .eq('user_id', session.user.id);
+          .eq('user_id', session.user.id)
+          .is('deleted_at', null);
 
         if (memberError) throw memberError;
         if (!memberships) return;

@@ -88,6 +88,7 @@ export default function Pricing() {
         .from('organization_members')
         .select('organization_id')
         .eq('user_id', user.id)
+        .is('deleted_at', null)
         .limit(1)
         .maybeSingle();
       
@@ -105,6 +106,7 @@ export default function Pricing() {
         .from("organization_members")
         .select("organization_id")
         .eq("user_id", user.id)
+        .is('deleted_at', null)
         .single();
 
       if (!membership) {
@@ -248,6 +250,7 @@ export default function Pricing() {
                       .from('organization_members')
                       .select('organization_id')
                       .eq('user_id', user.id)
+                      .is('deleted_at', null)
                       .limit(1)
                       .maybeSingle();
                     

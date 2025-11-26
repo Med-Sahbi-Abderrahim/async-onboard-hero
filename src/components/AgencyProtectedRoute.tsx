@@ -32,6 +32,7 @@ export function AgencyProtectedRoute({ children }: AgencyProtectedRouteProps) {
           .select('id, organization_id, role')
           .eq('user_id', session.user.id)
           .eq('organization_id', orgId)
+          .is('deleted_at', null)
           .maybeSingle();
 
         if (error) {

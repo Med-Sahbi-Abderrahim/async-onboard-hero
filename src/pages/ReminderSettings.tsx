@@ -42,6 +42,7 @@ export default function ReminderSettings() {
         .from("organization_members")
         .select("organization_id")
         .eq("user_id", user.id)
+        .is("deleted_at", null)
         .single();
 
       if (!membership) return;
@@ -103,6 +104,7 @@ export default function ReminderSettings() {
         .from("organization_members")
         .select("organization_id")
         .eq("user_id", user.id)
+        .is("deleted_at", null)
         .single();
 
       if (!membership) return;
@@ -154,6 +156,7 @@ export default function ReminderSettings() {
         .from("organization_members")
         .select("organization_id")
         .eq("user_id", user.id)
+        .is("deleted_at", null)
         .single();
 
       if (!membership) throw new Error("No organization found");
@@ -206,9 +209,16 @@ export default function ReminderSettings() {
 
       if (error) throw error;
 
-      // Clean up test data
-      await supabase.from("form_submissions").delete().eq("id", submission.id);
-      await supabase.from("clients").delete().eq("id", client.id);
+      // Clean up test data (soft-delete to preserve audit/history)
+      await supabase
+        .from("form_submissions")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", submission.id);
+
+      await supabase
+        .from("clients")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", client.id);
 
       toast({
         title: "Test Email Sent!",

@@ -32,14 +32,14 @@ export default function SelectOrganization() {
           navigate('/login');
           return;
         }
-
         console.log('Fetching organizations for user:', currentSession.user.id);
 
         // Fetch organizations user is a member of
         const { data: memberships, error: memberError } = await supabase
           .from('organization_members')
           .select('organization_id, role')
-          .eq('user_id', currentSession.user.id);
+          .eq('user_id', currentSession.user.id)
+          .is('deleted_at', null);
 
         if (memberError) {
           console.error('Error fetching memberships:', memberError);

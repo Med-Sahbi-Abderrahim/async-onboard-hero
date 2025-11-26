@@ -72,7 +72,8 @@ export default function AuthCallback() {
           const { data: orgMemberships } = await supabase
             .from('organization_members')
             .select('organization_id')
-            .eq('user_id', session.user.id);
+            .eq('user_id', session.user.id)
+            .is('deleted_at', null);
           
           console.log(`User has ${orgMemberships?.length || 0} organization(s)`);
           

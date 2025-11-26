@@ -45,7 +45,8 @@ export function useUserRoles(): UserRoles {
         const { data: memberData } = await supabase
           .from('organization_members')
           .select('organization_id')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .is('deleted_at', null);
 
         // Fetch organization details separately to avoid RLS issues
         const clientOrgIds = clientData?.map(c => c.organization_id) || [];

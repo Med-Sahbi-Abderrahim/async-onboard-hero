@@ -21,6 +21,7 @@ const NotFound = () => {
         .from('organization_members')
         .select('organization_id')
         .eq('user_id', session.user.id)
+        .is('deleted_at', null)
         .limit(1)
         .maybeSingle();
       

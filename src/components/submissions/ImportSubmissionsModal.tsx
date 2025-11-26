@@ -82,6 +82,7 @@ export function ImportSubmissionsModal({ open, onOpenChange, onImportComplete }:
         .from('organization_members')
         .select('organization_id')
         .eq('user_id', user.id)
+        .is('deleted_at', null)
         .single();
 
       if (!membership) {
