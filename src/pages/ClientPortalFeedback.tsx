@@ -38,7 +38,9 @@ export default function ClientPortalFeedback() {
     setSubmitting(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       const { data: client } = await supabase
@@ -52,14 +54,12 @@ export default function ClientPortalFeedback() {
 
       setOrganizationId(client.organization_id);
 
-      const { error } = await supabase
-        .from("client_feedback")
-        .insert({
-          client_id: client.id,
-          organization_id: client.organization_id,
-          rating,
-          message,
-        });
+      const { error } = await supabase.from("client_feedback").insert({
+        client_id: client.id,
+        organization_id: client.organization_id,
+        rating,
+        message,
+      });
 
       if (error) throw error;
 
@@ -85,7 +85,12 @@ export default function ClientPortalFeedback() {
     <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center gap-4 animate-slide-up">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/client-portal")} className="hover:scale-110 transition-transform">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="hover:scale-110 transition-transform"
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -94,7 +99,10 @@ export default function ClientPortalFeedback() {
           </div>
         </div>
 
-        <Card className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10 hover:shadow-medium transition-all" style={{ animationDelay: '0.1s' }}>
+        <Card
+          className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10 hover:shadow-medium transition-all"
+          style={{ animationDelay: "0.1s" }}
+        >
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="rounded-xl gradient-primary p-2.5 shadow-soft">
@@ -136,13 +144,20 @@ export default function ClientPortalFeedback() {
               />
             </div>
 
-            <Button onClick={handleSubmit} disabled={submitting} className="w-full hover:scale-105 transition-transform shadow-soft">
+            <Button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="w-full hover:scale-105 transition-transform shadow-soft"
+            >
               {submitting ? "Submitting..." : "Submit Feedback"}
             </Button>
           </CardContent>
         </Card>
 
-        <Card className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10 hover:shadow-medium transition-all" style={{ animationDelay: '0.2s' }}>
+        <Card
+          className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10 hover:shadow-medium transition-all"
+          style={{ animationDelay: "0.2s" }}
+        >
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="rounded-xl bg-green-500/10 p-2.5 shadow-soft">
@@ -156,11 +171,7 @@ export default function ClientPortalFeedback() {
               Help others discover us by leaving a review on Google!
             </p>
             <Button variant="outline" className="w-full hover:scale-105 transition-transform" asChild>
-              <a
-                href="https://www.google.com/search?q=your+business+name"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href="https://www.google.com/search?q=your+business+name" target="_blank" rel="noopener noreferrer">
                 Leave a Google Review
                 <ExternalLink className="h-4 w-4 ml-2" />
               </a>
@@ -168,7 +179,7 @@ export default function ClientPortalFeedback() {
           </CardContent>
         </Card>
       </div>
-      
+
       {organizationId && <BrandedFooter organizationId={organizationId} />}
     </div>
   );
