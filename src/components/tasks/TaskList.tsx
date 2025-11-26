@@ -28,6 +28,8 @@ interface TaskListProps {
 export function TaskList({ clientId, organizationId, isClient = false }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
 
   const fetchTasks = async () => {
     try {

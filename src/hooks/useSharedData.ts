@@ -1,3 +1,6 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
 // ============================================
 // UPDATED FILE FETCHING HOOK
 // ============================================
@@ -5,38 +8,38 @@ export function useClientFiles(clientId?: string, organizationId?: string, isCli
   const [files, setFiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchFiles = async () => {
     if (!organizationId) return;
+    
+    try {
+      let query = supabase
+        .from("client_files")
+        .select("*")
+        .eq("organization_id", organizationId)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
 
-    const fetchFiles = async () => {
-      try {
-        let query = supabase
-          .from("client_files")
-          .select("*")
-          .eq("organization_id", organizationId)
-          .is("deleted_at", null)
-          .order("created_at", { ascending: false });
-
-        // For clients: fetch their files OR org-wide files
-        if (isClient && clientId) {
-          query = query.or(`client_id.eq.${clientId},client_id.is.null`);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-        setFiles(data || []);
-      } catch (error) {
-        console.error("Error fetching files:", error);
-      } finally {
-        setLoading(false);
+      // For clients: fetch their files OR org-wide files
+      if (isClient && clientId) {
+        query = query.or(`client_id.eq.${clientId},client_id.is.null`);
       }
-    };
 
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setFiles(data || []);
+    } catch (error) {
+      console.error("Error fetching files:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchFiles();
   }, [clientId, organizationId, isClient]);
 
-  return { files, loading, refresh: () => fetchFiles() };
+  return { files, loading, refresh: fetchFiles };
 }
 
 // ============================================
@@ -178,55 +181,4 @@ export async function getCurrentClientId(organizationId: string): Promise<string
     .maybeSingle();
 
   return data?.id || null;
-}
-
-// ============================================
-// USAGE EXAMPLE IN CLIENT PORTAL
-// ============================================
-import { useParams } from "react-router-dom";
-import { getCurrentClientId } from "./hooks/useSharedData";
-
-export function ClientPortalFilesPage() {
-  const { orgId } = useParams();
-  const [clientId, setClientId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchClientId = async () => {
-      if (orgId) {
-        const id = await getCurrentClientId(orgId);
-        setClientId(id);
-        setLoading(false);
-      }
-    };
-    fetchClientId();
-  }, [orgId]);
-
-  const { files, loading: filesLoading } = useClientFiles(
-    clientId || undefined,
-    orgId,
-    true // isClient = true
-  );
-
-  if (loading || filesLoading) {
-    return <div>Loading...</div>;
-  }
-
-  return (
-    <div>
-      <h1>Files</h1>
-      <div className="space-y-4">
-        {files.map((file) => (
-          <div key={file.id} className="p-4 border rounded">
-            <h3>{file.file_name}</h3>
-            <p className="text-sm text-muted-foreground">
-              {file.client_id 
-                ? "Private to you" 
-                : "Shared by organization"}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 }
