@@ -294,6 +294,7 @@ export type Database = {
           file_size: number
           file_type: string
           id: string
+          is_shared_with_all_clients: boolean | null
           organization_id: string
           storage_path: string
           uploaded_by: string | null
@@ -306,6 +307,7 @@ export type Database = {
           file_size: number
           file_type: string
           id?: string
+          is_shared_with_all_clients?: boolean | null
           organization_id: string
           storage_path: string
           uploaded_by?: string | null
@@ -318,6 +320,7 @@ export type Database = {
           file_size?: number
           file_type?: string
           id?: string
+          is_shared_with_all_clients?: boolean | null
           organization_id?: string
           storage_path?: string
           uploaded_by?: string | null
@@ -418,6 +421,7 @@ export type Database = {
           description: string | null
           file_path: string | null
           id: string
+          is_shared_with_all_clients: boolean | null
           organization_id: string
           signed_at: string | null
           status: string
@@ -431,6 +435,7 @@ export type Database = {
           description?: string | null
           file_path?: string | null
           id?: string
+          is_shared_with_all_clients?: boolean | null
           organization_id: string
           signed_at?: string | null
           status?: string
@@ -444,6 +449,7 @@ export type Database = {
           description?: string | null
           file_path?: string | null
           id?: string
+          is_shared_with_all_clients?: boolean | null
           organization_id?: string
           signed_at?: string | null
           status?: string
@@ -709,6 +715,7 @@ export type Database = {
           due_date: string
           id: string
           invoice_number: string
+          is_shared_with_all_clients: boolean | null
           organization_id: string
           paid_at: string | null
           status: string
@@ -724,6 +731,7 @@ export type Database = {
           due_date: string
           id?: string
           invoice_number: string
+          is_shared_with_all_clients?: boolean | null
           organization_id: string
           paid_at?: string | null
           status?: string
@@ -739,6 +747,7 @@ export type Database = {
           due_date?: string
           id?: string
           invoice_number?: string
+          is_shared_with_all_clients?: boolean | null
           organization_id?: string
           paid_at?: string | null
           status?: string
@@ -782,6 +791,7 @@ export type Database = {
           deleted_at: string | null
           duration_minutes: number | null
           id: string
+          is_shared_with_all_clients: boolean | null
           meeting_link: string | null
           notes: string | null
           organization_id: string
@@ -796,6 +806,7 @@ export type Database = {
           deleted_at?: string | null
           duration_minutes?: number | null
           id?: string
+          is_shared_with_all_clients?: boolean | null
           meeting_link?: string | null
           notes?: string | null
           organization_id: string
@@ -810,6 +821,7 @@ export type Database = {
           deleted_at?: string | null
           duration_minutes?: number | null
           id?: string
+          is_shared_with_all_clients?: boolean | null
           meeting_link?: string | null
           notes?: string | null
           organization_id?: string
@@ -1163,6 +1175,7 @@ export type Database = {
           description: string | null
           due_date: string | null
           id: string
+          is_shared_with_all_clients: boolean | null
           organization_id: string
           status: string | null
           title: string
@@ -1177,6 +1190,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          is_shared_with_all_clients?: boolean | null
           organization_id: string
           status?: string | null
           title: string
@@ -1191,6 +1205,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          is_shared_with_all_clients?: boolean | null
           organization_id?: string
           status?: string | null
           title?: string
@@ -1425,6 +1440,7 @@ export type Database = {
         Returns: boolean
       }
       use_early_access_invite: { Args: { invite_code: string }; Returns: Json }
+      user_can_access_org_data: { Args: { org_id: string }; Returns: boolean }
     }
     Enums: {
       automation_action_type:
