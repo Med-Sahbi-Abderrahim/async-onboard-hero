@@ -51,6 +51,7 @@ export default function ForgotPassword() {
             .from('clients')
             .select('organization_id')
             .eq('email', session.user.email)
+            .is('deleted_at', null)
             .limit(1)
             .maybeSingle();
           

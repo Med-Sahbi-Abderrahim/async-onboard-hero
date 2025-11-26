@@ -204,6 +204,7 @@ export default function Signup() {
             .from('clients')
             .select('organization_id')
             .eq('user_id', data.session.user.id)
+            .is('deleted_at', null)
             .limit(1)
             .maybeSingle();
           
