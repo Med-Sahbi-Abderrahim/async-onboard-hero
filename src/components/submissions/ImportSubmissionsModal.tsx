@@ -121,6 +121,7 @@ export function ImportSubmissionsModal({ open, onOpenChange, onImportComplete }:
             .select('id')
             .eq('organization_id', membership.organization_id)
             .eq('email', row.client_email)
+            .is('deleted_at', null)
             .maybeSingle();
 
           if (!client) {

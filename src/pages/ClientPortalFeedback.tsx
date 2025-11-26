@@ -45,6 +45,7 @@ export default function ClientPortalFeedback() {
         .from("clients")
         .select("id, organization_id")
         .eq("user_id", user.id)
+        .is("deleted_at", null)
         .single();
 
       if (!client) throw new Error("Client record not found");

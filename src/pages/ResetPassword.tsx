@@ -125,6 +125,7 @@ export default function ResetPassword() {
           .from('clients')
           .select('organization_id')
           .eq('email', user.email)
+          .is('deleted_at', null)
           .limit(1)
           .maybeSingle();
 
