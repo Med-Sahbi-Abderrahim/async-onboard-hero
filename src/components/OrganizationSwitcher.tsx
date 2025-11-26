@@ -34,18 +34,28 @@ export function OrganizationSwitcher() {
 
     const fetchOrganizations = async () => {
       try {
-        const { data, error } = await supabase
+        const { data: memberships, error: memberError } = await supabase
           .from('organization_members')
-          .select('organization_id, organizations(id, name, logo_url)')
+          .select('organization_id')
           .eq('user_id', session.user.id);
 
-        if (error) throw error;
+        if (memberError) throw memberError;
+        if (!memberships) return;
 
-        const orgs = (data || [])
-          .map((m: any) => ({
-            id: m.organization_id,
-            name: m.organizations?.name || 'Unnamed Organization',
-            logo_url: m.organizations?.logo_url,
+        // Fetch organization details separately
+        const orgIds = memberships.map(m => m.organization_id);
+        const { data: orgsData, error: orgsError } = await supabase
+          .from('organizations')
+          .select('id, name, logo_url')
+          .in('id', orgIds);
+
+        if (orgsError) throw orgsError;
+
+        const orgs = (orgsData || [])
+          .map((org: any) => ({
+            id: org.id,
+            name: org.name || 'Unnamed Organization',
+            logo_url: org.logo_url,
           }))
           .filter((org) => org.id);
 

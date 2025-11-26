@@ -65,17 +65,23 @@ export function AppSidebar() {
     try {
       const { data: memberships } = await supabase
         .from("organization_members")
-        .select("organization_id, organizations(id, name)")
+        .select("organization_id")
         .eq("user_id", user?.id);
 
-      if (memberships) {
-        const orgs = memberships
-          .map((m: any) => m.organizations)
-          .filter(Boolean)
-          .map((org: any) => ({
-            id: org.id,
-            name: org.name || "Unnamed Organization",
-          }));
+      if (!memberships) return;
+
+      // Fetch organization details separately
+      const orgIds = memberships.map(m => m.organization_id);
+      const { data: orgsData } = await supabase
+        .from("organizations")
+        .select("id, name")
+        .in("id", orgIds);
+
+      if (orgsData) {
+        const orgs = orgsData.map((org: any) => ({
+          id: org.id,
+          name: org.name || "Unnamed Organization",
+        }));
         setOrganizations(orgs);
       }
     } catch (error) {
