@@ -29,19 +29,44 @@ export default function SelectRole() {
         // Get business organizations (where user is organization_member)
         const { data: businessData } = await supabase
           .from('organization_members')
-          .select('organization_id, organizations(id, name)')
+          .select('organization_id')
           .eq('user_id', session.user.id)
           .is('deleted_at', null);
 
         // Get client organizations (where user is a client)
         const { data: clientData } = await supabase
           .from('clients')
-          .select('organization_id, organizations(id, name)')
+          .select('organization_id')
           .eq('user_id', session.user.id)
           .is('deleted_at', null);
 
-        const businessOrgs = businessData || [];
-        const clientOrgs = clientData || [];
+        // Fetch organization details separately
+        const businessOrgIds = businessData?.map(m => m.organization_id) || [];
+        const clientOrgIds = clientData?.map(c => c.organization_id) || [];
+        const allOrgIds = [...new Set([...businessOrgIds, ...clientOrgIds])];
+
+        let orgNames: Record<string, string> = {};
+        if (allOrgIds.length > 0) {
+          const { data: orgsData } = await supabase
+            .from('organizations')
+            .select('id, name')
+            .in('id', allOrgIds);
+          
+          orgNames = (orgsData || []).reduce((acc: Record<string, string>, org) => {
+            acc[org.id] = org.name || 'Unnamed Organization';
+            return acc;
+          }, {});
+        }
+
+        const businessOrgs = businessData?.map(m => ({
+          organization_id: m.organization_id,
+          organizations: { id: m.organization_id, name: orgNames[m.organization_id] }
+        })) || [];
+
+        const clientOrgs = clientData?.map(c => ({
+          organization_id: c.organization_id,
+          organizations: { id: c.organization_id, name: orgNames[c.organization_id] }
+        })) || [];
 
         setUserInfo({
           businessOrgs,
