@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,6 @@ import { useToast } from "@/hooks/use-toast";
 import { BrandedFooter } from "@/components/BrandedFooter";
 import { BrandedHeader } from "@/components/BrandedHeader";
 import { useOrgBranding } from "@/hooks/useOrgBranding";
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
 
 export function ClientPortalTracker() {
   const location = useLocation();
