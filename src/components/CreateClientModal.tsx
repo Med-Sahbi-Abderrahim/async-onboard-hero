@@ -14,41 +14,6 @@ import { UpgradeModal } from "./UpgradeModal";
 import { useOrgLimits } from "@/hooks/useOrgLimits";
 import { inviteClientToPortal } from "@/lib/client-invitation";
 
-// After client is created
-const handleCreateClient = async (formData) => {
-  // Create client record
-  const { data: newClient, error } = await supabase
-    .from("clients")
-    .insert({
-      email: formData.email,
-      full_name: formData.full_name,
-      organization_id: organizationId,
-      invited_by: user.id,
-      // user_id will be set when they accept invite
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-
-  // AUTOMATICALLY send portal invite
-  const inviteResult = await inviteClientToPortal(formData.email, organizationId);
-
-  if (inviteResult.success) {
-    toast({
-      title: "✅ Client created and invited",
-      description: `Portal invite sent to ${formData.email}`,
-    });
-  } else {
-    toast({
-      title: "⚠️ Client created but invite failed",
-      description: "You can resend the invite from the client details page",
-      variant: "destructive",
-    });
-  }
-
-  return newClient;
-};
 const clientSchema = z.object({
   email: z.string().email("Invalid email address").min(1, "Email is required"),
   full_name: z.string().min(1, "Full name is required"),
