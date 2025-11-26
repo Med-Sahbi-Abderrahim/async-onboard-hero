@@ -16,6 +16,14 @@ export default function ClientPortalFeedback() {
   const [submitting, setSubmitting] = useState(false);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
 
+  const smartBack = () => {
+    if (window.history.length > 2) {
+      navigate(-1);
+    } else {
+      navigate("/client-portal");
+    }
+  };
+
   const handleSubmit = async () => {
     if (rating === 0) {
       toast({
@@ -85,14 +93,10 @@ export default function ClientPortalFeedback() {
     <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center gap-4 animate-slide-up">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/client-portal")}
-            className="hover:scale-110 transition-transform"
-          >
+          <Button variant="ghost" size="icon" onClick={smartBack} className="hover:scale-110 transition-transform">
             <ArrowLeft className="h-5 w-5" />
           </Button>
+
           <div>
             <h1 className="text-3xl md:text-4xl font-bold">Feedback</h1>
             <p className="text-sm text-muted-foreground">Share your thoughts with us</p>
