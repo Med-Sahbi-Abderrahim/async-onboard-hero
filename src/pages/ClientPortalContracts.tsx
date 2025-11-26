@@ -4,16 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, ArrowLeft, CheckCircle } from "lucide-react";
+import { FileText, ArrowLeft, CheckCircle, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { BrandedFooter } from "@/components/BrandedFooter";
+import { AddContractModal } from "@/components/SharedModals";
+import { useContracts } from "@/hooks/useSharedData";
 
 export default function ClientPortalContracts() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [contracts, setContracts] = useState<any[]>([]);
   const [clientId, setClientId] = useState<string | null>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const { contracts, loading } = useContracts(clientId || undefined, organizationId || undefined, true);
 
   useEffect(() => {
     loadClientAndContracts();
@@ -34,23 +37,7 @@ export default function ClientPortalContracts() {
     if (client) {
       setClientId(client.id);
       setOrganizationId(client.organization_id);
-      loadContracts(client.id);
     }
-  };
-
-  const loadContracts = async (cId: string) => {
-    const { data, error } = await supabase
-      .from("contracts")
-      .select("*")
-      .eq("client_id", cId)
-      .is("deleted_at", null)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error loading contracts:", error);
-      return;
-    }
-    setContracts(data || []);
   };
 
   const signContract = async (contractId: string) => {
@@ -70,7 +57,7 @@ export default function ClientPortalContracts() {
         description: "Contract signed successfully",
       });
 
-      if (clientId) loadContracts(clientId);
+      loadClientAndContracts();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -98,10 +85,14 @@ export default function ClientPortalContracts() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl md:text-4xl font-bold">Contracts</h1>
             <p className="text-sm text-muted-foreground">Review and sign your agreements</p>
           </div>
+          <Button onClick={() => setShowAddModal(true)} className="hover:scale-105 transition-transform">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Contract
+          </Button>
         </div>
 
         <div className="space-y-4">
@@ -172,6 +163,18 @@ export default function ClientPortalContracts() {
       </div>
 
       {organizationId && <BrandedFooter organizationId={organizationId} />}
+      
+      {showAddModal && clientId && organizationId && (
+        <AddContractModal
+          clientId={clientId}
+          organizationId={organizationId}
+          onClose={() => setShowAddModal(false)}
+          onSuccess={() => {
+            setShowAddModal(false);
+            loadClientAndContracts();
+          }}
+        />
+      )}
     </div>
   );
 }

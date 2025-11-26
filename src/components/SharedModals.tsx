@@ -369,3 +369,303 @@ export function AddContractModal({
     </Dialog>
   );
 }
+
+// ============================================
+// UPDATED AddMeetingModal
+// ============================================
+export function AddMeetingModal({ 
+  clientId, 
+  organizationId, 
+  onClose, 
+  onSuccess 
+}: {
+  clientId?: string;
+  organizationId: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shareWithAllClients, setShareWithAllClients] = useState(!clientId);
+  const [formData, setFormData] = useState({
+    title: "",
+    scheduled_at: "",
+    duration_minutes: 60,
+    meeting_link: "",
+    notes: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase.from("meetings").insert({
+        client_id: shareWithAllClients ? null : clientId,
+        organization_id: organizationId,
+        title: formData.title,
+        scheduled_at: formData.scheduled_at,
+        duration_minutes: formData.duration_minutes,
+        meeting_link: formData.meeting_link || null,
+        notes: formData.notes || null,
+        status: "scheduled",
+        is_shared_with_all_clients: shareWithAllClients,
+      });
+
+      if (error) throw error;
+
+      toast.success(
+        shareWithAllClients 
+          ? "Meeting scheduled and shared with all clients" 
+          : "Meeting scheduled for specific client"
+      );
+      
+      onSuccess();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create meeting");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Schedule Meeting</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Title *</Label>
+            <Input
+              id="title"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="scheduled_at">Date & Time *</Label>
+            <Input
+              id="scheduled_at"
+              type="datetime-local"
+              value={formData.scheduled_at}
+              onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="duration">Duration (minutes)</Label>
+            <Input
+              id="duration"
+              type="number"
+              value={formData.duration_minutes}
+              onChange={(e) => setFormData({ ...formData, duration_minutes: parseInt(e.target.value) })}
+              min={15}
+              step={15}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="meeting_link">Meeting Link</Label>
+            <Input
+              id="meeting_link"
+              type="url"
+              value={formData.meeting_link}
+              onChange={(e) => setFormData({ ...formData, meeting_link: e.target.value })}
+              placeholder="https://meet.google.com/..."
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              rows={3}
+            />
+          </div>
+
+          {!clientId && (
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+              <div className="space-y-0.5">
+                <Label htmlFor="share-meeting-toggle">Share with all clients</Label>
+                <p className="text-xs text-muted-foreground">
+                  All clients can see this meeting
+                </p>
+              </div>
+              <Switch
+                id="share-meeting-toggle"
+                checked={shareWithAllClients}
+                onCheckedChange={setShareWithAllClients}
+              />
+            </div>
+          )}
+
+          <div className="flex gap-2 justify-end pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Schedule Meeting"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ============================================
+// UPDATED AddInvoiceModal
+// ============================================
+export function AddInvoiceModal({ 
+  clientId, 
+  organizationId, 
+  onClose, 
+  onSuccess 
+}: {
+  clientId?: string;
+  organizationId: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shareWithAllClients, setShareWithAllClients] = useState(!clientId);
+  const [formData, setFormData] = useState({
+    invoice_number: `INV-${Date.now()}`,
+    amount_cents: 0,
+    currency: "USD",
+    due_date: "",
+    description: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase.from("invoices").insert({
+        client_id: shareWithAllClients ? null : clientId,
+        organization_id: organizationId,
+        invoice_number: formData.invoice_number,
+        amount_cents: Math.round(formData.amount_cents * 100), // Convert to cents
+        currency: formData.currency,
+        due_date: formData.due_date,
+        description: formData.description || null,
+        status: "pending",
+        is_shared_with_all_clients: shareWithAllClients,
+      });
+
+      if (error) throw error;
+
+      toast.success(
+        shareWithAllClients 
+          ? "Invoice created and shared with all clients" 
+          : "Invoice created for specific client"
+      );
+      
+      onSuccess();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create invoice");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create Invoice</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="invoice_number">Invoice Number *</Label>
+            <Input
+              id="invoice_number"
+              value={formData.invoice_number}
+              onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="amount">Amount *</Label>
+              <Input
+                id="amount"
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.amount_cents}
+                onChange={(e) => setFormData({ ...formData, amount_cents: parseFloat(e.target.value) })}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="currency">Currency</Label>
+              <Input
+                id="currency"
+                value={formData.currency}
+                onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                placeholder="USD"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="due_date">Due Date *</Label>
+            <Input
+              id="due_date"
+              type="date"
+              value={formData.due_date}
+              onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={3}
+            />
+          </div>
+
+          {!clientId && (
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+              <div className="space-y-0.5">
+                <Label htmlFor="share-invoice-toggle">Share with all clients</Label>
+                <p className="text-xs text-muted-foreground">
+                  All clients can see this invoice
+                </p>
+              </div>
+              <Switch
+                id="share-invoice-toggle"
+                checked={shareWithAllClients}
+                onCheckedChange={setShareWithAllClients}
+              />
+            </div>
+          )}
+
+          <div className="flex gap-2 justify-end pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create Invoice"}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
