@@ -123,6 +123,25 @@ export default function SelectRole() {
   const hasBusinessRole = userInfo.businessOrgs.length > 0;
   const hasClientRole = userInfo.clientOrgs.length > 0;
 
+  useEffect(() => {
+    if (!hasBusinessRole && hasClientRole) {
+      setUserMode('client');
+      if (userInfo.clientOrgs.length === 1) {
+        navigate(`/client-portal/${userInfo.clientOrgs[0].organization_id}`, { replace: true });
+      } else {
+        navigate('/client-dashboard', { replace: true });
+      }
+    } else if (hasBusinessRole && !hasClientRole) {
+      setUserMode('business');
+      if (userInfo.businessOrgs.length === 1) {
+        navigate(`/dashboard/${userInfo.businessOrgs[0].organization_id}`, { replace: true });
+      } else {
+        navigate('/select-organization', { replace: true });
+      }
+    }
+  }, [hasBusinessRole, hasClientRole, userInfo, navigate, setUserMode]);
+
+  // Show loading while redirecting single-role users
   if (!hasBusinessRole && hasClientRole) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
