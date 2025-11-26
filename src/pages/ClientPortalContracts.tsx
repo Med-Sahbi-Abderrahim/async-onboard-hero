@@ -28,15 +28,15 @@ export default function ClientPortalContracts() {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: client } = await supabase
+    const { data: clients } = await supabase
       .from("clients")
       .select("id, organization_id")
       .eq("user_id", user.id)
-      .single();
+      .is("deleted_at", null);
 
-    if (client) {
-      setClientId(client.id);
-      setOrganizationId(client.organization_id);
+    if (clients && clients.length > 0) {
+      setClientId(clients[0].id);
+      setOrganizationId(clients[0].organization_id);
     }
   };
 
