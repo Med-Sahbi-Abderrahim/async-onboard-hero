@@ -72,29 +72,56 @@ export default function AuthCallback() {
           // Clear any stored context from localStorage
           localStorage.removeItem("auth_context");
           localStorage.removeItem("auth_org_id");
+          // Clear persisted user mode so we don't respect stale choices
+          localStorage.removeItem("kenly_user_mode");
 
-          // ALWAYS check organization count first - this is the source of truth
-          const { data: orgMembershipsData } = await supabase
-            .from("organization_members")
-            .select("organization_id")
-            .eq("user_id", session.user.id)
-            .is("deleted_at", null);
-          const orgMemberships = orgMembershipsData || [];
+          // Defensively query organization_members and clients. If queries error,
+          // we default to empty arrays and mark the org query error so we don't
+          // accidentally route the user to client-only when the org lookup failed.
+          let orgMemberships: any[] = [];
+          let orgQueryErrored = false;
+          try {
+            const { data: orgMembershipsData, error: orgErr } = await supabase
+              .from("organization_members")
+              .select("organization_id")
+              .eq("user_id", session.user.id)
+              .is("deleted_at", null);
+            if (orgErr) {
+              console.error("organization_members query error:", orgErr);
+              orgQueryErrored = true;
+            } else {
+              orgMemberships = orgMembershipsData || [];
+            }
+          } catch (e) {
+            console.error("organization_members unexpected error:", e);
+            orgQueryErrored = true;
+            orgMemberships = [];
+          }
 
-          console.log(`User has ${orgMemberships.length} organization(s)`);
+          console.log(`User has ${orgMemberships.length} organization(s) (orgQueryErrored=${orgQueryErrored})`);
 
           // Check if user is a client
-          const { data: clientRecordsData } = await supabase
-            .from("clients")
-            .select("organization_id")
-            .eq("user_id", session.user.id)
-            .is("deleted_at", null);
-          const clientRecords = clientRecordsData || [];
+          let clientRecords: any[] = [];
+          try {
+            const { data: clientRecordsData, error: clientErr } = await supabase
+              .from("clients")
+              .select("organization_id")
+              .eq("user_id", session.user.id)
+              .is("deleted_at", null);
+            if (clientErr) {
+              console.error("clients query error:", clientErr);
+            } else {
+              clientRecords = clientRecordsData || [];
+            }
+          } catch (e) {
+            console.error("clients unexpected error:", e);
+            clientRecords = [];
+          }
 
           console.log(`User has ${clientRecords.length} client record(s)`);
 
-          const hasOrgMemberships = orgMemberships && orgMemberships.length > 0;
-          const hasClientRecords = clientRecords && clientRecords.length > 0;
+          const hasOrgMemberships = orgMemberships.length > 0;
+          const hasClientRecords = clientRecords.length > 0;
 
           // Update last_seen_at for agency members
           if (hasOrgMemberships) {
@@ -105,14 +132,28 @@ export default function AuthCallback() {
             }
           }
 
-          // Handle users with both agency AND client roles
+          // If both roles -> show role selection screen
           if (hasOrgMemberships && hasClientRecords) {
-            // User has both roles - show role selection screen
             toast({
               title: "Welcome!",
               description: "Please select which part of the app you'd like to access",
             });
             // Small delay to ensure session propagates to UserContext
+            setTimeout(() => {
+              navigate("/select-role", { replace: true });
+            }, 500);
+            return;
+          }
+
+          // If the org lookup errored but we found client records, we are uncertain:
+          // be conservative and route to /select-role so the user can pick rather than
+          // forcing client-only mode.
+          if (orgQueryErrored && hasClientRecords) {
+            console.warn("Org lookup errored but client records exist — routing to /select-role for safety");
+            toast({
+              title: "Welcome!",
+              description: "Please select which part of the app you'd like to access",
+            });
             setTimeout(() => {
               navigate("/select-role", { replace: true });
             }, 500);
