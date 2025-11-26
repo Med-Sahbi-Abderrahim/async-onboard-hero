@@ -11,23 +11,24 @@ export default function AuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const type = searchParams.get('type');
-        const accessToken = searchParams.get('access_token');
-        
+        const type = searchParams.get("type");
+        const accessToken = searchParams.get("access_token");
+
         console.log("Auth callback - type:", type);
         console.log("Auth callback - access_token present:", !!accessToken);
-        
+
         // Check for error in URL (from Supabase)
-        const error = searchParams.get('error');
-        const errorDescription = searchParams.get('error_description');
-        
+        const error = searchParams.get("error");
+        const errorDescription = searchParams.get("error_description");
+
         if (error) {
           console.error("Auth error:", error, errorDescription);
           toast({
             title: "Authentication Error",
-            description: errorDescription === "Email link is invalid or has expired" 
-              ? "Your link has expired. Please request a new one."
-              : errorDescription || "An error occurred during authentication",
+            description:
+              errorDescription === "Email link is invalid or has expired"
+                ? "Your link has expired. Please request a new one."
+                : errorDescription || "An error occurred during authentication",
             variant: "destructive",
           });
           navigate("/login", { replace: true });
@@ -35,15 +36,19 @@ export default function AuthCallback() {
         }
 
         // Get the session from Supabase
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
 
         if (sessionError) {
           console.error("Error getting session:", sessionError);
           toast({
-            title: "Session Error", 
-            description: sessionError.message === "Invalid Refresh Token: Already Used"
-              ? "Your link has expired. Please request a new one."
-              : "Failed to retrieve your session. Please try again.",
+            title: "Session Error",
+            description:
+              sessionError.message === "Invalid Refresh Token: Already Used"
+                ? "Your link has expired. Please request a new one."
+                : "Failed to retrieve your session. Please try again.",
             variant: "destructive",
           });
           navigate("/login", { replace: true });
@@ -52,9 +57,9 @@ export default function AuthCallback() {
 
         if (session) {
           console.log("Session found:", session.user.email);
-          
+
           // CRITICAL: Check for password recovery FIRST before any other checks
-          if (type === 'recovery' || accessToken) {
+          if (type === "recovery" || accessToken) {
             console.log("Password recovery detected - redirecting to /reset-password");
             toast({
               title: "Email Verified",
@@ -63,42 +68,43 @@ export default function AuthCallback() {
             navigate("/reset-password", { replace: true });
             return;
           }
-          
+
           // Clear any stored context from localStorage
-          localStorage.removeItem('auth_context');
-          localStorage.removeItem('auth_org_id');
-          
+          localStorage.removeItem("auth_context");
+          localStorage.removeItem("auth_org_id");
+
           // ALWAYS check organization count first - this is the source of truth
-          const { data: orgMemberships } = await supabase
-            .from('organization_members')
-            .select('organization_id')
-            .eq('user_id', session.user.id)
-            .is('deleted_at', null);
-          
-          console.log(`User has ${orgMemberships?.length || 0} organization(s)`);
-          
+          const { data: orgMembershipsData } = await supabase
+            .from("organization_members")
+            .select("organization_id")
+            .eq("user_id", session.user.id)
+            .is("deleted_at", null);
+          const orgMemberships = orgMembershipsData || [];
+
+          console.log(`User has ${orgMemberships.length} organization(s)`);
+
           // Check if user is a client
-          const { data: clientRecords } = await supabase
-            .from('clients')
-            .select('organization_id')
-            .eq('user_id', session.user.id)
-            .is('deleted_at', null);
-          
+          const { data: clientRecordsData } = await supabase
+            .from("clients")
+            .select("organization_id")
+            .eq("user_id", session.user.id)
+            .is("deleted_at", null);
+          const clientRecords = clientRecordsData || [];
+
+          console.log(`User has ${clientRecords.length} client record(s)`);
+
           const hasOrgMemberships = orgMemberships && orgMemberships.length > 0;
           const hasClientRecords = clientRecords && clientRecords.length > 0;
-          
+
           // Update last_seen_at for agency members
           if (hasOrgMemberships) {
             try {
-              await supabase
-                .from('users')
-                .update({ last_seen_at: new Date().toISOString() })
-                .eq('id', session.user.id);
+              await supabase.from("users").update({ last_seen_at: new Date().toISOString() }).eq("id", session.user.id);
             } catch (error) {
               console.error("Error updating last_seen_at:", error);
             }
           }
-          
+
           // Handle users with both agency AND client roles
           if (hasOrgMemberships && hasClientRecords) {
             // User has both roles - show role selection screen
@@ -108,11 +114,11 @@ export default function AuthCallback() {
             });
             // Small delay to ensure session propagates to UserContext
             setTimeout(() => {
-              navigate('/select-role', { replace: true });
-            }, 100);
+              navigate("/select-role", { replace: true });
+            }, 500);
             return;
           }
-          
+
           // Handle agency members only
           if (hasOrgMemberships) {
             if (orgMemberships.length === 1) {
@@ -124,7 +130,7 @@ export default function AuthCallback() {
               // Small delay to ensure session propagates to UserContext
               setTimeout(() => {
                 navigate(`/dashboard/${orgMemberships[0].organization_id}`, { replace: true });
-              }, 100);
+              }, 500);
               return;
             } else {
               // Multiple organizations - ALWAYS show selection screen
@@ -134,12 +140,12 @@ export default function AuthCallback() {
               });
               // Small delay to ensure session propagates to UserContext
               setTimeout(() => {
-                navigate('/select-organization', { replace: true });
-              }, 100);
+                navigate("/select-organization", { replace: true });
+              }, 500);
               return;
             }
           }
-          
+
           // Handle clients only (no agency membership)
           if (hasClientRecords) {
             if (clientRecords.length === 1) {
@@ -156,11 +162,11 @@ export default function AuthCallback() {
                 title: "Welcome!",
                 description: "Choose an organization to access...",
               });
-              navigate('/client-dashboard', { replace: true });
+              navigate("/client-dashboard", { replace: true });
               return;
             }
           }
-          
+
           // User has no roles - this shouldn't happen
           console.warn("User has no organization membership or client record");
           toast({
