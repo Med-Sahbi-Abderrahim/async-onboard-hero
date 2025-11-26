@@ -239,8 +239,7 @@ export default function ClientDetail() {
       const { error } = await supabase
         .from("clients")
         .update({ deleted_at: new Date().toISOString() })
-        .eq("id", id)
-        .eq("organization_id", orgId);
+        .eq("id", id);
 
       if (error) {
         console.error("Delete client error:", error);
