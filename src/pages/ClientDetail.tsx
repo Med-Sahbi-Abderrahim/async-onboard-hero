@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import { supabase } from "@/integrations/supabase/client";
+import { softDelete } from "@/lib/supabase/soft-delete";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -232,14 +233,18 @@ export default function ClientDetail() {
       return;
     }
 
+    if (!orgId || !client) return;
+
     setIsDeleting(true);
 
     try {
-      // Use soft delete to avoid foreign key constraint issues
-      const { error } = await supabase
-        .from("clients")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", id);
+      // Verify client belongs to current organization
+      if (client.organization_id !== orgId) {
+        throw new Error("You don't have permission to delete this client");
+      }
+
+      // Soft delete to avoid foreign key constraint issues
+      const { error } = await softDelete(supabase, "clients", id!);
 
       if (error) {
         console.error("Delete client error:", error);
