@@ -19,7 +19,6 @@ import { AgencyProtectedRoute } from "@/components/AgencyProtectedRoute";
 import { OrgRedirect } from "@/components/OrgRedirect";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { SettingsLayout } from "./components/settings/SettingsLayout";
-import { useAuth } from "./hooks/useAuth"; // <-- ADDED: Assumed location based on previous context
 
 // Pages
 import Index from "./pages/Index";
