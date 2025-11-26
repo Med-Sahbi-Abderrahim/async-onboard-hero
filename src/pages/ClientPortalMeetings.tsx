@@ -26,18 +26,17 @@ export default function ClientPortalMeetings() {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    // First get the client record for this organization
-    const { data: clientData } = await supabase
+    // First get the client records for this user
+    const { data: clients } = await supabase
       .from("clients")
       .select("id, organization_id")
       .eq("user_id", user.id)
-      .is("deleted_at", null)
-      .single();
+      .is("deleted_at", null);
 
-    if (!clientData) return;
+    if (!clients || clients.length === 0) return;
 
-    setClientId(clientData.id);
-    setOrganizationId(clientData.organization_id);
+    setClientId(clients[0].id);
+    setOrganizationId(clients[0].organization_id);
   };
 
   const statusColors = {

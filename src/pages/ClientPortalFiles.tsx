@@ -22,6 +22,7 @@ export default function ClientPortalFiles() {
   const [client, setClient] = useState<any>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<'free' | 'starter' | 'pro'>('free');
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
 
   useEffect(() => {
     loadClientAndFiles();
@@ -39,13 +40,14 @@ export default function ClientPortalFiles() {
       return;
     }
 
-    const { data: clientData, error } = await supabase
+    // Fetch all client records for this user
+    const { data: clients, error } = await supabase
       .from("clients")
       .select("id, organization_id, full_name")
       .eq("user_id", user.id)
-      .single();
+      .is("deleted_at", null);
 
-    if (error || !clientData) {
+    if (error || !clients || clients.length === 0) {
       toast({
         title: "Access denied",
         description: "Client account not found",
@@ -55,8 +57,11 @@ export default function ClientPortalFiles() {
       return;
     }
 
+    // Use the first client if we have multiple, or consider using orgId from route
+    const clientData = clients[0];
     setClient(clientData);
     setClientId(clientData.id);
+    setOrganizationId(clientData.organization_id);
     loadFiles(clientData.id);
   };
 
@@ -116,7 +121,7 @@ export default function ClientPortalFiles() {
       // Check storage limit
       const { data: canUpload, error: limitError } = await supabase
         .rpc('can_upload_file', {
-          org_id: client.organization_id,
+          org_id: organizationId,
           file_size_bytes: selectedFile.size
         });
 
@@ -140,7 +145,7 @@ export default function ClientPortalFiles() {
         .from("client_files")
         .insert({
           client_id: clientId,
-          organization_id: client.organization_id,
+          organization_id: organizationId,
           file_name: selectedFile.name,
           file_type: selectedFile.type,
           file_size: selectedFile.size,
@@ -301,11 +306,11 @@ export default function ClientPortalFiles() {
         onOpenChange={setShowUpgradeModal}
         limitType="storage"
         currentPlan={currentPlan}
-        organizationId={client?.organization_id || ''}
+        organizationId={organizationId || ''}
       />
       
-      {client?.organization_id && (
-        <BrandedFooter organizationId={client.organization_id} />
+      {organizationId && (
+        <BrandedFooter organizationId={organizationId} />
       )}
     </div>
   );

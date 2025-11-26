@@ -54,15 +54,15 @@ export default function ClientPortalFeedback() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { data: client } = await supabase
+      const { data: clients } = await supabase
         .from("clients")
         .select("id, organization_id")
         .eq("user_id", user.id)
-        .is("deleted_at", null)
-        .single();
+        .is("deleted_at", null);
 
-      if (!client) throw new Error("Client record not found");
-
+      if (!clients || clients.length === 0) throw new Error("Client record not found");
+      
+      const client = clients[0];
       setOrganizationId(client.organization_id);
 
       const { error } = await supabase.from("client_feedback").insert({
