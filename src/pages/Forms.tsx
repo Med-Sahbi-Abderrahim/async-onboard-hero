@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
+import { softDelete } from "@/lib/supabase/soft-delete";
 import { useUser } from "@/contexts/UserContext";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, MoreVertical, Edit, Trash2, ExternalLink, Eye, FileText } from "lucide-react";
@@ -139,15 +140,23 @@ export default function Forms() {
   };
 
   const handleDeleteForm = async () => {
-    if (!formToDelete) return;
+    if (!formToDelete || !orgId) return;
 
     setDeleting(true);
     try {
-      // Soft-delete the form by setting deleted_at instead of hard deleting
-      const { error } = await supabase
+      // Verify form belongs to current organization before deleting
+      const { data: formCheck } = await supabase
         .from("intake_forms")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", formToDelete.id);
+        .select("organization_id")
+        .eq("id", formToDelete.id)
+        .single();
+
+      if (!formCheck || formCheck.organization_id !== orgId) {
+        throw new Error("Form not found or you don't have permission to delete it");
+      }
+
+      // Soft-delete the form
+      const { error } = await softDelete(supabase, "intake_forms", formToDelete.id);
 
       if (error) throw error;
 

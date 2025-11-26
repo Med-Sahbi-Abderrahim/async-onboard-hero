@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { softDelete } from "@/lib/supabase/soft-delete";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
 import { ArrowLeft, Edit, ExternalLink, Eye, Copy, Trash2, BarChart3, Loader2 } from "lucide-react";
@@ -127,14 +128,17 @@ export default function FormDetail() {
   };
 
   const handleDeleteForm = async () => {
-    if (!form) return;
+    if (!form || !orgId) return;
 
     setDeleting(true);
     try {
-      const { error } = await supabase
-        .from("intake_forms")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", form.id);
+      // Verify form belongs to current organization
+      if (form.organization_id !== orgId) {
+        throw new Error("You don't have permission to delete this form");
+      }
+
+      // Soft-delete the form
+      const { error } = await softDelete(supabase, "intake_forms", form.id);
 
       if (error) throw error;
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { softDelete } from "@/lib/supabase/soft-delete";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -210,15 +211,8 @@ export default function ReminderSettings() {
       if (error) throw error;
 
       // Clean up test data (soft-delete to preserve audit/history)
-      await supabase
-        .from("form_submissions")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", submission.id);
-
-      await supabase
-        .from("clients")
-        .update({ deleted_at: new Date().toISOString() })
-        .eq("id", client.id);
+      await softDelete(supabase, "form_submissions", submission.id);
+      await softDelete(supabase, "clients", client.id);
 
       toast({
         title: "Test Email Sent!",
