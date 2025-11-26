@@ -71,38 +71,50 @@ export default function Login() {
       } = await supabase.auth.getSession();
       
       if (session) {
-        // User is already logged in - check organization count
+        // Check both agency and client roles
         const { data: memberships } = await supabase
           .from('organization_members')
           .select('organization_id')
           .eq('user_id', session.user.id)
           .is('deleted_at', null);
 
-        if (memberships && memberships.length > 0) {
+        const { data: clientData } = await supabase
+          .from('clients')
+          .select('organization_id')
+          .eq('user_id', session.user.id)
+          .is('deleted_at', null);
+
+        const hasOrgMemberships = memberships && memberships.length > 0;
+        const hasClientRecords = clientData && clientData.length > 0;
+
+        // Handle users with both roles
+        if (hasOrgMemberships && hasClientRecords) {
+          navigate('/select-role');
+          return;
+        }
+
+        // Handle agency members only
+        if (hasOrgMemberships) {
           if (memberships.length === 1) {
             navigate(`/dashboard/${memberships[0].organization_id}`);
           } else {
-            // Multiple orgs - always show selection
             navigate('/select-organization');
           }
-        } else {
-          // Check if user is a client
-          const { data: clientData } = await supabase
-            .from('clients')
-            .select('organization_id')
-            .eq('user_id', session.user.id)
-            .is('deleted_at', null);
-          
-          if (clientData && clientData.length > 0) {
-            if (clientData.length === 1) {
-              navigate(`/client-portal/${clientData[0].organization_id}`);
-            } else {
-              navigate('/client-dashboard');
-            }
-          } else {
-            navigate('/no-organization');
-          }
+          return;
         }
+
+        // Handle clients only
+        if (hasClientRecords) {
+          if (clientData.length === 1) {
+            navigate(`/client-portal/${clientData[0].organization_id}`);
+          } else {
+            navigate('/client-dashboard');
+          }
+          return;
+        }
+
+        // No roles
+        navigate('/no-organization');
       }
     };
     checkUser();
@@ -141,40 +153,50 @@ export default function Login() {
       localStorage.removeItem('auth_context');
       localStorage.removeItem('auth_org_id');
       
-      // Check organizations - always use current org count as source of truth
+      // Check both agency and client roles
       const { data: memberships } = await supabase
         .from('organization_members')
         .select('organization_id')
         .eq('user_id', data.user.id)
         .is('deleted_at', null);
 
-      if (memberships && memberships.length > 0) {
+      const { data: clientData } = await supabase
+        .from('clients')
+        .select('organization_id')
+        .eq('user_id', data.user.id)
+        .is('deleted_at', null);
+
+      const hasOrgMemberships = memberships && memberships.length > 0;
+      const hasClientRecords = clientData && clientData.length > 0;
+
+      // Handle users with both roles - show role selector
+      if (hasOrgMemberships && hasClientRecords) {
+        navigate('/select-role');
+        return;
+      }
+
+      // Handle agency members only
+      if (hasOrgMemberships) {
         if (memberships.length === 1) {
-          // User has only one org - redirect directly
           navigate(`/dashboard/${memberships[0].organization_id}`);
         } else {
-          // User has multiple orgs - always show selector
           navigate('/select-organization');
         }
-      } else {
-        // Check if user is a client
-        const { data: clientData } = await supabase
-          .from('clients')
-          .select('organization_id')
-          .eq('user_id', data.user.id)
-          .is('deleted_at', null);
-        
-        if (clientData && clientData.length > 0) {
-          if (clientData.length === 1) {
-            navigate(`/client-portal/${clientData[0].organization_id}`);
-          } else {
-            navigate('/client-dashboard');
-          }
-        } else {
-          // User has no organization access
-          navigate('/no-organization');
-        }
+        return;
       }
+
+      // Handle clients only
+      if (hasClientRecords) {
+        if (clientData.length === 1) {
+          navigate(`/client-portal/${clientData[0].organization_id}`);
+        } else {
+          navigate('/client-dashboard');
+        }
+        return;
+      }
+
+      // No organization access
+      navigate('/no-organization');
     } catch (error: any) {
       toast({
         variant: "destructive",
