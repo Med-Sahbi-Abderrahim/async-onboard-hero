@@ -1431,6 +1431,14 @@ export type Database = {
         Args: { form_id: string }
         Returns: undefined
       }
+      invite_client_with_auth: {
+        Args: {
+          p_client_email: string
+          p_invited_by: string
+          p_organization_id: string
+        }
+        Returns: Json
+      }
       is_organization_member: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: boolean

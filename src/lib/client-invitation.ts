@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 export async function inviteClientToPortal(
   clientEmail: string,
   organizationId: string
-): Promise {
+): Promise<{ success: boolean; error?: string }> {
   try {
     // Send magic link invite (this creates auth user automatically)
     const { error: inviteError } = await supabase.auth.signInWithOtp({
@@ -38,7 +38,7 @@ export async function inviteClientToPortal(
  */
 export async function checkClientPortalAccess(
   clientId: string
-): Promise {
+): Promise<boolean> {
   try {
     const { data, error } = await supabase
       .from("clients")
