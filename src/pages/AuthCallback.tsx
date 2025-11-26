@@ -99,7 +99,21 @@ export default function AuthCallback() {
             }
           }
           
-          // Handle agency members
+          // Handle users with both agency AND client roles
+          if (hasOrgMemberships && hasClientRecords) {
+            // User has both roles - show role selection screen
+            toast({
+              title: "Welcome!",
+              description: "Please select which part of the app you'd like to access",
+            });
+            // Small delay to ensure session propagates to UserContext
+            setTimeout(() => {
+              navigate('/select-role', { replace: true });
+            }, 100);
+            return;
+          }
+          
+          // Handle agency members only
           if (hasOrgMemberships) {
             if (orgMemberships.length === 1) {
               // Only one organization - redirect directly
@@ -126,7 +140,7 @@ export default function AuthCallback() {
             }
           }
           
-          // Handle clients (no agency membership)
+          // Handle clients only (no agency membership)
           if (hasClientRecords) {
             if (clientRecords.length === 1) {
               // Only one organization - redirect directly to portal

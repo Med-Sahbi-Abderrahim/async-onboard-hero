@@ -48,6 +48,7 @@ import EarlyAccessAdmin from "./pages/EarlyAccessAdmin";
 import ClientDashboard from "./pages/ClientDashboard";
 import SelectOrganization from "./pages/SelectOrganization";
 import NoOrganization from "./pages/NoOrganization";
+import SelectRole from "./pages/SelectRole";
 
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,6 +82,9 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             {/* callback after email confirmation*/}
             <Route path="/auth/callback" element={<AuthCallback />} />
+            
+            {/* Role selection for users with both agency and client roles */}
+            <Route path="/select-role" element={<ProtectedRoute><SelectRole /></ProtectedRoute>} />
             
             {/* Organization selection for multi-org users */}
             <Route path="/select-organization" element={<ProtectedRoute><SelectOrganization /></ProtectedRoute>} />
