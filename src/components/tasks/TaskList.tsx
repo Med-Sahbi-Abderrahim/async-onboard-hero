@@ -16,10 +16,11 @@ interface Task {
   due_date: string | null;
   completed_at: string | null;
   created_at: string;
+  client_id: string | null; // Can be null for org-wide tasks
 }
 
 interface TaskListProps {
-  clientId: string;
+  clientId?: string; // Optional - for client-specific view
   organizationId: string;
   isClient?: boolean;
 }
@@ -27,18 +28,23 @@ interface TaskListProps {
 export function TaskList({ clientId, organizationId, isClient = false }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("all");
 
   const fetchTasks = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("tasks")
         .select("*")
-        .eq("client_id", clientId)
         .eq("organization_id", organizationId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
+
+      // For clients: fetch tasks assigned to them OR org-wide tasks (client_id IS NULL)
+      if (isClient && clientId) {
+        query = query.or(`client_id.eq.${clientId},client_id.is.null`);
+      }
+      // For org members: fetch all tasks (no additional filter needed)
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setTasks(data || []);
@@ -83,15 +89,9 @@ export function TaskList({ clientId, organizationId, isClient = false }: TaskLis
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="all">All ({tasks.length})</TabsTrigger>
-          <TabsTrigger value="pending">
-            Pending ({filterTasks("pending").length})
-          </TabsTrigger>
-          <TabsTrigger value="in_progress">
-            In Progress ({filterTasks("in_progress").length})
-          </TabsTrigger>
-          <TabsTrigger value="completed">
-            Completed ({filterTasks("completed").length})
-          </TabsTrigger>
+          <TabsTrigger value="pending">Pending ({filterTasks("pending").length})</TabsTrigger>
+          <TabsTrigger value="in_progress">In Progress ({filterTasks("in_progress").length})</TabsTrigger>
+          <TabsTrigger value="completed">Completed ({filterTasks("completed").length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-3 mt-4">
@@ -99,21 +99,22 @@ export function TaskList({ clientId, organizationId, isClient = false }: TaskLis
             <EmptyState
               icon={CheckSquare}
               title="No tasks yet"
-              description={isClient ? "You have no assigned tasks at the moment. Check back later for updates." : "Create your first task to start tracking work and deadlines."}
-              action={!isClient ? {
-                label: "Create First Task",
-                onClick: () => setShowAddModal(true)
-              } : undefined}
+              description={
+                isClient
+                  ? "You have no assigned tasks at the moment. Check back later for updates."
+                  : "Create your first task to start tracking work and deadlines."
+              }
+              action={
+                !isClient
+                  ? {
+                      label: "Create First Task",
+                      onClick: () => setShowAddModal(true),
+                    }
+                  : undefined
+              }
             />
           ) : (
-            tasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onUpdate={fetchTasks}
-                isClient={isClient}
-              />
-            ))
+            tasks.map((task) => <TaskCard key={task.id} task={task} onUpdate={fetchTasks} isClient={isClient} />)
           )}
         </TabsContent>
 
@@ -127,12 +128,7 @@ export function TaskList({ clientId, organizationId, isClient = false }: TaskLis
               </div>
             ) : (
               filterTasks(status).map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  onUpdate={fetchTasks}
-                  isClient={isClient}
-                />
+                <TaskCard key={task.id} task={task} onUpdate={fetchTasks} isClient={isClient} />
               ))
             )}
           </TabsContent>
