@@ -11,6 +11,7 @@ import { useOrgId } from "@/hooks/useOrgId";
 import { Loader2, Users, HardDrive, Sparkles, Zap, Crown, ArrowRight, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { EarlyAccessBanner } from "@/components/EarlyAccessBanner";
+import { AddTaskModal, AddFileModal, AddContractModal } from "@/components/SharedModals";
 
 interface Organization {
   id: string;
@@ -64,7 +65,7 @@ export default function Billing() {
     if (!orgId) return;
 
     try {
-      console.log('Fetching billing info for organization:', orgId);
+      console.log("Fetching billing info for organization:", orgId);
 
       // Get user's role in this organization
       const { data: membership } = await supabase
@@ -72,7 +73,7 @@ export default function Billing() {
         .select("role")
         .eq("user_id", user?.id)
         .eq("organization_id", orgId)
-        .is('deleted_at', null)
+        .is("deleted_at", null)
         .single();
 
       if (!membership) {
@@ -89,24 +90,26 @@ export default function Billing() {
 
       const { data: org, error } = await supabase
         .from("organizations")
-        .select(`
+        .select(
+          `
           id, plan, max_portals, max_storage_gb, storage_used_bytes, features, 
           subscription_status, subscription_renewal_date, lemonsqueezy_subscription_id,
           price_per_user, active_user_count, storage_per_user_gb,
           automation_runs_per_user, automation_runs_used,
           esignature_runs_per_user, esignature_runs_used,
           branding_level, support_level, organization_owner_id
-        `)
+        `,
+        )
         .eq("id", orgId)
         .single();
 
       if (error) throw error;
       setOrganization(org as Organization);
-      
+
       // Check if current user is the owner
       const userIsOwner = org.organization_owner_id === user?.id;
       setIsOwner(userIsOwner);
-      
+
       // If not owner, fetch owner's email
       if (!userIsOwner && org.organization_owner_id) {
         const { data: ownerData } = await supabase
@@ -114,7 +117,7 @@ export default function Billing() {
           .select("email")
           .eq("id", org.organization_owner_id)
           .single();
-        
+
         if (ownerData) {
           setOwnerEmail(ownerData.email || "organization owner");
         }
@@ -129,7 +132,7 @@ export default function Billing() {
 
       setClientCount(count || 0);
     } catch (error: any) {
-      console.error('Error fetching billing info:', error);
+      console.error("Error fetching billing info:", error);
       toast({
         title: "Error",
         description: error.message,
@@ -182,19 +185,19 @@ export default function Billing() {
 
     try {
       setLoading(true);
-      const plan = organization?.plan === 'free' ? 'starter' : 'pro';
-      
-      const { data, error } = await supabase.functions.invoke('create-lemon-squeezy-checkout', {
-        body: { plan, organizationId: organization?.id }
+      const plan = organization?.plan === "free" ? "starter" : "pro";
+
+      const { data, error } = await supabase.functions.invoke("create-lemon-squeezy-checkout", {
+        body: { plan, organizationId: organization?.id },
       });
 
       if (error) throw error;
 
       if (data?.url) {
         // Open in new tab - if blocked by popup blocker, show message
-        const newWindow = window.open(data.url, '_blank', 'noopener,noreferrer');
-        
-        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        const newWindow = window.open(data.url, "_blank", "noopener,noreferrer");
+
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === "undefined") {
           // Popup was blocked
           toast({
             title: "Popup Blocked",
@@ -230,7 +233,7 @@ export default function Billing() {
     }
     // Open Lemon Squeezy customer portal
     const customerPortalUrl = `https://app.lemonsqueezy.com/my-orders`;
-    window.open(customerPortalUrl, '_blank');
+    window.open(customerPortalUrl, "_blank");
   };
 
   if (loading) {
@@ -251,14 +254,12 @@ export default function Billing() {
 
   const storageUsedGB = organization.storage_used_bytes / (1024 * 1024 * 1024);
   const storagePercentage = (storageUsedGB / organization.max_storage_gb) * 100;
-  const clientPercentage = organization.max_portals === 999999 
-    ? 0 
-    : (clientCount / organization.max_portals) * 100;
+  const clientPercentage = organization.max_portals === 999999 ? 0 : (clientCount / organization.max_portals) * 100;
 
   return (
     <div className="space-y-6 animate-fade-in">
       <EarlyAccessBanner />
-      
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold">Billing & Usage</h2>
@@ -288,7 +289,8 @@ export default function Billing() {
           <CardContent>
             <p className="text-sm text-muted-foreground">
               Billing and subscription settings are restricted to organization owners{ownerEmail && `: ${ownerEmail}`}.
-              As a {userRole}, you can view usage information but cannot modify plans, manage payment methods, or access invoices.
+              As a {userRole}, you can view usage information but cannot modify plans, manage payment methods, or access
+              invoices.
             </p>
           </CardContent>
         </Card>
@@ -299,28 +301,25 @@ export default function Billing() {
         <CardHeader>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-primary/10 p-3">
-                {getPlanIcon(organization.plan)}
-              </div>
+              <div className="rounded-xl bg-primary/10 p-3">{getPlanIcon(organization.plan)}</div>
               <div>
-                <CardTitle className="text-2xl">
-                  {getPlanName(organization.plan)} Plan
-                </CardTitle>
+                <CardTitle className="text-2xl">{getPlanName(organization.plan)} Plan</CardTitle>
                 <CardDescription className="text-base mt-1">
                   {getPricePerUser(organization.price_per_user)} per user/month
-                  {organization.subscription_status && organization.subscription_status !== 'active' && (
+                  {organization.subscription_status && organization.subscription_status !== "active" && (
                     <Badge variant="outline" className="ml-2 text-xs">
                       {organization.subscription_status}
                     </Badge>
                   )}
                 </CardDescription>
                 <p className="text-sm font-semibold text-foreground mt-2">
-                  Monthly Cost: {getPlanPrice(organization.plan, organization.price_per_user, organization.active_user_count)}
+                  Monthly Cost:{" "}
+                  {getPlanPrice(organization.plan, organization.price_per_user, organization.active_user_count)}
                   <span className="text-muted-foreground font-normal ml-1">
-                    ({organization.active_user_count} {organization.active_user_count === 1 ? 'user' : 'users'})
+                    ({organization.active_user_count} {organization.active_user_count === 1 ? "user" : "users"})
                   </span>
                 </p>
-                {organization.subscription_renewal_date && organization.subscription_status === 'active' && (
+                {organization.subscription_renewal_date && organization.subscription_status === "active" && (
                   <p className="text-sm text-muted-foreground mt-2">
                     Renews on {new Date(organization.subscription_renewal_date).toLocaleDateString()}
                   </p>
@@ -351,9 +350,7 @@ export default function Billing() {
                   <Users className="h-4 w-4 text-primary" />
                   <span className="font-medium">Active Users</span>
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {organization.active_user_count}
-                </span>
+                <span className="text-sm text-muted-foreground">{organization.active_user_count}</span>
               </div>
             </div>
 
@@ -379,17 +376,22 @@ export default function Billing() {
                   <span className="font-medium">Automations</span>
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  {organization.automation_runs_used} / {
-                    organization.automation_runs_per_user * organization.active_user_count === 999999 * organization.active_user_count 
-                      ? "∞" 
-                      : organization.automation_runs_per_user * organization.active_user_count
-                  }
+                  {organization.automation_runs_used} /{" "}
+                  {organization.automation_runs_per_user * organization.active_user_count ===
+                  999999 * organization.active_user_count
+                    ? "∞"
+                    : organization.automation_runs_per_user * organization.active_user_count}
                 </span>
               </div>
-              {organization.automation_runs_per_user * organization.active_user_count !== 999999 * organization.active_user_count && (
-                <Progress 
-                  value={(organization.automation_runs_used / (organization.automation_runs_per_user * organization.active_user_count)) * 100} 
-                  className="h-2" 
+              {organization.automation_runs_per_user * organization.active_user_count !==
+                999999 * organization.active_user_count && (
+                <Progress
+                  value={
+                    (organization.automation_runs_used /
+                      (organization.automation_runs_per_user * organization.active_user_count)) *
+                    100
+                  }
+                  className="h-2"
                 />
               )}
             </div>
@@ -401,35 +403,45 @@ export default function Billing() {
             <div className="grid md:grid-cols-2 gap-2">
               <div className="flex items-center gap-2 text-sm">
                 {organization.features.custom_branding ? (
-                  <Badge variant="outline" className="bg-primary/10">Custom Branding</Badge>
+                  <Badge variant="outline" className="bg-primary/10">
+                    Custom Branding
+                  </Badge>
                 ) : (
                   <span className="text-muted-foreground">Custom Branding</span>
                 )}
               </div>
               <div className="flex items-center gap-2 text-sm">
                 {organization.features.automations ? (
-                  <Badge variant="outline" className="bg-primary/10">Automations</Badge>
+                  <Badge variant="outline" className="bg-primary/10">
+                    Automations
+                  </Badge>
                 ) : (
                   <span className="text-muted-foreground">Automations</span>
                 )}
               </div>
               <div className="flex items-center gap-2 text-sm">
                 {organization.features.integrations ? (
-                  <Badge variant="outline" className="bg-primary/10">Integrations</Badge>
+                  <Badge variant="outline" className="bg-primary/10">
+                    Integrations
+                  </Badge>
                 ) : (
                   <span className="text-muted-foreground">Integrations</span>
                 )}
               </div>
               <div className="flex items-center gap-2 text-sm">
                 {organization.features.white_label ? (
-                  <Badge variant="outline" className="bg-primary/10">White Label</Badge>
+                  <Badge variant="outline" className="bg-primary/10">
+                    White Label
+                  </Badge>
                 ) : (
                   <span className="text-muted-foreground">White Label</span>
                 )}
               </div>
               <div className="flex items-center gap-2 text-sm">
                 {organization.features.priority_support ? (
-                  <Badge variant="outline" className="bg-primary/10">Priority Support</Badge>
+                  <Badge variant="outline" className="bg-primary/10">
+                    Priority Support
+                  </Badge>
                 ) : (
                   <span className="text-muted-foreground">Priority Support</span>
                 )}
@@ -441,11 +453,12 @@ export default function Billing() {
 
       {/* Warning Cards */}
       {clientCount >= organization.max_portals && organization.max_portals !== 999999 && (
-        <Card className="border-amber-500 bg-amber-50 dark:bg-amber-950/20 animate-slide-up" style={{ animationDelay: "0.1s" }}>
+        <Card
+          className="border-amber-500 bg-amber-50 dark:bg-amber-950/20 animate-slide-up"
+          style={{ animationDelay: "0.1s" }}
+        >
           <CardHeader>
-            <CardTitle className="text-base text-amber-700 dark:text-amber-400">
-              Client Portal Limit Reached
-            </CardTitle>
+            <CardTitle className="text-base text-amber-700 dark:text-amber-400">Client Portal Limit Reached</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
@@ -459,11 +472,12 @@ export default function Billing() {
       )}
 
       {storagePercentage > 80 && (
-        <Card className="border-amber-500 bg-amber-50 dark:bg-amber-950/20 animate-slide-up" style={{ animationDelay: "0.2s" }}>
+        <Card
+          className="border-amber-500 bg-amber-50 dark:bg-amber-950/20 animate-slide-up"
+          style={{ animationDelay: "0.2s" }}
+        >
           <CardHeader>
-            <CardTitle className="text-base text-amber-700 dark:text-amber-400">
-              Storage Almost Full
-            </CardTitle>
+            <CardTitle className="text-base text-amber-700 dark:text-amber-400">Storage Almost Full</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
@@ -478,16 +492,21 @@ export default function Billing() {
 
       {/* Payment Integration Info - Only show to owner */}
       {isOwner && !organization.lemonsqueezy_subscription_id && (
-        <Card className="border-primary/20 bg-card/80 backdrop-blur-sm animate-slide-up" style={{ animationDelay: "0.3s" }}>
+        <Card
+          className="border-primary/20 bg-card/80 backdrop-blur-sm animate-slide-up"
+          style={{ animationDelay: "0.3s" }}
+        >
           <CardHeader>
             <CardTitle className="text-base">🍋 Secure Payments with Lemon Squeezy</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              Ready to upgrade? Click "Upgrade Plan" to securely checkout via Lemon Squeezy. 
-              You'll be able to manage your subscription, update payment methods, and access invoices anytime.
-              <br /><br />
-              <strong>Note:</strong> As the organization owner, you are billed for all active users in your organization: {organization.active_user_count} {organization.active_user_count === 1 ? 'user' : 'users'}.
+              Ready to upgrade? Click "Upgrade Plan" to securely checkout via Lemon Squeezy. You'll be able to manage
+              your subscription, update payment methods, and access invoices anytime.
+              <br />
+              <br />
+              <strong>Note:</strong> As the organization owner, you are billed for all active users in your
+              organization: {organization.active_user_count} {organization.active_user_count === 1 ? "user" : "users"}.
             </p>
           </CardContent>
         </Card>
