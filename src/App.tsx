@@ -3,13 +3,25 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react"; // Kept here to satisfy subsequent code block
+import { supabase } from "@/integrations/supabase/client";
+
+// Contexts & Providers
+import { AuthProvider } from "./contexts/AuthContext"; // <-- ADDED: Assumed location
 import { UserProvider } from "@/contexts/UserContext";
+import { OrganizationProvider } from "./contexts/OrganizationContext";
 import { ThemeProvider } from "@/components/theme-provider";
+
+// Hooks & Protectors
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ClientProtectedRoute } from "@/components/ClientProtectedRoute";
 import { AgencyProtectedRoute } from "@/components/AgencyProtectedRoute";
 import { OrgRedirect } from "@/components/OrgRedirect";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { SettingsLayout } from "./components/settings/SettingsLayout";
+import { useAuth } from "./hooks/useAuth"; // <-- ADDED: Assumed location based on previous context
+
+// Pages
 import Index from "./pages/Index";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
@@ -35,7 +47,6 @@ import ClientPortalMeetings from "./pages/ClientPortalMeetings";
 import ClientPortalFeedback from "./pages/ClientPortalFeedback";
 import ClientPortalTasks from "./pages/ClientPortalTasks";
 import ClientIntake from "./pages/ClientIntake";
-import { SettingsLayout } from "./components/settings/SettingsLayout";
 import { ProfileSettings } from "./components/settings/ProfileSettings";
 import { OrganizationSettings } from "./components/settings/OrganizationSettings";
 import { TeamSettings } from "./components/settings/TeamSettings";
@@ -50,11 +61,7 @@ import SelectOrganization from "./pages/SelectOrganization";
 import NoOrganization from "./pages/NoOrganization";
 import SelectRole from "./pages/SelectRole";
 
-import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { OrganizationProvider } from "./contexts/OrganizationContext";
-
-// Plain JS for Lovable Code Component
+// Plain JS for Lovable Code Component (runs immediately on file load, outside the component)
 (async () => {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   console.log("👤 User:", userData);
@@ -69,403 +76,482 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <AuthProvider>
+       {" "}
     <OrganizationProvider>
+           {" "}
       <QueryClientProvider client={queryClient}>
+               {" "}
         <ThemeProvider defaultTheme="light" storageKey="kenly-ui-theme">
+                   {" "}
           <TooltipProvider>
-            <Toaster />
-            <Sonner />
+                        <Toaster />
+                        <Sonner />           {" "}
             <BrowserRouter>
+                           {" "}
               <UserProvider>
+                               {" "}
                 <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
+                                    <Route path="/" element={<Index />} />
+                                    <Route path="/signup" element={<Signup />} />
+                                    <Route path="/login" element={<Login />} />
+                                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                                    <Route path="/reset-password" element={<ResetPassword />} />                 {" "}
                   {/* callback after email confirmation*/}
-                  <Route path="/auth/callback" element={<AuthCallback />} />
-
+                                    <Route path="/auth/callback" element={<AuthCallback />} />                 {" "}
                   {/* Role selection for users with both agency and client roles */}
+                                   {" "}
                   <Route
                     path="/select-role"
                     element={
                       <ProtectedRoute>
-                        <SelectRole />
+                                                <SelectRole />                     {" "}
                       </ProtectedRoute>
                     }
                   />
-
-                  {/* Organization selection for multi-org users */}
+                                    {/* Organization selection for multi-org users */}
+                                   {" "}
                   <Route
                     path="/select-organization"
                     element={
                       <ProtectedRoute>
-                        <SelectOrganization />
+                                                <SelectOrganization />                     {" "}
                       </ProtectedRoute>
                     }
                   />
-
-                  {/* No organization access page */}
+                                    {/* No organization access page */}
+                                   {" "}
                   <Route
                     path="/no-organization"
                     element={
                       <ProtectedRoute>
-                        <NoOrganization />
+                                                <NoOrganization />                     {" "}
                       </ProtectedRoute>
                     }
                   />
-
-                  {/* Protected Agency Routes with Dashboard Layout - Support orgId parameter */}
+                                    {/* Protected Agency Routes with Dashboard Layout - Support orgId parameter */}
+                                   {" "}
                   <Route
                     path="/dashboard/:orgId"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
-                          <Dashboard />
+                                                    <Dashboard />                       {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/clients/:orgId"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
-                          <Clients />
+                                                    <Clients />                       {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/clients/:orgId/:id"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
-                          <ClientDetail />
+                                                    <ClientDetail />                       {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/forms/:orgId"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
-                          <Forms />
+                                                    <Forms />                       {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/forms/:orgId/create"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
-                          <CreateForm />
+                                                    <CreateForm />                       {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/forms/:orgId/:id"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
-                          <FormDetail />
+                                                    <FormDetail />                       {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/forms/:orgId/:id/edit"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
-                          <EditForm />
+                                                    <EditForm />                       {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/submissions/:orgId"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
-                          <Submissions />
+                                                    <Submissions />                       {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/settings/:orgId"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
+                                                   {" "}
                           <SettingsLayout>
-                            <Settings />
+                                                        <Settings />                         {" "}
                           </SettingsLayout>
+                                                 {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/settings/:orgId/profile"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
+                                                   {" "}
                           <SettingsLayout>
-                            <ProfileSettings />
+                                                        <ProfileSettings />                         {" "}
                           </SettingsLayout>
+                                                 {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/settings/:orgId/organization"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
+                                                   {" "}
                           <SettingsLayout>
-                            <OrganizationSettings />
+                                                        <OrganizationSettings />                         {" "}
                           </SettingsLayout>
+                                                 {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/settings/:orgId/team"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
+                                                   {" "}
                           <SettingsLayout>
-                            <TeamSettings />
+                                                        <TeamSettings />                         {" "}
                           </SettingsLayout>
+                                                 {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/settings/:orgId/notifications"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
+                                                   {" "}
                           <SettingsLayout>
-                            <NotificationSettings />
+                                                        <NotificationSettings />                         {" "}
                           </SettingsLayout>
+                                                 {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/billing/:orgId"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
-                          <Billing />
+                                                    <Billing />                       {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
-                  <Route path="/pricing" element={<Pricing />} />
+                                    <Route path="/pricing" element={<Pricing />} />
+                                   {" "}
                   <Route
                     path="/reminders/:orgId"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
-                          <ReminderSettings />
+                                                    <ReminderSettings />                       {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/tasks/:orgId"
                     element={
                       <AgencyProtectedRoute>
+                                               {" "}
                         <DashboardLayout>
-                          <Tasks />
+                                                    <Tasks />                       {" "}
                         </DashboardLayout>
+                                             {" "}
                       </AgencyProtectedRoute>
                     }
                   />
-
-                  {/* Admin Routes - No orgId required */}
+                                    {/* Admin Routes - No orgId required */}
+                                   {" "}
                   <Route
                     path="/admin/early-access"
                     element={
                       <ProtectedRoute>
-                        <EarlyAccessAdmin />
+                                                <EarlyAccessAdmin />                     {" "}
                       </ProtectedRoute>
                     }
                   />
-
-                  {/* Legacy routes without orgId - redirect to orgId routes */}
-                  <Route path="/dashboard" element={<OrgRedirect />} />
-                  <Route path="/clients" element={<OrgRedirect />} />
-                  <Route path="/clients/:id" element={<OrgRedirect />} />
-                  <Route path="/forms" element={<OrgRedirect />} />
-                  <Route path="/forms/create" element={<OrgRedirect />} />
-                  <Route path="/forms/:id" element={<OrgRedirect />} />
-                  <Route path="/forms/:id/edit" element={<OrgRedirect />} />
-                  <Route path="/submissions" element={<OrgRedirect />} />
-                  <Route path="/settings" element={<OrgRedirect />} />
-                  <Route path="/settings/profile" element={<OrgRedirect />} />
-                  <Route path="/settings/organization" element={<OrgRedirect />} />
-                  <Route path="/settings/team" element={<OrgRedirect />} />
-                  <Route path="/settings/notifications" element={<OrgRedirect />} />
-                  <Route path="/billing" element={<OrgRedirect />} />
-                  <Route path="/reminders" element={<OrgRedirect />} />
-                  <Route path="/tasks" element={<OrgRedirect />} />
-
+                                    {/* Legacy routes without orgId - redirect to orgId routes */}
+                                    <Route path="/dashboard" element={<OrgRedirect />} />
+                                    <Route path="/clients" element={<OrgRedirect />} />
+                                    <Route path="/clients/:id" element={<OrgRedirect />} />
+                                    <Route path="/forms" element={<OrgRedirect />} />
+                                    <Route path="/forms/create" element={<OrgRedirect />} />
+                                    <Route path="/forms/:id" element={<OrgRedirect />} />
+                                    <Route path="/forms/:id/edit" element={<OrgRedirect />} />
+                                    <Route path="/submissions" element={<OrgRedirect />} />
+                                    <Route path="/settings" element={<OrgRedirect />} />
+                                    <Route path="/settings/profile" element={<OrgRedirect />} />
+                                    <Route path="/settings/organization" element={<OrgRedirect />} />
+                                    <Route path="/settings/team" element={<OrgRedirect />} />
+                                    <Route path="/settings/notifications" element={<OrgRedirect />} />
+                                    <Route path="/billing" element={<OrgRedirect />} />
+                                    <Route path="/reminders" element={<OrgRedirect />} />
+                                    <Route path="/tasks" element={<OrgRedirect />} />                 {" "}
                   {/* Public client-facing form route */}
-                  <Route path="/forms/:slug/submit" element={<ClientFormPage />} />
-
+                                    <Route path="/forms/:slug/submit" element={<ClientFormPage />} />                 {" "}
                   {/* Client intake route (validates token and sends magic link) */}
-                  <Route path="/intake/:token" element={<ClientIntake />} />
-
+                                    <Route path="/intake/:token" element={<ClientIntake />} />                 {" "}
                   {/* Client Dashboard - Shows all organizations client belongs to */}
+                                   {" "}
                   <Route
                     path="/client-dashboard"
                     element={
                       <ProtectedRoute>
-                        <ClientDashboard />
+                                                <ClientDashboard />                     {" "}
                       </ProtectedRoute>
                     }
                   />
-
-                  {/* Client Portal Routes with orgId - Protected */}
+                                    {/* Client Portal Routes with orgId - Protected */}
+                                   {" "}
                   <Route
                     path="/client-portal/:orgId"
                     element={
                       <ClientProtectedRoute>
-                        <ClientPortal />
+                                                <ClientPortal />                     {" "}
                       </ClientProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/client-portal/:orgId/files"
                     element={
                       <ClientProtectedRoute>
-                        <ClientPortalFiles />
+                                                <ClientPortalFiles />                     {" "}
                       </ClientProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/client-portal/:orgId/contracts"
                     element={
                       <ClientProtectedRoute>
-                        <ClientPortalContracts />
+                                                <ClientPortalContracts />                     {" "}
                       </ClientProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/client-portal/:orgId/billing"
                     element={
                       <ClientProtectedRoute>
-                        <ClientPortalBilling />
+                                                <ClientPortalBilling />                     {" "}
                       </ClientProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/client-portal/:orgId/meetings"
                     element={
                       <ClientProtectedRoute>
-                        <ClientPortalMeetings />
+                                                <ClientPortalMeetings />                     {" "}
                       </ClientProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/client-portal/:orgId/feedback"
                     element={
                       <ClientProtectedRoute>
-                        <ClientPortalFeedback />
+                                                <ClientPortalFeedback />                     {" "}
                       </ClientProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/client-portal/:orgId/tasks"
                     element={
                       <ClientProtectedRoute>
-                        <ClientPortalTasks />
+                                                <ClientPortalTasks />                     {" "}
                       </ClientProtectedRoute>
                     }
                   />
-
-                  {/* Legacy client portal routes without orgId */}
+                                    {/* Legacy client portal routes without orgId */}
+                                   {" "}
                   <Route
                     path="/client-portal"
                     element={
                       <ProtectedRoute>
-                        <ClientPortal />
+                                                <ClientPortal />                     {" "}
                       </ProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/portal"
                     element={
                       <ProtectedRoute>
-                        <ClientPortal />
+                                                <ClientPortal />                     {" "}
                       </ProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/client-portal/files"
                     element={
                       <ProtectedRoute>
-                        <ClientPortalFiles />
+                                                <ClientPortalFiles />                     {" "}
                       </ProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/client-portal/contracts"
                     element={
                       <ProtectedRoute>
-                        <ClientPortalContracts />
+                                                <ClientPortalContracts />                     {" "}
                       </ProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/client-portal/billing"
                     element={
                       <ProtectedRoute>
-                        <ClientPortalBilling />
+                                                <ClientPortalBilling />                     {" "}
                       </ProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/client-portal/meetings"
                     element={
                       <ProtectedRoute>
-                        <ClientPortalMeetings />
+                                                <ClientPortalMeetings />                     {" "}
                       </ProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/client-portal/feedback"
                     element={
                       <ProtectedRoute>
-                        <ClientPortalFeedback />
+                                                <ClientPortalFeedback />                     {" "}
                       </ProtectedRoute>
                     }
                   />
+                                   {" "}
                   <Route
                     path="/client-portal/tasks"
                     element={
                       <ProtectedRoute>
-                        <ClientPortalTasks />
+                                                <ClientPortalTasks />                     {" "}
                       </ProtectedRoute>
                     }
                   />
-
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
+                                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                                    <Route path="*" element={<NotFound />} />               {" "}
                 </Routes>
+                             {" "}
               </UserProvider>
+                         {" "}
             </BrowserRouter>
+                     {" "}
           </TooltipProvider>
+                 {" "}
         </ThemeProvider>
+             {" "}
       </QueryClientProvider>
+         {" "}
     </OrganizationProvider>
+     {" "}
   </AuthProvider>
 );
 
