@@ -40,10 +40,35 @@ export default function SelectRole() {
           .eq('user_id', session.user.id)
           .is('deleted_at', null);
 
+        const businessOrgs = businessData || [];
+        const clientOrgs = clientData || [];
+
         setUserInfo({
-          businessOrgs: businessData || [],
-          clientOrgs: clientData || [],
+          businessOrgs,
+          clientOrgs,
         });
+
+        // Auto-redirect if user only has one role
+        const hasBusinessRole = businessOrgs.length > 0;
+        const hasClientRole = clientOrgs.length > 0;
+
+        if (!hasBusinessRole && hasClientRole) {
+          // Client only
+          setUserMode('client');
+          if (clientOrgs.length === 1) {
+            navigate(`/client-portal/${clientOrgs[0].organization_id}`, { replace: true });
+          } else {
+            navigate('/client-dashboard', { replace: true });
+          }
+        } else if (hasBusinessRole && !hasClientRole) {
+          // Business only
+          setUserMode('business');
+          if (businessOrgs.length === 1) {
+            navigate(`/dashboard/${businessOrgs[0].organization_id}`, { replace: true });
+          } else {
+            navigate('/select-organization', { replace: true });
+          }
+        }
       } catch (error) {
         console.error('Error fetching user info:', error);
         toast({
@@ -56,7 +81,7 @@ export default function SelectRole() {
     };
 
     fetchUserInfo();
-  }, [navigate]);
+  }, [navigate, setUserMode]);
 
   const handleContinueAsBusiness = async () => {
     if (!userInfo?.businessOrgs.length) return;
@@ -119,50 +144,9 @@ export default function SelectRole() {
     );
   }
 
-  // If user only has one role, redirect automatically
+  // Check if user has both roles (dual-role users see the selection screen)
   const hasBusinessRole = userInfo.businessOrgs.length > 0;
   const hasClientRole = userInfo.clientOrgs.length > 0;
-
-  useEffect(() => {
-    if (!hasBusinessRole && hasClientRole) {
-      setUserMode('client');
-      if (userInfo.clientOrgs.length === 1) {
-        navigate(`/client-portal/${userInfo.clientOrgs[0].organization_id}`, { replace: true });
-      } else {
-        navigate('/client-dashboard', { replace: true });
-      }
-    } else if (hasBusinessRole && !hasClientRole) {
-      setUserMode('business');
-      if (userInfo.businessOrgs.length === 1) {
-        navigate(`/dashboard/${userInfo.businessOrgs[0].organization_id}`, { replace: true });
-      } else {
-        navigate('/select-organization', { replace: true });
-      }
-    }
-  }, [hasBusinessRole, hasClientRole, userInfo, navigate, setUserMode]);
-
-  // Show loading while redirecting single-role users
-  if (!hasBusinessRole && hasClientRole) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Redirecting to client portal...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (hasBusinessRole && !hasClientRole) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Redirecting to dashboard...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 to-background flex items-center justify-center p-4">
