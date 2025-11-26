@@ -1358,6 +1358,10 @@ export type Database = {
         Args: { file_size_bytes: number; org_id: string }
         Returns: boolean
       }
+      check_org_membership_safe: {
+        Args: { check_org_id: string; check_user_id: string }
+        Returns: boolean
+      }
       create_notification_for_org: {
         Args: {
           p_message: string
