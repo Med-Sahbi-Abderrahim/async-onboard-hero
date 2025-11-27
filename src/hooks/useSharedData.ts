@@ -175,7 +175,7 @@ export async function getCurrentClientId(organizationId: string): Promise<string
   const { data } = await supabase
     .from("clients")
     .select("id")
-    .eq("user_id", user.id)
+    .or(`user_id.eq.${user.id},email.ilike.${user.email}`)
     .eq("organization_id", organizationId)
     .is("deleted_at", null)
     .maybeSingle();

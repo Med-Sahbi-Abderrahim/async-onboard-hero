@@ -26,11 +26,11 @@ export function ClientProtectedRoute({ children }: ClientProtectedRouteProps) {
       }
 
       try {
-        // Check if user is a client for this organization
+        // Check if user is a client for this organization (by user_id OR email)
         const { data: clientData, error } = await supabase
           .from('clients')
           .select('id, organization_id')
-          .eq('user_id', session.user.id)
+          .or(`user_id.eq.${session.user.id},email.ilike.${session.user.email}`)
           .eq('organization_id', orgId)
           .is('deleted_at', null)
           .maybeSingle();
