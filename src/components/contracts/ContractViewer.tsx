@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { FileText, Download, CheckCircle, Clock, Users, DollarSign, Calendar } from "lucide-react";
+import { FileText, Download, CheckCircle, Clock, Users, DollarSign, Calendar, Loader2 } from "lucide-react";
 import { ContractSignaturePad } from "./ContractSignaturePad";
 import { useContractSignatures } from "@/hooks/useContractSignatures";
 
@@ -50,20 +50,42 @@ export function ContractViewer({ contract, onRefresh }: ContractViewerProps) {
   const [showSignaturePad, setShowSignaturePad] = useState(false);
   const [mySignature, setMySignature] = useState<any>(null);
   const [downloading, setDownloading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [checkingSignature, setCheckingSignature] = useState(true);
   const { signatures, loading, addSignature, refresh } = useContractSignatures(contract.id);
 
   useEffect(() => {
-    checkMySignature();
-  }, [signatures]);
+    loadCurrentUser();
+  }, []);
+
+  useEffect(() => {
+    if (!loading && currentUser) {
+      checkMySignature();
+    }
+  }, [signatures, loading, currentUser]);
+
+  const loadCurrentUser = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    setCurrentUser(user);
+  };
 
   const checkMySignature = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    setCheckingSignature(true);
+    if (!currentUser) {
+      setCheckingSignature(false);
+      return;
+    }
 
+    // Find signature for current user
     const mySign = signatures.find(
-      (sig) => sig.signer_user_id === user.id || sig.signer_email.toLowerCase() === user.email?.toLowerCase()
+      (sig) =>
+        sig.signer_user_id === currentUser.id || sig.signer_email.toLowerCase() === currentUser.email?.toLowerCase(),
     );
+
     setMySignature(mySign);
+    setCheckingSignature(false);
   };
 
   const handleDownload = async () => {
@@ -71,9 +93,7 @@ export function ContractViewer({ contract, onRefresh }: ContractViewerProps) {
 
     setDownloading(true);
     try {
-      const { data, error } = await supabase.storage
-        .from("contracts")
-        .createSignedUrl(contract.file_path, 3600);
+      const { data, error } = await supabase.storage.from("contracts").createSignedUrl(contract.file_path, 3600);
 
       if (error) throw error;
 
@@ -83,7 +103,7 @@ export function ContractViewer({ contract, onRefresh }: ContractViewerProps) {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `${contract.title}.${contract.file_type?.includes('pdf') ? 'pdf' : 'docx'}`;
+        link.download = `${contract.title}.${contract.file_type?.includes("pdf") ? "pdf" : "docx"}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -99,17 +119,37 @@ export function ContractViewer({ contract, onRefresh }: ContractViewerProps) {
   };
 
   const handleSign = async (signatureData: string) => {
-    if (!mySignature) return;
+    if (!mySignature) {
+      toast.error("No signature requirement found for you");
+      return;
+    }
 
     const success = await addSignature(signatureData, mySignature.id);
     if (success) {
       setShowSignaturePad(false);
       await refresh();
       onRefresh?.();
+
+      // Check if all required signatures are complete
+      const allSigned = signatures.every((sig) => !sig.is_required || sig.signed_at || sig.id === mySignature.id);
+
+      if (allSigned) {
+        // Update contract status to signed
+        await supabase
+          .from("contracts")
+          .update({
+            status: "signed",
+            signed_at: new Date().toISOString(),
+          })
+          .eq("id", contract.id);
+
+        onRefresh?.();
+      }
     }
   };
 
-  const canSign = mySignature && !mySignature.signed_at && contract.status === "pending_signature";
+  // Determine if user can sign
+  const canSign = mySignature && !mySignature.signed_at;
   const allSignaturesComplete = signatures.length > 0 && signatures.every((sig) => !sig.is_required || sig.signed_at);
 
   return (
@@ -125,7 +165,7 @@ export function ContractViewer({ contract, onRefresh }: ContractViewerProps) {
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
               <Badge className={`${statusColors[contract.status as keyof typeof statusColors]} shadow-soft`}>
-                {contract.status.replace('_', ' ').toUpperCase()}
+                {contract.status.replace("_", " ").toUpperCase()}
               </Badge>
               <Badge variant="outline">{contractTypeLabels[contract.contract_type] || contract.contract_type}</Badge>
             </div>
@@ -173,20 +213,16 @@ export function ContractViewer({ contract, onRefresh }: ContractViewerProps) {
           <div className="space-y-2">
             <h4 className="text-sm font-semibold flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Signatures ({signatures.filter((s) => s.signed_at).length}/{signatures.filter((s) => s.is_required).length})
+              Signatures ({signatures.filter((s) => s.signed_at).length}/
+              {signatures.filter((s) => s.is_required).length})
             </h4>
             <div className="space-y-2">
               {signatures.map((sig) => (
-                <div
-                  key={sig.id}
-                  className="flex items-center justify-between p-3 bg-muted/30 rounded-lg"
-                >
+                <div key={sig.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                   <div>
                     <p className="text-sm font-medium">{sig.signer_name}</p>
                     <p className="text-xs text-muted-foreground">{sig.signer_email}</p>
-                    {sig.signer_role && (
-                      <p className="text-xs text-muted-foreground capitalize">{sig.signer_role}</p>
-                    )}
+                    {sig.signer_role && <p className="text-xs text-muted-foreground capitalize">{sig.signer_role}</p>}
                   </div>
                   <div className="text-right">
                     {sig.signed_at ? (
@@ -206,13 +242,16 @@ export function ContractViewer({ contract, onRefresh }: ContractViewerProps) {
           </div>
         )}
 
-        {/* Signature Pad */}
-        {showSignaturePad && (
-          <ContractSignaturePad
-            onSave={handleSign}
-            onCancel={() => setShowSignaturePad(false)}
-          />
+        {/* Loading state for signature check */}
+        {checkingSignature && (
+          <div className="flex items-center justify-center py-4 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            <span className="text-sm">Checking signature status...</span>
+          </div>
         )}
+
+        {/* Signature Pad */}
+        {showSignaturePad && <ContractSignaturePad onSave={handleSign} onCancel={() => setShowSignaturePad(false)} />}
 
         {/* Actions */}
         <div className="flex flex-wrap gap-2">
@@ -228,7 +267,8 @@ export function ContractViewer({ contract, onRefresh }: ContractViewerProps) {
             </Button>
           )}
 
-          {canSign && !showSignaturePad && (
+          {/* Show sign button if user can sign and pad is not showing */}
+          {canSign && !showSignaturePad && !checkingSignature && (
             <Button
               onClick={() => setShowSignaturePad(true)}
               className="hover:scale-105 transition-transform shadow-soft"
@@ -238,10 +278,19 @@ export function ContractViewer({ contract, onRefresh }: ContractViewerProps) {
             </Button>
           )}
 
+          {/* Show fully executed badge */}
           {allSignaturesComplete && contract.status === "signed" && (
             <Badge className="bg-green-500 shadow-soft px-4 py-2">
               <CheckCircle className="h-4 w-4 mr-2" />
               Fully Executed
+            </Badge>
+          )}
+
+          {/* Show already signed badge if user has already signed */}
+          {mySignature?.signed_at && !allSignaturesComplete && (
+            <Badge className="bg-blue-500 shadow-soft px-4 py-2">
+              <CheckCircle className="h-4 w-4 mr-2" />
+              You've Signed - Awaiting Others
             </Badge>
           )}
         </div>
