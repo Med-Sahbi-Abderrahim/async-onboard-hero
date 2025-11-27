@@ -73,7 +73,10 @@ export default function PublicFormSubmit() {
       }
 
       console.log("Form loaded:", data);
-      setForm(data);
+      setForm({
+        ...data,
+        fields: data.fields as unknown as FormField[]
+      });
 
       // Increment view count
       await supabase.rpc("increment_form_view_count", { form_id: data.id });
@@ -352,25 +355,11 @@ export default function PublicFormSubmit() {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{
-        backgroundColor: branding?.background_color || "#f9fafb",
-      }}
-    >
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-2xl">
-        <CardHeader
-          style={{
-            borderBottom: "1px solid rgba(0,0,0,0.05)",
-            backgroundColor: branding?.header_background || "white",
-          }}
-        >
-          {branding?.logo_url && <img src={branding.logo_url} alt="Brand Logo" className="h-10 mb-4 object-contain" />}
-          <CardTitle
-            style={{
-              color: branding?.primary_color || "inherit",
-            }}
-          >
+        <CardHeader className="border-b">
+          {branding?.logoUrl && <img src={branding.logoUrl} alt="Brand Logo" className="h-10 mb-4 object-contain" />}
+          <CardTitle style={{ color: branding?.brandColor || undefined }}>
             {form.title}
           </CardTitle>
           {form.description && <CardDescription>{form.description}</CardDescription>}
