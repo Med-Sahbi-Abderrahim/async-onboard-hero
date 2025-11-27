@@ -99,7 +99,7 @@ export default function ClientPortal() {
       setClient(data);
 
       // Check onboarding
-      const metadata = (data.metadata as Record) || {};
+      const metadata = (data.metadata as Record<string, any>) || {};
       const hasSeenOnboarding = metadata.onboarding_completed === true;
       if (!hasSeenOnboarding) {
         setShowWelcome(true);
