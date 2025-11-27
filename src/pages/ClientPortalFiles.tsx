@@ -21,7 +21,7 @@ export default function ClientPortalFiles() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [client, setClient] = useState<any>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [currentPlan, setCurrentPlan] = useState<'free' | 'starter' | 'pro'>('free');
+  const [currentPlan, setCurrentPlan] = useState<"free" | "starter" | "pro">("free");
   const [organizationId, setOrganizationId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -29,7 +29,9 @@ export default function ClientPortalFiles() {
   }, []);
 
   const loadClientAndFiles = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       toast({
         title: "Authentication required",
@@ -40,11 +42,11 @@ export default function ClientPortalFiles() {
       return;
     }
 
-    // Fetch all client records for this user
+    // Fetch client by user_id OR email
     const { data: clients, error } = await supabase
       .from("clients")
       .select("id, organization_id, full_name")
-      .eq("user_id", user.id)
+      .or(`user_id.eq.${user.id},email.ilike.${user.email}`)
       .is("deleted_at", null);
 
     if (error || !clients || clients.length === 0) {
@@ -57,8 +59,17 @@ export default function ClientPortalFiles() {
       return;
     }
 
-    // Use the first client if we have multiple, or consider using orgId from route
     const clientData = clients[0];
+
+    // Update user_id if not set
+    if (clientData.id && user.id) {
+      const { data: checkClient } = await supabase.from("clients").select("user_id").eq("id", clientData.id).single();
+
+      if (checkClient && !checkClient.user_id) {
+        await supabase.from("clients").update({ user_id: user.id }).eq("id", clientData.id);
+      }
+    }
+
     setClient(clientData);
     setClientId(clientData.id);
     setOrganizationId(clientData.organization_id);
@@ -84,7 +95,12 @@ export default function ClientPortalFiles() {
     if (!e.target.files || !e.target.files[0]) return;
 
     const file = e.target.files[0];
-    const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
 
     if (!allowedTypes.includes(file.type)) {
       toast({
@@ -104,26 +120,27 @@ export default function ClientPortalFiles() {
     setUploading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
       // Get organization plan and check storage
       const { data: orgData } = await supabase
-        .from('organizations')
-        .select('plan')
-        .eq('id', client.organization_id)
+        .from("organizations")
+        .select("plan")
+        .eq("id", client.organization_id)
         .single();
 
       if (orgData) {
-        setCurrentPlan(orgData.plan as 'free' | 'starter' | 'pro');
+        setCurrentPlan(orgData.plan as "free" | "starter" | "pro");
       }
 
       // Check storage limit
-      const { data: canUpload, error: limitError } = await supabase
-        .rpc('can_upload_file', {
-          org_id: organizationId,
-          file_size_bytes: selectedFile.size
-        });
+      const { data: canUpload, error: limitError } = await supabase.rpc("can_upload_file", {
+        org_id: organizationId,
+        file_size_bytes: selectedFile.size,
+      });
 
       if (limitError) throw limitError;
 
@@ -135,23 +152,19 @@ export default function ClientPortalFiles() {
 
       const filePath = `${user.id}/${Date.now()}_${selectedFile.name}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("client-uploads")
-        .upload(filePath, selectedFile);
+      const { error: uploadError } = await supabase.storage.from("client-uploads").upload(filePath, selectedFile);
 
       if (uploadError) throw uploadError;
 
-      const { error: dbError } = await supabase
-        .from("client_files")
-        .insert({
-          client_id: clientId,
-          organization_id: organizationId,
-          file_name: selectedFile.name,
-          file_type: selectedFile.type,
-          file_size: selectedFile.size,
-          storage_path: filePath,
-          uploaded_by: user.id,
-        });
+      const { error: dbError } = await supabase.from("client_files").insert({
+        client_id: clientId,
+        organization_id: organizationId,
+        file_name: selectedFile.name,
+        file_type: selectedFile.type,
+        file_size: selectedFile.size,
+        storage_path: filePath,
+        uploaded_by: user.id,
+      });
 
       if (dbError) throw dbError;
 
@@ -188,7 +201,12 @@ export default function ClientPortalFiles() {
     <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex items-center gap-4 animate-slide-up">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/client-portal")} className="hover:scale-110 transition-transform">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/client-portal")}
+            className="hover:scale-110 transition-transform"
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -197,7 +215,10 @@ export default function ClientPortalFiles() {
           </div>
         </div>
 
-        <Card className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10 hover:shadow-medium transition-all" style={{ animationDelay: '0.1s' }}>
+        <Card
+          className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10 hover:shadow-medium transition-all"
+          style={{ animationDelay: "0.1s" }}
+        >
           <CardHeader>
             <div className="flex items-center gap-3">
               <div className="rounded-xl gradient-primary p-2.5 shadow-soft">
@@ -228,8 +249,8 @@ export default function ClientPortalFiles() {
                     <p className="text-xs text-muted-foreground">{formatFileSize(selectedFile.size)}</p>
                   </div>
                 </div>
-                <Button 
-                  onClick={handleSubmit} 
+                <Button
+                  onClick={handleSubmit}
                   disabled={uploading}
                   className="ml-3 hover:scale-105 transition-transform"
                   size="sm"
@@ -248,7 +269,10 @@ export default function ClientPortalFiles() {
           </CardContent>
         </Card>
 
-        <Card className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10" style={{ animationDelay: '0.2s' }}>
+        <Card
+          className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10"
+          style={{ animationDelay: "0.2s" }}
+        >
           <CardHeader>
             <CardTitle className="text-xl">Your Files</CardTitle>
           </CardHeader>
@@ -264,8 +288,8 @@ export default function ClientPortalFiles() {
             ) : (
               <div className="space-y-3">
                 {files.map((file, index) => (
-                  <div 
-                    key={file.id} 
+                  <div
+                    key={file.id}
                     className="flex items-center justify-between p-4 border border-primary/10 rounded-xl hover:shadow-medium hover:scale-[1.01] transition-all duration-200 bg-background/50 group"
                     style={{ animationDelay: `${0.3 + index * 0.05}s` }}
                   >
@@ -280,10 +304,10 @@ export default function ClientPortalFiles() {
                         </p>
                       </div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      onClick={() => handleDownload(file)} 
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleDownload(file)}
                       disabled={downloading === file.storage_path}
                       className="hover:scale-110 transition-transform"
                     >
@@ -306,12 +330,10 @@ export default function ClientPortalFiles() {
         onOpenChange={setShowUpgradeModal}
         limitType="storage"
         currentPlan={currentPlan}
-        organizationId={organizationId || ''}
+        organizationId={organizationId || ""}
       />
-      
-      {organizationId && (
-        <BrandedFooter organizationId={organizationId} />
-      )}
+
+      {organizationId && <BrandedFooter organizationId={organizationId} />}
     </div>
   );
 }
