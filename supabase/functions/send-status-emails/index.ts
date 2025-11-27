@@ -10,7 +10,7 @@ const corsHeaders = {
 };
 
 interface EmailPayload {
-  type: "early_access_reminder" | "trial_welcome" | "trial_ending" | "trial_ended" | "payment_failed" | "subscription_ended" | "plan_expiring_soon" | "plan_expired_day1" | "plan_expired_day5" | "plan_expired_day14" | "post_signup_nudge" | "inactivity_reminder" | "milestone_onboarding" | "milestone_first_submission" | "milestone_first_automation" | "seasonal_thanks" | "feature_update";
+  type: "early_access_reminder" | "trial_welcome" | "trial_ending" | "trial_ended" | "payment_failed" | "subscription_ended" | "plan_expiring_soon" | "plan_expired_day1" | "plan_expired_day5" | "plan_expired_day14" | "post_signup_nudge" | "inactivity_reminder" | "milestone_onboarding" | "milestone_first_submission" | "milestone_first_automation" | "seasonal_thanks" | "feature_update" | "meeting_scheduled" | "contract_added" | "invoice_added" | "file_added";
   userId: string;
   metadata?: Record<string, any>;
 }
@@ -552,6 +552,94 @@ serve(async (req: Request) => {
               </div>
               <p>Thanks for being a valued user!</p>
               <p>Best,<br>The ClientFlow Team</p>
+            </div>
+          `,
+        });
+        break;
+
+      case "meeting_scheduled":
+        const meetingTitle = metadata?.meeting_title || "a meeting";
+        const meetingDate = metadata?.meeting_date || "";
+        emailResponse = await resend.emails.send({
+          from: "ClientFlow <notifications@resend.dev>",
+          to: [user.email],
+          subject: `New Meeting Scheduled: ${meetingTitle}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #3b82f6;">New Meeting Scheduled</h1>
+              <p>Hi ${user.full_name || "there"},</p>
+              <p>A new meeting has been scheduled for you:</p>
+              <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                <h3 style="margin: 0 0 8px 0;">${meetingTitle}</h3>
+                ${meetingDate ? `<p style="margin: 0; color: #6b7280;">📅 ${meetingDate}</p>` : ''}
+              </div>
+              <p>You can view the meeting details in your client portal.</p>
+              <p>Best regards,<br>Your Team</p>
+            </div>
+          `,
+        });
+        break;
+
+      case "contract_added":
+        const contractTitle = metadata?.contract_title || "a contract";
+        emailResponse = await resend.emails.send({
+          from: "ClientFlow <notifications@resend.dev>",
+          to: [user.email],
+          subject: `New Contract: ${contractTitle}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #3b82f6;">New Contract Available</h1>
+              <p>Hi ${user.full_name || "there"},</p>
+              <p>A new contract has been added for you:</p>
+              <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                <h3 style="margin: 0;">${contractTitle}</h3>
+              </div>
+              <p>Please review the contract in your client portal.</p>
+              <p>Best regards,<br>Your Team</p>
+            </div>
+          `,
+        });
+        break;
+
+      case "invoice_added":
+        const invoiceNumber = metadata?.invoice_number || "";
+        const invoiceAmount = metadata?.invoice_amount || "";
+        emailResponse = await resend.emails.send({
+          from: "ClientFlow <notifications@resend.dev>",
+          to: [user.email],
+          subject: `New Invoice: ${invoiceNumber}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #3b82f6;">New Invoice</h1>
+              <p>Hi ${user.full_name || "there"},</p>
+              <p>A new invoice has been created:</p>
+              <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                <h3 style="margin: 0 0 8px 0;">Invoice ${invoiceNumber}</h3>
+                ${invoiceAmount ? `<p style="margin: 0; font-size: 24px; color: #3b82f6;">${invoiceAmount}</p>` : ''}
+              </div>
+              <p>View and pay your invoice in the client portal.</p>
+              <p>Best regards,<br>Your Team</p>
+            </div>
+          `,
+        });
+        break;
+
+      case "file_added":
+        const fileName = metadata?.file_name || "a file";
+        emailResponse = await resend.emails.send({
+          from: "ClientFlow <notifications@resend.dev>",
+          to: [user.email],
+          subject: `New File Shared: ${fileName}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #3b82f6;">New File Shared</h1>
+              <p>Hi ${user.full_name || "there"},</p>
+              <p>A new file has been shared with you:</p>
+              <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0;">
+                <h3 style="margin: 0;">📄 ${fileName}</h3>
+              </div>
+              <p>Access the file in your client portal.</p>
+              <p>Best regards,<br>Your Team</p>
             </div>
           `,
         });
