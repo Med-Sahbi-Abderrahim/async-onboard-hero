@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ChevronLeft, ChevronRight, Loader2, Save } from "lucide-react";
 import { ClientFormField } from "./ClientFormField";
 import { useFormAutosave } from "@/hooks/useFormAutosave";
-import { z } from 'zod';
+import { z } from "zod";
 import { useOrgBranding } from "@/hooks/useOrgBranding";
 
 interface ClientFormRendererProps {
@@ -17,25 +17,16 @@ interface ClientFormRendererProps {
   onSubmitted: () => void;
 }
 
-export function ClientFormRenderer({
-  form,
-  client,
-  existingSubmission,
-  onSubmitted,
-}: ClientFormRendererProps) {
+export function ClientFormRenderer({ form, client, existingSubmission, onSubmitted }: ClientFormRendererProps) {
   const fields = form.fields || [];
   const branding = form.custom_branding || {};
   const { branding: orgBranding } = useOrgBranding(form.organization_id);
-  
+
   // Use custom color only if plan allows it
-  const primaryColor = orgBranding?.allowCustomColors && branding.primary_color 
-    ? branding.primary_color 
-    : undefined;
-  
+  const primaryColor = orgBranding?.allowCustomColors && branding.primary_color ? branding.primary_color : undefined;
+
   const [currentStep, setCurrentStep] = useState(0);
-  const [responses, setResponses] = useState<Record<string, any>>(
-    existingSubmission?.responses || {}
-  );
+  const [responses, setResponses] = useState<Record<string, any>>(existingSubmission?.responses || {});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submissionId, setSubmissionId] = useState(existingSubmission?.id);
@@ -51,9 +42,7 @@ export function ClientFormRenderer({
 
   const totalSteps = steps.length;
   const currentFields = steps[currentStep] || [];
-  const completionPercentage = Math.round(
-    (Object.keys(responses).length / fields.length) * 100
-  );
+  const completionPercentage = Math.round((Object.keys(responses).length / fields.length) * 100);
 
   // Autosave hook
   const { saving } = useFormAutosave({
@@ -80,7 +69,9 @@ export function ClientFormRenderer({
           z.string().email().max(255).parse(value);
           break;
         case "phone":
-          z.string().regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number format").parse(value);
+          z.string()
+            .regex(/^\+?[1-9]\d{1,14}$/, "Invalid phone number format")
+            .parse(value);
           break;
         case "url":
           z.string().url().max(500).parse(value);
@@ -88,7 +79,7 @@ export function ClientFormRenderer({
         case "number":
           const numValue = Number(value);
           if (isNaN(numValue)) return "Please enter a valid number";
-          z.number().min(-1000000).max(1000000).parse(numValue);
+          z.number().min(0).max(10000000000000).parse(numValue);
           break;
         case "text":
         case "textarea":
@@ -127,7 +118,7 @@ export function ClientFormRenderer({
 
   const handleFieldChange = (fieldId: string, value: any) => {
     setResponses((prev) => ({ ...prev, [fieldId]: value }));
-    
+
     // Clear error for this field
     if (errors[fieldId]) {
       setErrors((prev) => {
@@ -184,22 +175,17 @@ export function ClientFormRenderer({
 
       if (submissionId) {
         // Update existing draft
-        const { error } = await supabase
-          .from("form_submissions")
-          .update(submissionData)
-          .eq("id", submissionId);
+        const { error } = await supabase.from("form_submissions").update(submissionData).eq("id", submissionId);
 
         if (error) throw error;
       } else {
         // Create new submission
-        const { error } = await supabase
-          .from("form_submissions")
-          .insert({
-            ...submissionData,
-            intake_form_id: form.id,
-            client_id: client.id,
-            organization_id: form.organization_id,
-          } as any);
+        const { error } = await supabase.from("form_submissions").insert({
+          ...submissionData,
+          intake_form_id: form.id,
+          client_id: client.id,
+          organization_id: form.organization_id,
+        } as any);
 
         if (error) throw error;
       }
@@ -207,28 +193,28 @@ export function ClientFormRenderer({
       // Increment form submission and view counts
       await supabase
         .from("intake_forms")
-        .update({ 
-          submission_count: form.submission_count + 1 
+        .update({
+          submission_count: form.submission_count + 1,
         })
         .eq("id", form.id);
 
       // Send confirmation email
       try {
-        await supabase.functions.invoke('send-submission-confirmation', {
-          body: { submissionId: submissionId }
+        await supabase.functions.invoke("send-submission-confirmation", {
+          body: { submissionId: submissionId },
         });
       } catch (emailError) {
-        console.error('Failed to send confirmation email:', emailError);
+        console.error("Failed to send confirmation email:", emailError);
         // Don't block submission if email fails
       }
 
       // Notify agency if this is a new auto-created client
       try {
-        await supabase.functions.invoke('notify-agency-new-client', {
-          body: { submissionId: submissionId }
+        await supabase.functions.invoke("notify-agency-new-client", {
+          body: { submissionId: submissionId },
         });
       } catch (notifyError) {
-        console.error('Failed to send agency notification:', notifyError);
+        console.error("Failed to send agency notification:", notifyError);
         // Don't block submission if notification fails
       }
 
@@ -266,15 +252,13 @@ export function ClientFormRenderer({
               )}
             </div>
             <CardDescription>{form.description}</CardDescription>
-            
+
             <div className="space-y-2 mt-4">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
                   Step {currentStep + 1} of {totalSteps}
                 </span>
-                <span className="text-muted-foreground">
-                  {completionPercentage}% Complete
-                </span>
+                <span className="text-muted-foreground">{completionPercentage}% Complete</span>
               </div>
               <Progress value={completionPercentage} />
             </div>
@@ -294,11 +278,7 @@ export function ClientFormRenderer({
             ))}
 
             <div className="flex justify-between pt-4">
-              <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentStep === 0 || submitting}
-              >
+              <Button variant="outline" onClick={handlePrevious} disabled={currentStep === 0 || submitting}>
                 <ChevronLeft className="mr-2 h-4 w-4" />
                 Previous
               </Button>
@@ -309,11 +289,7 @@ export function ClientFormRenderer({
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               ) : (
-                <Button
-                  onClick={handleSubmit}
-                  style={{ backgroundColor: primaryColor }}
-                  disabled={submitting}
-                >
+                <Button onClick={handleSubmit} style={{ backgroundColor: primaryColor }} disabled={submitting}>
                   {submitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
