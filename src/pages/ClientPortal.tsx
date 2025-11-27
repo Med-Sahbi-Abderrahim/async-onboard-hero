@@ -47,7 +47,6 @@ export default function ClientPortal() {
 
   const loadClientData = async () => {
     try {
-      // Check if user is authenticated via Supabase auth
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -57,35 +56,50 @@ export default function ClientPortal() {
         return;
       }
 
-      // Check how many organizations this client belongs to
+      // Try to find client by user_id OR email
       const { data: allClients } = await supabase
         .from("clients")
         .select("organization_id")
-        .eq("user_id", user.id)
+        .or(`user_id.eq.${user.id},email.ilike.${user.email}`)
         .is("deleted_at", null);
 
       setHasMultipleOrgs((allClients?.length || 0) > 1);
 
-      // Fetch client data using authenticated user ID and current org
+      // Fetch client for current organization
       const { data, error } = await supabase
         .from("clients")
         .select("*")
-        .eq("user_id", user.id)
         .eq("organization_id", orgId || "")
+        .or(`user_id.eq.${user.id},email.ilike.${user.email}`)
         .is("deleted_at", null)
-        .single();
+        .maybeSingle();
 
-      if (error || !data) {
+      if (error) {
         console.error("Error loading client:", error);
         await supabase.auth.signOut();
         setLoading(false);
         return;
       }
 
+      if (!data) {
+        console.error("No client found for this organization");
+        setLoading(false);
+        return;
+      }
+
+      // If client found but user_id not set, update it
+      if (data.user_id !== user.id) {
+        const { error: updateError } = await supabase.from("clients").update({ user_id: user.id }).eq("id", data.id);
+
+        if (!updateError) {
+          data.user_id = user.id;
+        }
+      }
+
       setClient(data);
 
-      // Check if this is first-time user (onboarding not completed)
-      const metadata = (data.metadata as Record<string, any>) || {};
+      // Check onboarding
+      const metadata = (data.metadata as Record) || {};
       const hasSeenOnboarding = metadata.onboarding_completed === true;
       if (!hasSeenOnboarding) {
         setShowWelcome(true);
