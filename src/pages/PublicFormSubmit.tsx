@@ -230,20 +230,22 @@ export default function PublicFormSubmit() {
                 if (!file) return;
 
                 try {
-                  const formDataToSend = new FormData();
-                  formDataToSend.append("file", file);
-                  formDataToSend.append("submission_id", form.id);
+                  // Upload directly to Supabase Storage
+                  const fileExt = file.name.split('.').pop();
+                  const fileName = `${field.id}_${Date.now()}.${fileExt}`;
+                  const filePath = `${form.id}/temp/${fileName}`;
 
-                  const res = await fetch(`${import.meta.env.VITE_SUPABASE_FUNCTIONS_URL}/upload-public-form-file`, {
-                    method: "POST",
-                    body: formDataToSend,
-                  });
+                  const { data, error } = await supabase.storage
+                    .from('submissions')
+                    .upload(filePath, file, {
+                      cacheControl: '3600',
+                      upsert: false
+                    });
 
-                  const result = await res.json();
-                  if (!res.ok) throw new Error(result.error || "Upload failed");
+                  if (error) throw error;
 
                   // Save path to formData
-                  handleFieldChange(field.id, result.path);
+                  handleFieldChange(field.id, data.path);
 
                   toast({
                     title: "File uploaded",
