@@ -57,11 +57,11 @@ export default function ClientPortalFeedback() {
       const { data: clients } = await supabase
         .from("clients")
         .select("id, organization_id")
-        .eq("user_id", user.id)
+        .or(`user_id.eq.${user.id},email.ilike.${user.email}`)
         .is("deleted_at", null);
 
       if (!clients || clients.length === 0) throw new Error("Client record not found");
-      
+
       const client = clients[0];
       setOrganizationId(client.organization_id);
 
