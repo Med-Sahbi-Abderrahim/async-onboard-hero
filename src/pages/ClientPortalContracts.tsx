@@ -2,19 +2,19 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft, FileQuestion } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { BrandedFooter } from "@/components/BrandedFooter";
 import { useContracts } from "@/hooks/useSharedData";
 import { ContractViewer } from "@/components/contracts/ContractViewer";
-import { ContractUploadModal } from "@/components/contracts/ContractUploadModal";
+import { ContractRequestModal } from "@/components/contracts/ContractRequestModal";
 
 export default function ClientPortalContracts() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [clientId, setClientId] = useState<string | null>(null);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
-  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showRequestModal, setShowRequestModal] = useState(false);
   const { contracts, loading, refresh } = useContracts(clientId || undefined, organizationId || undefined, true);
 
   useEffect(() => {
@@ -55,9 +55,13 @@ export default function ClientPortalContracts() {
             <h1 className="text-3xl md:text-4xl font-bold">Contracts</h1>
             <p className="text-sm text-muted-foreground">View and sign your contracts</p>
           </div>
-          <Button onClick={() => setShowUploadModal(true)} className="hover:scale-105 transition-transform">
-            <Plus className="h-4 w-4 mr-2" />
-            Upload Contract
+          <Button
+            onClick={() => setShowRequestModal(true)}
+            variant="outline"
+            className="hover:scale-105 transition-transform"
+          >
+            <FileQuestion className="h-4 w-4 mr-2" />
+            Request Contract
           </Button>
         </div>
 
@@ -72,24 +76,25 @@ export default function ClientPortalContracts() {
               <p className="text-sm">New contracts will appear here</p>
             </div>
           ) : (
-            contracts.map((contract) => (
-              <ContractViewer key={contract.id} contract={contract} onRefresh={refresh} />
-            ))
+            contracts.map((contract) => <ContractViewer key={contract.id} contract={contract} onRefresh={refresh} />)
           )}
         </div>
       </div>
 
       {organizationId && <BrandedFooter organizationId={organizationId} />}
 
-      {showUploadModal && clientId && organizationId && (
-        <ContractUploadModal
-          open={showUploadModal}
-          onOpenChange={setShowUploadModal}
+      {showRequestModal && clientId && organizationId && (
+        <ContractRequestModal
+          open={showRequestModal}
+          onOpenChange={setShowRequestModal}
           clientId={clientId}
           organizationId={organizationId}
           onSuccess={() => {
-            setShowUploadModal(false);
-            refresh();
+            setShowRequestModal(false);
+            toast({
+              title: "Request sent",
+              description: "Your contract request has been submitted successfully.",
+            });
           }}
         />
       )}
