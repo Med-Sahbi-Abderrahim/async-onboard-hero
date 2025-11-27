@@ -111,7 +111,7 @@ export default function PublicFormSubmit() {
 
       // 1. Create or find client record
       let clientId: string;
-      
+
       const { data: existingClient } = await supabase
         .from("clients")
         .select("id")
@@ -143,17 +143,15 @@ export default function PublicFormSubmit() {
       }
 
       // 2. Create form submission
-      const { error: submissionError } = await supabase
-        .from("form_submissions")
-        .insert({
-          intake_form_id: form.id,
-          client_id: clientId,
-          organization_id: form.organization_id,
-          responses: formData,
-          status: "pending",
-          completion_percentage: 100,
-          submitted_at: new Date().toISOString(),
-        });
+      const { error: submissionError } = await supabase.from("form_submissions").insert({
+        intake_form_id: form.id,
+        client_id: clientId,
+        organization_id: form.organization_id,
+        responses: formData,
+        status: "pending",
+        completion_percentage: 100,
+        submitted_at: new Date().toISOString(),
+      });
 
       if (submissionError) throw submissionError;
 
@@ -167,12 +165,11 @@ export default function PublicFormSubmit() {
 
       // 4. Show success
       setSubmitted(true);
-      
+
       toast({
         title: "✅ Submission received",
         description: "Thank you! We'll review your information and be in touch soon.",
       });
-
     } catch (error: any) {
       console.error("Submission error:", error);
       toast({
@@ -210,6 +207,55 @@ export default function PublicFormSubmit() {
               value={formData[field.id] || ""}
               onChange={(e) => handleFieldChange(field.id, e.target.value)}
               required={field.required}
+              disabled={submitting}
+            />
+          </div>
+        );
+
+      case "file":
+        return (
+          <div key={field.id} className="space-y-2">
+            <Label htmlFor={field.id}>
+              {field.label}
+              {field.required && <span className="text-destructive ml-1">*</span>}
+            </Label>
+            <input
+              id={field.id}
+              type="file"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                try {
+                  const formDataToSend = new FormData();
+                  formDataToSend.append("file", file);
+                  formDataToSend.append("submission_id", form.id);
+
+                  const res = await fetch(`${import.meta.env.VITE_SUPABASE_FUNCTIONS_URL}/upload-public-form-file`, {
+                    method: "POST",
+                    body: formDataToSend,
+                  });
+
+                  const result = await res.json();
+                  if (!res.ok) throw new Error(result.error || "Upload failed");
+
+                  // Save path to formData
+                  handleFieldChange(field.id, result.path);
+
+                  toast({
+                    title: "File uploaded",
+                    description: file.name,
+                    variant: "default",
+                  });
+                } catch (err: any) {
+                  console.error("Upload error:", err);
+                  toast({
+                    title: "Upload failed",
+                    description: err.message,
+                    variant: "destructive",
+                  });
+                }
+              }}
               disabled={submitting}
             />
           </div>
@@ -279,31 +325,24 @@ export default function PublicFormSubmit() {
           <CardContent className="text-center py-12">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-2">Form Not Found</h2>
-            <p className="text-muted-foreground">
-              This form is not available or has been unpublished.
-            </p>
+            <p className="text-muted-foreground">This form is not available or has been unpublished.</p>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-    if (submitted) {
+  if (submitted) {
     return (
       <div className="flex items-center justify-center min-h-screen p-4">
         <Card className="max-w-md w-full text-center">
           <CardHeader>
             <CheckCircle2 className="h-12 w-12 text-green-600 mx-auto mb-4" />
             <CardTitle>Submission Received</CardTitle>
-            <CardDescription>
-              Thank you! Your information has been successfully submitted.
-            </CardDescription>
+            <CardDescription>Thank you! Your information has been successfully submitted.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button
-              className="w-full"
-              onClick={() => navigate("/")}
-            >
+            <Button className="w-full" onClick={() => navigate("/")}>
               Return Home
             </Button>
           </CardContent>
@@ -326,13 +365,7 @@ export default function PublicFormSubmit() {
             backgroundColor: branding?.header_background || "white",
           }}
         >
-          {branding?.logo_url && (
-            <img
-              src={branding.logo_url}
-              alt="Brand Logo"
-              className="h-10 mb-4 object-contain"
-            />
-          )}
+          {branding?.logo_url && <img src={branding.logo_url} alt="Brand Logo" className="h-10 mb-4 object-contain" />}
           <CardTitle
             style={{
               color: branding?.primary_color || "inherit",
@@ -340,9 +373,7 @@ export default function PublicFormSubmit() {
           >
             {form.title}
           </CardTitle>
-          {form.description && (
-            <CardDescription>{form.description}</CardDescription>
-          )}
+          {form.description && <CardDescription>{form.description}</CardDescription>}
         </CardHeader>
 
         <CardContent className="pt-6">
@@ -366,11 +397,7 @@ export default function PublicFormSubmit() {
             {/* Dynamic form fields */}
             {form.fields?.map((field) => renderField(field))}
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={submitting}
-            >
+            <Button type="submit" className="w-full" disabled={submitting}>
               {submitting ? (
                 <div className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
