@@ -43,7 +43,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { AddMeetingModal } from "@/components/AddMeetingModal";
 import { AddFileModal } from "@/components/AddFileModal";
-import { AddContractModal } from "@/components/AddContractModal";
+import { ContractUploadModal } from "@/components/contracts/ContractUploadModal";
 import { AddInvoiceModal } from "@/components/AddInvoiceModal";
 import { TaskList } from "@/components/tasks/TaskList";
 import { ClientProgressCard } from "@/components/progress/ClientProgressCard";
@@ -669,7 +669,7 @@ export default function ClientDetail() {
         onSuccess={fetchClientData}
       />
 
-      <AddContractModal
+      <ContractUploadModal
         open={isContractModalOpen}
         onOpenChange={setIsContractModalOpen}
         clientId={id!}
