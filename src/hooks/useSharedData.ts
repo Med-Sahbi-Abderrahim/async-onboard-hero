@@ -19,9 +19,9 @@ export function useClientFiles(clientId?: string, organizationId?: string, isCli
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
 
-      // For clients: fetch their files OR org-wide files
+      // For clients: fetch their files OR shared files
       if (isClient && clientId) {
-        query = query.or(`client_id.eq.${clientId},client_id.is.null`);
+        query = query.or(`client_id.eq.${clientId},is_shared_with_all_clients.eq.true`);
       }
 
       const { data, error } = await query;
@@ -61,9 +61,9 @@ export function useContracts(clientId?: string, organizationId?: string, isClien
           .is("deleted_at", null)
           .order("created_at", { ascending: false });
 
-        // For clients: fetch their contracts OR org-wide contracts
+        // For clients: fetch their contracts OR shared contracts
         if (isClient && clientId) {
-          query = query.or(`client_id.eq.${clientId},client_id.is.null`);
+          query = query.or(`client_id.eq.${clientId},is_shared_with_all_clients.eq.true`);
         }
 
         const { data, error } = await query;
@@ -102,9 +102,9 @@ export function useMeetings(clientId?: string, organizationId?: string, isClient
           .is("deleted_at", null)
           .order("scheduled_at", { ascending: true });
 
-        // For clients: fetch their meetings OR org-wide meetings
+        // For clients: fetch their meetings OR shared meetings
         if (isClient && clientId) {
-          query = query.or(`client_id.eq.${clientId},client_id.is.null`);
+          query = query.or(`client_id.eq.${clientId},is_shared_with_all_clients.eq.true`);
         }
 
         const { data, error } = await query;
@@ -143,9 +143,9 @@ export function useInvoices(clientId?: string, organizationId?: string, isClient
           .is("deleted_at", null)
           .order("created_at", { ascending: false });
 
-        // For clients: fetch their invoices OR org-wide invoices
+        // For clients: fetch their invoices OR shared invoices
         if (isClient && clientId) {
-          query = query.or(`client_id.eq.${clientId},client_id.is.null`);
+          query = query.or(`client_id.eq.${clientId},is_shared_with_all_clients.eq.true`);
         }
 
         const { data, error } = await query;
