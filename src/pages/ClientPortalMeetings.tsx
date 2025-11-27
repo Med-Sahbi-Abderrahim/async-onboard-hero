@@ -30,7 +30,8 @@ export default function ClientPortalMeetings() {
     const { data: clients } = await supabase
       .from("clients")
       .select("id, organization_id")
-      .eq("user_id", user.id)
+      .or(`user_id.eq.${user.id},email.ilike.${user.email}`)
+
       .is("deleted_at", null);
 
     if (!clients || clients.length === 0) return;
@@ -137,7 +138,7 @@ export default function ClientPortalMeetings() {
       </div>
 
       {organizationId && <BrandedFooter organizationId={organizationId} />}
-      
+
       {showAddModal && clientId && organizationId && (
         <AddMeetingModal
           clientId={clientId}
