@@ -49,38 +49,38 @@ export function useContracts(clientId?: string, organizationId?: string, isClien
   const [contracts, setContracts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchContracts = async () => {
     if (!organizationId) return;
 
-    const fetchContracts = async () => {
-      try {
-        let query = supabase
-          .from("contracts")
-          .select("*")
-          .eq("organization_id", organizationId)
-          .is("deleted_at", null)
-          .order("created_at", { ascending: false });
+    try {
+      let query = supabase
+        .from("contracts")
+        .select("*")
+        .eq("organization_id", organizationId)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
 
-        // For clients: fetch their contracts OR shared contracts
-        if (isClient && clientId) {
-          query = query.or(`client_id.eq.${clientId},is_shared_with_all_clients.eq.true`);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-        setContracts(data || []);
-      } catch (error) {
-        console.error("Error fetching contracts:", error);
-      } finally {
-        setLoading(false);
+      // For clients: fetch their contracts OR shared contracts
+      if (isClient && clientId) {
+        query = query.or(`client_id.eq.${clientId},is_shared_with_all_clients.eq.true`);
       }
-    };
 
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setContracts(data || []);
+    } catch (error) {
+      console.error("Error fetching contracts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchContracts();
   }, [clientId, organizationId, isClient]);
 
-  return { contracts, loading };
+  return { contracts, loading, refresh: fetchContracts };
 }
 
 // ============================================

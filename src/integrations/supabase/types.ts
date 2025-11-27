@@ -413,48 +413,147 @@ export type Database = {
           },
         ]
       }
+      contract_signatures: {
+        Row: {
+          contract_id: string
+          created_at: string | null
+          id: string
+          ip_address: unknown
+          is_required: boolean | null
+          order_index: number | null
+          organization_id: string
+          signature_data: string | null
+          signature_type: string | null
+          signed_at: string | null
+          signer_email: string
+          signer_name: string
+          signer_role: string | null
+          signer_user_id: string | null
+          updated_at: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          is_required?: boolean | null
+          order_index?: number | null
+          organization_id: string
+          signature_data?: string | null
+          signature_type?: string | null
+          signed_at?: string | null
+          signer_email: string
+          signer_name: string
+          signer_role?: string | null
+          signer_user_id?: string | null
+          updated_at?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown
+          is_required?: boolean | null
+          order_index?: number | null
+          organization_id?: string
+          signature_data?: string | null
+          signature_type?: string | null
+          signed_at?: string | null
+          signer_email?: string
+          signer_name?: string
+          signer_role?: string | null
+          signer_user_id?: string | null
+          updated_at?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_signatures_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_signatures_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
+          amount_cents: number | null
           client_id: string
+          contract_type: Database["public"]["Enums"]["contract_type"] | null
           created_at: string
+          currency: string | null
           deleted_at: string | null
           description: string | null
+          effective_date: string | null
+          expiration_date: string | null
           file_path: string | null
+          file_size: number | null
+          file_type: string | null
           id: string
           is_shared_with_all_clients: boolean | null
           organization_id: string
+          signature_fields: Json | null
           signed_at: string | null
           status: string
           title: string
           updated_at: string
+          uploaded_by: string | null
         }
         Insert: {
+          amount_cents?: number | null
           client_id: string
+          contract_type?: Database["public"]["Enums"]["contract_type"] | null
           created_at?: string
+          currency?: string | null
           deleted_at?: string | null
           description?: string | null
+          effective_date?: string | null
+          expiration_date?: string | null
           file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
           id?: string
           is_shared_with_all_clients?: boolean | null
           organization_id: string
+          signature_fields?: Json | null
           signed_at?: string | null
           status?: string
           title: string
           updated_at?: string
+          uploaded_by?: string | null
         }
         Update: {
+          amount_cents?: number | null
           client_id?: string
+          contract_type?: Database["public"]["Enums"]["contract_type"] | null
           created_at?: string
+          currency?: string | null
           deleted_at?: string | null
           description?: string | null
+          effective_date?: string | null
+          expiration_date?: string | null
           file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
           id?: string
           is_shared_with_all_clients?: boolean | null
           organization_id?: string
+          signature_fields?: Json | null
           signed_at?: string | null
           status?: string
           title?: string
           updated_at?: string
+          uploaded_by?: string | null
         }
         Relationships: [
           {
@@ -1464,6 +1563,14 @@ export type Database = {
         | "no_response"
         | "field_condition_met"
       client_status: "active" | "archived" | "blocked"
+      contract_type:
+        | "nda"
+        | "service_agreement"
+        | "consulting_agreement"
+        | "master_service_agreement"
+        | "sow"
+        | "amendment"
+        | "other"
       form_status: "draft" | "active" | "archived"
       log_action:
         | "created"
@@ -1641,6 +1748,15 @@ export const Constants = {
         "field_condition_met",
       ],
       client_status: ["active", "archived", "blocked"],
+      contract_type: [
+        "nda",
+        "service_agreement",
+        "consulting_agreement",
+        "master_service_agreement",
+        "sow",
+        "amendment",
+        "other",
+      ],
       form_status: ["draft", "active", "archived"],
       log_action: [
         "created",
