@@ -45,10 +45,10 @@ export function AddContractModal({ open, onOpenChange, clientId, organizationId,
       if (error) throw error;
 
       await handleCreateContract({
-        contractId: insertedContract.id,
+        name: insertedContract.title,
+        description: insertedContract.description || '',
         clientId,
-        title: insertedContract.title,
-        description: insertedContract.description,
+        dueDate: insertedContract.effective_date || new Date().toISOString().split('T')[0],
       });
 
       toast({
