@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { handleCreateInvoice } from "@/lib/notifications";
 
 interface AddInvoiceModalProps {
   open: boolean;
@@ -27,6 +28,8 @@ export function AddInvoiceModal({ open, onOpenChange, clientId, organizationId, 
     currency: "USD",
   });
 
+  import { handleCreateInvoice } from "@/lib/notifications";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -34,18 +37,14 @@ export function AddInvoiceModal({ open, onOpenChange, clientId, organizationId, 
     try {
       const amountCents = Math.round(parseFloat(formData.amount) * 100);
 
-      const { error } = await supabase.from("invoices").insert({
-        client_id: clientId,
-        organization_id: organizationId,
-        invoice_number: formData.invoice_number,
-        amount_cents: amountCents,
+      await handleCreateInvoice({
+        invoiceNumber: formData.invoice_number,
+        amountCents,
         currency: formData.currency,
-        due_date: formData.due_date,
+        dueDate: formData.due_date,
         description: formData.description || null,
-        status: "pending",
+        clientId,
       });
-
-      if (error) throw error;
 
       toast({
         title: "✅ Invoice added",
@@ -59,6 +58,7 @@ export function AddInvoiceModal({ open, onOpenChange, clientId, organizationId, 
         description: "",
         currency: "USD",
       });
+
       onOpenChange(false);
       onSuccess();
     } catch (error: any) {
