@@ -28,18 +28,14 @@ export function AddInvoiceModal({ open, onOpenChange, clientId, organizationId, 
     currency: "USD",
   });
 
-  import { handleCreateInvoice } from "@/lib/notifications";
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      const amountCents = Math.round(parseFloat(formData.amount) * 100);
-
       await handleCreateInvoice({
         invoiceNumber: formData.invoice_number,
-        amountCents,
+        amount: parseFloat(formData.amount),
         currency: formData.currency,
         dueDate: formData.due_date,
         description: formData.description || null,
