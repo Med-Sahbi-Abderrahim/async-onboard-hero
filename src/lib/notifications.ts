@@ -262,6 +262,8 @@ export async function handleCreateInvoice(formData: {
   amount: number;
   dueDate: string;
   clientId: string;
+  currency?: string;
+  description?: string | null;
 }) {
   try {
     const {
@@ -290,6 +292,8 @@ export async function handleCreateInvoice(formData: {
         due_date: formData.dueDate,
         client_id: formData.clientId,
         organization_id: organization.id,
+        currency: formData.currency || "USD",
+        description: formData.description || null,
       }])
       .select()
       .single();
