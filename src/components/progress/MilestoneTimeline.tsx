@@ -47,8 +47,9 @@ export function MilestoneTimeline({ progress }: MilestoneTimelineProps) {
     {
       id: "files",
       title: "Upload Files",
-      description: formatProgressDescription(progress.files.completed, progress.files.total, "tasks"),
-
+      description: progress.files.uploaded > 0 
+        ? `${progress.files.uploaded} file${progress.files.uploaded === 1 ? '' : 's'} uploaded`
+        : "No files uploaded yet",
       status:
         progress.files.percentage === 100 ? "completed" : progress.files.percentage > 0 ? "in-progress" : "pending",
       icon: Upload,
@@ -56,7 +57,7 @@ export function MilestoneTimeline({ progress }: MilestoneTimelineProps) {
     {
       id: "contracts",
       title: "Sign Contracts",
-      description: formatProgressDescription(progress.contracts.completed, progress.contracts.total, "tasks"),
+      description: formatProgressDescription(progress.contracts.signed, progress.contracts.total, "contracts"),
 
       status:
         progress.contracts.percentage === 100
