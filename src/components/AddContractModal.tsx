@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { handleCreateContract } from "@/lib/notifications";
 
 interface AddContractModalProps {
   open: boolean;
@@ -29,15 +30,26 @@ export function AddContractModal({ open, onOpenChange, clientId, organizationId,
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("contracts").insert({
-        client_id: clientId,
-        organization_id: organizationId,
-        title: formData.title,
-        description: formData.description || null,
-        status: "pending",
-      });
+      const { data: insertedContract, error } = await supabase
+        .from("contracts")
+        .insert({
+          client_id: clientId,
+          organization_id: organizationId,
+          title: formData.title,
+          description: formData.description || null,
+          status: "pending",
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      await handleCreateContract({
+        contractId: insertedContract.id,
+        clientId,
+        title: insertedContract.title,
+        description: insertedContract.description,
+      });
 
       toast({
         title: "✅ Contract added",
