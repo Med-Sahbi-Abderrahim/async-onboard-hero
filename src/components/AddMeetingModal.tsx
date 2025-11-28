@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { handleCreateMeeting } from "@/lib/notifications";
 
 interface AddMeetingModalProps {
   open: boolean;
@@ -32,18 +33,14 @@ export function AddMeetingModal({ open, onOpenChange, clientId, organizationId, 
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("meetings").insert({
-        client_id: clientId,
-        organization_id: organizationId,
+      await handleCreateMeeting({
         title: formData.title,
-        notes: formData.notes || null,
-        scheduled_at: new Date(formData.scheduled_at).toISOString(),
-        duration_minutes: parseInt(formData.duration_minutes),
-        meeting_link: formData.meeting_link || null,
-        status: "scheduled",
+        date: new Date(formData.scheduled_at).toISOString().split("T")[0], // YYYY-MM-DD
+        time: new Date(formData.scheduled_at).toISOString().split("T")[1], // HH:MM:SS
+        duration: formData.duration_minutes,
+        meetingLink: formData.meeting_link,
+        clientId,
       });
-
-      if (error) throw error;
 
       toast({
         title: "✅ Meeting added",
@@ -57,6 +54,7 @@ export function AddMeetingModal({ open, onOpenChange, clientId, organizationId, 
         duration_minutes: "60",
         meeting_link: "",
       });
+
       onOpenChange(false);
       onSuccess();
     } catch (error: any) {
