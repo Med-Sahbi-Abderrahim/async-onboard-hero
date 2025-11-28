@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { calculatePercentage } from "@/lib/progress-display";
 
 interface ProgressData {
   overall: number;
@@ -35,7 +36,7 @@ export function useClientProgress(clientId: string, organizationId: string) {
     overall: 0,
     tasks: { completed: 0, total: 0, percentage: 0 },
     forms: { completed: 0, total: 0, percentage: 0 },
-    files: { uploaded: 0, percentage: 100 },
+    files: { uploaded: 0, percentage: 0 },
     contracts: { signed: 0, total: 0, percentage: 0 },
     blockedItems: [],
   });
@@ -78,30 +79,33 @@ export function useClientProgress(clientId: string, organizationId: string) {
       // Calculate task progress
       const totalTasks = tasks?.length || 0;
       const completedTasks = tasks?.filter((t) => t.status === "completed").length || 0;
-      const taskPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 100;
+      const taskPercentage = calculatePercentage(completedTasks, totalTasks);
 
       // Calculate form progress
       const totalForms = submissions?.length || 0;
       const completedForms =
         submissions?.filter((s) => s.status === "completed" || s.status === "approved").length || 0;
-      const formPercentage = totalForms > 0 ? (completedForms / totalForms) * 100 : 100;
+      const formPercentage = calculatePercentage(completedForms, totalForms);
 
-      // File progress (always 100% if any files uploaded, as we don't track required files)
+      // File progress (simple count, no progress bar if 0)
       const fileCount = files?.length || 0;
       const filePercentage = fileCount > 0 ? 100 : 0;
 
       // Calculate contract progress
       const totalContracts = contracts?.length || 0;
       const signedContracts = contracts?.filter((c) => c.status === "signed").length || 0;
-      const contractPercentage = totalContracts > 0 ? (signedContracts / totalContracts) * 100 : 100;
+      const contractPercentage = calculatePercentage(signedContracts, totalContracts);
 
-      // Calculate overall progress (average of all categories with data)
-      const categories = [taskPercentage, formPercentage, filePercentage, contractPercentage];
-      const validCategories = categories.filter((p) => p !== null);
+      // Calculate overall progress
+      // Only include categories that have items
+      const percentages: number[] = [];
+      if (totalTasks > 0) percentages.push(taskPercentage);
+      if (totalForms > 0) percentages.push(formPercentage);
+      if (fileCount > 0) percentages.push(filePercentage);
+      if (totalContracts > 0) percentages.push(contractPercentage);
+
       const overallPercentage =
-        validCategories.length > 0
-          ? validCategories.reduce((sum, p) => sum + p, 0) / validCategories.length
-          : 0;
+        percentages.length > 0 ? Math.round(percentages.reduce((sum, p) => sum + p, 0) / percentages.length) : 0;
 
       // Identify blocked items (pending/incomplete items)
       const blockedItems: ProgressData["blockedItems"] = [];
@@ -141,25 +145,25 @@ export function useClientProgress(clientId: string, organizationId: string) {
         });
 
       setProgress({
-        overall: Math.round(overallPercentage),
+        overall: overallPercentage,
         tasks: {
           completed: completedTasks,
           total: totalTasks,
-          percentage: Math.round(taskPercentage),
+          percentage: taskPercentage,
         },
         forms: {
           completed: completedForms,
           total: totalForms,
-          percentage: Math.round(formPercentage),
+          percentage: formPercentage,
         },
         files: {
           uploaded: fileCount,
-          percentage: Math.round(filePercentage),
+          percentage: filePercentage,
         },
         contracts: {
           signed: signedContracts,
           total: totalContracts,
-          percentage: Math.round(contractPercentage),
+          percentage: contractPercentage,
         },
         blockedItems: blockedItems.slice(0, 10), // Limit to 10 most important
       });
@@ -187,7 +191,7 @@ export function useClientProgress(clientId: string, organizationId: string) {
           },
           () => {
             fetchProgress();
-          }
+          },
         )
         .subscribe();
 
@@ -203,7 +207,7 @@ export function useClientProgress(clientId: string, organizationId: string) {
           },
           () => {
             fetchProgress();
-          }
+          },
         )
         .subscribe();
 
@@ -219,7 +223,7 @@ export function useClientProgress(clientId: string, organizationId: string) {
           },
           () => {
             fetchProgress();
-          }
+          },
         )
         .subscribe();
 
@@ -235,7 +239,7 @@ export function useClientProgress(clientId: string, organizationId: string) {
           },
           () => {
             fetchProgress();
-          }
+          },
         )
         .subscribe();
 
