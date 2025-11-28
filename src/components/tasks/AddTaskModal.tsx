@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { handleCreateTask } from "@/lib/notifications";
 
 interface AddTaskModalProps {
   clientId: string;
@@ -29,7 +30,7 @@ export function AddTaskModal({ clientId, organizationId, onClose, onSuccess }: A
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim()) {
       toast.error("Please enter a task title");
       return;
@@ -38,18 +39,29 @@ export function AddTaskModal({ clientId, organizationId, onClose, onSuccess }: A
     setLoading(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
-      
-      const { error } = await supabase.from("tasks").insert({
-        client_id: clientId,
-        organization_id: organizationId,
-        title: formData.title,
-        description: formData.description || null,
-        due_date: formData.due_date?.toISOString() || null,
-        status: "pending",
-        created_by: userData.user?.id,
-      });
+
+      const { data: insertedTask, error } = await supabase
+        .from("tasks")
+        .insert({
+          client_id: clientId,
+          organization_id: organizationId,
+          title: formData.title,
+          description: formData.description || null,
+          due_date: formData.due_date?.toISOString() || null,
+          status: "pending",
+          created_by: userData.user?.id,
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      await handleCreateTask({
+        taskId: insertedTask.id,
+        clientId,
+        title: insertedTask.title,
+        dueDate: insertedTask.due_date,
+      });
 
       toast.success("Task created successfully");
       onSuccess();
@@ -99,7 +111,7 @@ export function AddTaskModal({ clientId, organizationId, onClose, onSuccess }: A
                   variant="outline"
                   className={cn(
                     "w-full justify-start text-left font-normal",
-                    !formData.due_date && "text-muted-foreground"
+                    !formData.due_date && "text-muted-foreground",
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
