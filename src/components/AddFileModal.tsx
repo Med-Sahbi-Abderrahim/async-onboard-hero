@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Upload } from "lucide-react";
 import { UpgradeModal } from "./UpgradeModal";
 import { useOrgLimits } from "@/hooks/useOrgLimits";
+import { handleCreateFile } from "@/lib/notifications";
 
 interface AddFileModalProps {
   open: boolean;
@@ -22,7 +23,7 @@ export function AddFileModal({ open, onOpenChange, clientId, organizationId, onS
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [currentPlan, setCurrentPlan] = useState<'free' | 'starter' | 'pro'>('free');
+  const [currentPlan, setCurrentPlan] = useState<"free" | "starter" | "pro">("free");
   const { canUploadFile, refresh } = useOrgLimits(organizationId);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,22 +40,17 @@ export function AddFileModal({ open, onOpenChange, clientId, organizationId, onS
 
     try {
       // Get organization plan
-      const { data: orgData } = await supabase
-        .from('organizations')
-        .select('plan')
-        .eq('id', organizationId)
-        .single();
+      const { data: orgData } = await supabase.from("organizations").select("plan").eq("id", organizationId).single();
 
       if (orgData) {
-        setCurrentPlan(orgData.plan as 'free' | 'starter' | 'pro');
+        setCurrentPlan(orgData.plan as "free" | "starter" | "pro");
       }
 
       // Check storage limit using RPC function
-      const { data: canUpload, error: limitError } = await supabase
-        .rpc('can_upload_file', {
-          org_id: organizationId,
-          file_size_bytes: selectedFile.size
-        });
+      const { data: canUpload, error: limitError } = await supabase.rpc("can_upload_file", {
+        org_id: organizationId,
+        file_size_bytes: selectedFile.size,
+      });
 
       if (limitError) throw limitError;
 
@@ -65,30 +61,44 @@ export function AddFileModal({ open, onOpenChange, clientId, organizationId, onS
       }
 
       // Get the current authenticated user
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error("You must be logged in to upload files");
 
       const fileExt = selectedFile.name.split(".").pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
       const filePath = `${clientId}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("client-uploads")
-        .upload(filePath, selectedFile);
+      const { error: uploadError } = await supabase.storage.from("client-uploads").upload(filePath, selectedFile);
 
       if (uploadError) throw uploadError;
 
-      const { error: dbError } = await supabase.from("client_files").insert({
-        client_id: clientId,
-        organization_id: organizationId,
-        file_name: selectedFile.name,
-        file_type: selectedFile.type,
-        file_size: selectedFile.size,
-        storage_path: filePath,
-        uploaded_by: user.id,
-      });
+      // Insert file record
+      const { data: fileRecord, error: dbError } = await supabase
+        .from("client_files")
+        .insert({
+          client_id: clientId,
+          organization_id: organizationId,
+          file_name: selectedFile.name,
+          file_type: selectedFile.type,
+          file_size: selectedFile.size,
+          storage_path: filePath,
+          uploaded_by: user.id,
+        })
+        .select()
+        .single();
 
       if (dbError) throw dbError;
+
+      // 🔥 Trigger email + portal notification
+      await handleCreateFile({
+        clientId,
+        organizationId,
+        fileId: fileRecord.id,
+        fileName: selectedFile.name,
+        uploadedBy: user.id,
+      });
 
       toast({
         title: "✅ File uploaded",
@@ -114,56 +124,44 @@ export function AddFileModal({ open, onOpenChange, clientId, organizationId, onS
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Add File</DialogTitle>
-        </DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Add File</DialogTitle>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="file">Select File *</Label>
-            <div className="border-2 border-dashed border-primary/20 rounded-lg p-8 text-center hover:border-primary/40 hover:bg-primary/5 transition-all">
-              <Upload className="h-8 w-8 mx-auto mb-2 text-primary/50" />
-              <Label htmlFor="file" className="cursor-pointer">
-                <p className="text-sm text-muted-foreground">
-                  Click to select a file
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Any file type supported
-                </p>
-              </Label>
-              <Input
-                id="file"
-                type="file"
-                className="hidden"
-                onChange={handleFileSelect}
-                disabled={isSubmitting}
-              />
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="file">Select File *</Label>
+              <div className="border-2 border-dashed border-primary/20 rounded-lg p-8 text-center hover:border-primary/40 hover:bg-primary/5 transition-all">
+                <Upload className="h-8 w-8 mx-auto mb-2 text-primary/50" />
+                <Label htmlFor="file" className="cursor-pointer">
+                  <p className="text-sm text-muted-foreground">Click to select a file</p>
+                  <p className="text-xs text-muted-foreground mt-1">Any file type supported</p>
+                </Label>
+                <Input id="file" type="file" className="hidden" onChange={handleFileSelect} disabled={isSubmitting} />
+              </div>
+              {selectedFile && <p className="text-sm text-muted-foreground">Selected: {selectedFile.name}</p>}
             </div>
-            {selectedFile && (
-              <p className="text-sm text-muted-foreground">Selected: {selectedFile.name}</p>
-            )}
-          </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting || !selectedFile}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Upload File
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting || !selectedFile}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Upload File
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-    <UpgradeModal
-      open={showUpgradeModal}
-      onOpenChange={setShowUpgradeModal}
-      limitType="storage"
-      currentPlan={currentPlan}
-      organizationId={organizationId}
-    />
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        limitType="storage"
+        currentPlan={currentPlan}
+        organizationId={organizationId}
+      />
     </>
   );
 }
