@@ -57,10 +57,10 @@ export function AddTaskModal({ clientId, organizationId, onClose, onSuccess }: A
       if (error) throw error;
 
       await handleCreateTask({
-        taskId: insertedTask.id,
-        clientId,
         title: insertedTask.title,
-        dueDate: insertedTask.due_date,
+        description: insertedTask.description || "",
+        dueDate: insertedTask.due_date || "",
+        assignedToClientId: clientId,
       });
 
       toast.success("Task created successfully");
