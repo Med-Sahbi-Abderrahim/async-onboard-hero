@@ -1,9 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.REACT_APP_SUPABASE_URL,
-  process.env.REACT_APP_SUPABASE_ANON_KEY
-);
+import { supabase } from "@/integrations/supabase/client";
 
 // ============================================
 // HELPER FUNCTION: Queue notification
@@ -85,16 +80,14 @@ export async function handleCreateMeeting(formData: {
     // 1. Create the meeting in your database
     const { data: meeting, error: meetingError } = await supabase
       .from("meetings")
-      .insert({
+      .insert([{
         title: formData.title,
-        date: formData.date,
-        time: formData.time,
-        duration: formData.duration,
+        scheduled_at: new Date(`${formData.date}T${formData.time}`).toISOString(),
+        duration_minutes: parseInt(formData.duration),
         meeting_link: formData.meetingLink,
         client_id: formData.clientId,
         organization_id: organization.id,
-        created_by: user.id,
-      })
+      }])
       .select()
       .single();
 
@@ -163,14 +156,13 @@ export async function handleCreateTask(formData: {
     // Create task
     const { data: task, error: taskError } = await supabase
       .from("tasks")
-      .insert({
+      .insert([{
         title: formData.title,
         description: formData.description,
         due_date: formData.dueDate,
-        assigned_to_client_id: formData.assignedToClientId,
+        client_id: formData.assignedToClientId,
         organization_id: organization.id,
-        created_by: user.id,
-      })
+      }])
       .select()
       .single();
 
@@ -228,14 +220,13 @@ export async function handleCreateContract(formData: {
     // Create contract
     const { data: contract, error: contractError } = await supabase
       .from("contracts")
-      .insert({
-        name: formData.name,
+      .insert([{
+        title: formData.name,
         description: formData.description,
         client_id: formData.clientId,
         organization_id: organization.id,
-        due_date: formData.dueDate,
-        created_by: user.id,
-      })
+        effective_date: formData.dueDate,
+      }])
       .select()
       .single();
 
@@ -293,14 +284,13 @@ export async function handleCreateInvoice(formData: {
     // Create invoice
     const { data: invoice, error: invoiceError } = await supabase
       .from("invoices")
-      .insert({
+      .insert([{
         invoice_number: formData.invoiceNumber,
-        amount: formData.amount,
+        amount_cents: formData.amount * 100,
         due_date: formData.dueDate,
         client_id: formData.clientId,
         organization_id: organization.id,
-        created_by: user.id,
-      })
+      }])
       .select()
       .single();
 
