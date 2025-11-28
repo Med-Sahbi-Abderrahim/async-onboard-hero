@@ -342,29 +342,19 @@ export async function handleCreateFile({
 
     if (clientError) throw clientError;
 
-    // 2. Add portal notification (activity log)
-    const { error: logError } = await supabase.from("activities").insert({
-      client_id: clientId,
-      organization_id: organizationId,
-      type: "file_uploaded",
-      title: "New file uploaded",
-      description: `${fileName} was added.`,
-      entity_id: fileId,
-    });
-
-    if (logError) throw logError;
-
-    // 3. Send email to client
-    await sendEmail({
-      to: client.email,
-      subject: "A new file was added to your portal",
-      html: `
-        <p>Hello ${client.full_name},</p>
-        <p>A new file has been uploaded for you:</p>
-        <p><strong>${fileName}</strong></p>
-        <p>You can now view it inside your portal.</p>
-      `,
-    });
+    // 2. Queue notification email to client
+    await queueNotification(
+      "file",
+      fileId,
+      "immediate",
+      client.email,
+      client.full_name,
+      organizationId,
+      clientId,
+      {
+        file_name: fileName,
+      }
+    );
 
     return { success: true };
   } catch (err) {
