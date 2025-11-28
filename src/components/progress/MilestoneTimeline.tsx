@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Circle, Clock, FileText, Upload, FileSignature, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatProgressDescription } from "@/lib/progress-display.tsx";
 
 interface Milestone {
   id: string;
@@ -28,29 +29,41 @@ export function MilestoneTimeline({ progress }: MilestoneTimelineProps) {
     {
       id: "tasks",
       title: "Complete Tasks",
-      description: `${progress.tasks.completed} of ${progress.tasks.total} tasks completed`,
-      status: progress.tasks.percentage === 100 ? "completed" : progress.tasks.percentage > 0 ? "in-progress" : "pending",
+      description: formatProgressDescription(progress.tasks.completed, progress.tasks.total, "tasks"),
+
+      status:
+        progress.tasks.percentage === 100 ? "completed" : progress.tasks.percentage > 0 ? "in-progress" : "pending",
       icon: ListChecks,
     },
     {
       id: "forms",
       title: "Submit Forms",
-      description: `${progress.forms.completed} of ${progress.forms.total} forms submitted`,
-      status: progress.forms.percentage === 100 ? "completed" : progress.forms.percentage > 0 ? "in-progress" : "pending",
+      description: formatProgressDescription(progress.forms.completed, progress.forms.total, "tasks"),
+
+      status:
+        progress.forms.percentage === 100 ? "completed" : progress.forms.percentage > 0 ? "in-progress" : "pending",
       icon: FileText,
     },
     {
       id: "files",
       title: "Upload Files",
-      description: `${progress.files.uploaded} files uploaded`,
-      status: progress.files.percentage === 100 ? "completed" : progress.files.percentage > 0 ? "in-progress" : "pending",
+      description: formatProgressDescription(progress.files.completed, progress.files.total, "tasks"),
+
+      status:
+        progress.files.percentage === 100 ? "completed" : progress.files.percentage > 0 ? "in-progress" : "pending",
       icon: Upload,
     },
     {
       id: "contracts",
       title: "Sign Contracts",
-      description: `${progress.contracts.signed} of ${progress.contracts.total} contracts signed`,
-      status: progress.contracts.percentage === 100 ? "completed" : progress.contracts.percentage > 0 ? "in-progress" : "pending",
+      description: formatProgressDescription(progress.contracts.completed, progress.contracts.total, "tasks"),
+
+      status:
+        progress.contracts.percentage === 100
+          ? "completed"
+          : progress.contracts.percentage > 0
+            ? "in-progress"
+            : "pending",
       icon: FileSignature,
     },
   ];
@@ -94,16 +107,14 @@ export function MilestoneTimeline({ progress }: MilestoneTimelineProps) {
               return (
                 <div key={milestone.id} className="relative flex gap-4">
                   {/* Status indicator */}
-                  <div className="relative z-10 flex-shrink-0">
-                    {getStatusIcon(milestone.status)}
-                  </div>
+                  <div className="relative z-10 flex-shrink-0">{getStatusIcon(milestone.status)}</div>
 
                   {/* Milestone content */}
                   <div
                     className={cn(
                       "flex-1 rounded-lg border-2 p-4 transition-all animate-fade-in",
                       getStatusColor(milestone.status),
-                      milestone.status === "completed" && "shadow-soft"
+                      milestone.status === "completed" && "shadow-soft",
                     )}
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
