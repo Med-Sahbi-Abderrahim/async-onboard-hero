@@ -323,21 +323,52 @@ export async function handleCreateInvoice(formData: {
 }
 
 // ============================================
-// USAGE IN YOUR MODAL
+// EXAMPLE 5: Create File Modal
 // ============================================
-/*
-Example in a React component:
+export async function handleCreateFile({
+  clientId,
+  organizationId,
+  fileId,
+  fileName,
+  uploadedBy,
+}) {
+  try {
+    // 1. Get client info
+    const { data: client, error: clientError } = await supabase
+      .from("clients")
+      .select("email, full_name")
+      .eq("id", clientId)
+      .single();
 
-import { handleCreateMeeting } from './notifications';
+    if (clientError) throw clientError;
 
-function CreateMeetingModal() {
-  const handleSubmit = async (formData) => {
-    await handleCreateMeeting(formData);
-    // Close modal, show success, etc.
-  };
+    // 2. Add portal notification (activity log)
+    const { error: logError } = await supabase.from("activities").insert({
+      client_id: clientId,
+      organization_id: organizationId,
+      type: "file_uploaded",
+      title: "New file uploaded",
+      description: `${fileName} was added.`,
+      entity_id: fileId,
+    });
 
-  return (
-    // Your form JSX
-  );
+    if (logError) throw logError;
+
+    // 3. Send email to client
+    await sendEmail({
+      to: client.email,
+      subject: "A new file was added to your portal",
+      html: `
+        <p>Hello ${client.full_name},</p>
+        <p>A new file has been uploaded for you:</p>
+        <p><strong>${fileName}</strong></p>
+        <p>You can now view it inside your portal.</p>
+      `,
+    });
+
+    return { success: true };
+  } catch (err) {
+    console.error("Error in handleCreateFile:", err);
+    return { success: false, error: err };
+  }
 }
-*/
