@@ -59,15 +59,13 @@ export async function handleCreateMeeting(formData: {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    const {
-      data: { organizations },
-    } = await supabase
+    const { data: organization } = await supabase
       .from("organizations")
-      .select("id")
+      .select("id, name")
       .limit(1)
       .single();
 
-    if (!user || !organizations) {
+    if (!user || !organization) {
       console.error("User or organization not found");
       return;
     }
@@ -94,7 +92,7 @@ export async function handleCreateMeeting(formData: {
         duration: formData.duration,
         meeting_link: formData.meetingLink,
         client_id: formData.clientId,
-        organization_id: organizations.id,
+        organization_id: organization.id,
         created_by: user.id,
       })
       .select()
@@ -112,7 +110,7 @@ export async function handleCreateMeeting(formData: {
       "immediate",
       client.email,
       client.full_name,
-      organizations.id,
+      organization.id,
       formData.clientId,
       {
         meeting_title: formData.title,
@@ -120,7 +118,7 @@ export async function handleCreateMeeting(formData: {
         meeting_time: formData.time,
         meeting_duration: formData.duration,
         meeting_link: formData.meetingLink,
-        organization_name: organizations.name,
+        organization_name: organization.name,
         client_name: client.full_name,
       }
     );
@@ -148,7 +146,7 @@ export async function handleCreateTask(formData: {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    const { data: organizations } = await supabase
+    const { data: organization } = await supabase
       .from("organizations")
       .select("id")
       .limit(1)
@@ -160,7 +158,7 @@ export async function handleCreateTask(formData: {
       .eq("id", formData.assignedToClientId)
       .single();
 
-    if (!user || !organizations || !client) return;
+    if (!user || !organization || !client) return;
 
     // Create task
     const { data: task, error: taskError } = await supabase
@@ -170,7 +168,7 @@ export async function handleCreateTask(formData: {
         description: formData.description,
         due_date: formData.dueDate,
         assigned_to_client_id: formData.assignedToClientId,
-        organization_id: organizations.id,
+        organization_id: organization.id,
         created_by: user.id,
       })
       .select()
@@ -185,7 +183,7 @@ export async function handleCreateTask(formData: {
       "immediate",
       client.email,
       client.full_name,
-      organizations.id,
+      organization.id,
       formData.assignedToClientId,
       {
         task_title: formData.title,
@@ -213,7 +211,7 @@ export async function handleCreateContract(formData: {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    const { data: organizations } = await supabase
+    const { data: organization } = await supabase
       .from("organizations")
       .select("id")
       .limit(1)
@@ -225,7 +223,7 @@ export async function handleCreateContract(formData: {
       .eq("id", formData.clientId)
       .single();
 
-    if (!user || !organizations || !client) return;
+    if (!user || !organization || !client) return;
 
     // Create contract
     const { data: contract, error: contractError } = await supabase
@@ -234,7 +232,7 @@ export async function handleCreateContract(formData: {
         name: formData.name,
         description: formData.description,
         client_id: formData.clientId,
-        organization_id: organizations.id,
+        organization_id: organization.id,
         due_date: formData.dueDate,
         created_by: user.id,
       })
@@ -250,7 +248,7 @@ export async function handleCreateContract(formData: {
       "immediate",
       client.email,
       client.full_name,
-      organizations.id,
+      organization.id,
       formData.clientId,
       {
         contract_name: formData.name,
@@ -278,7 +276,7 @@ export async function handleCreateInvoice(formData: {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    const { data: organizations } = await supabase
+    const { data: organization } = await supabase
       .from("organizations")
       .select("id")
       .limit(1)
@@ -290,7 +288,7 @@ export async function handleCreateInvoice(formData: {
       .eq("id", formData.clientId)
       .single();
 
-    if (!user || !organizations || !client) return;
+    if (!user || !organization || !client) return;
 
     // Create invoice
     const { data: invoice, error: invoiceError } = await supabase
@@ -300,7 +298,7 @@ export async function handleCreateInvoice(formData: {
         amount: formData.amount,
         due_date: formData.dueDate,
         client_id: formData.clientId,
-        organization_id: organizations.id,
+        organization_id: organization.id,
         created_by: user.id,
       })
       .select()
@@ -315,7 +313,7 @@ export async function handleCreateInvoice(formData: {
       "immediate",
       client.email,
       client.full_name,
-      organizations.id,
+      organization.id,
       formData.clientId,
       {
         invoice_number: formData.invoiceNumber,
