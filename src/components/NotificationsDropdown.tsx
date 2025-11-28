@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -83,7 +79,7 @@ export function NotificationsDropdown() {
             title: newNotification.title,
             description: newNotification.message,
           });
-        }
+        },
       )
       .on(
         "postgres_changes",
@@ -95,13 +91,9 @@ export function NotificationsDropdown() {
         },
         (payload) => {
           const updatedNotification = payload.new as Notification;
-          setNotifications((prev) =>
-            prev.map((n) => (n.id === updatedNotification.id ? updatedNotification : n))
-          );
-          setUnreadCount((prev) =>
-            updatedNotification.is_read ? Math.max(0, prev - 1) : prev
-          );
-        }
+          setNotifications((prev) => prev.map((n) => (n.id === updatedNotification.id ? updatedNotification : n)));
+          setUnreadCount((prev) => (updatedNotification.is_read ? Math.max(0, prev - 1) : prev));
+        },
       )
       .subscribe();
 
@@ -154,7 +146,7 @@ export function NotificationsDropdown() {
 
     // Get organization ID from notification
     const orgId = notification.organization_id;
-    
+
     if (!orgId) {
       toast({
         title: "Navigation Error",
@@ -166,17 +158,18 @@ export function NotificationsDropdown() {
     }
 
     // Navigate based on notification type with orgId
+    // FIXED: Routes should be /clients/:orgId/:id NOT /:orgId/clients/:id
     const { metadata } = notification;
-    
+
     if (metadata.client_id) {
-      navigate(`/${orgId}/clients/${metadata.client_id}`);
+      navigate(`/clients/${orgId}/${metadata.client_id}`);
     } else if (metadata.submission_id) {
-      navigate(`/${orgId}/submissions`);
+      navigate(`/submissions/${orgId}`);
     } else if (metadata.form_id) {
-      navigate(`/${orgId}/forms/${metadata.form_id}`);
+      navigate(`/forms/${orgId}/${metadata.form_id}`);
     } else {
       // Default to dashboard if no specific target
-      navigate(`/${orgId}/dashboard`);
+      navigate(`/dashboard/${orgId}`);
     }
 
     setOpen(false);
@@ -216,12 +209,7 @@ export function NotificationsDropdown() {
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-semibold">Notifications</h3>
           {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={markAllAsRead}
-              className="text-xs"
-            >
+            <Button variant="ghost" size="sm" onClick={markAllAsRead} className="text-xs">
               Mark all as read
             </Button>
           )}
@@ -244,9 +232,7 @@ export function NotificationsDropdown() {
                   }`}
                 >
                   <div className="flex gap-3">
-                    <span className="text-2xl flex-shrink-0">
-                      {getNotificationIcon(notification.type)}
-                    </span>
+                    <span className="text-2xl flex-shrink-0">{getNotificationIcon(notification.type)}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <p className="font-medium text-sm">{notification.title}</p>
@@ -254,9 +240,7 @@ export function NotificationsDropdown() {
                           <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-1" />
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                        {notification.message}
-                      </p>
+                      <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{notification.message}</p>
                       <p className="text-xs text-muted-foreground mt-2">
                         {formatDistanceToNow(new Date(notification.created_at), {
                           addSuffix: true,
