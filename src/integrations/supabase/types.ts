@@ -502,6 +502,8 @@ export type Database = {
           id: string
           is_shared_with_all_clients: boolean | null
           organization_id: string
+          reminder_24h_sent: boolean | null
+          reminder_24h_sent_at: string | null
           signature_fields: Json | null
           signed_at: string | null
           status: string
@@ -525,6 +527,8 @@ export type Database = {
           id?: string
           is_shared_with_all_clients?: boolean | null
           organization_id: string
+          reminder_24h_sent?: boolean | null
+          reminder_24h_sent_at?: string | null
           signature_fields?: Json | null
           signed_at?: string | null
           status?: string
@@ -548,6 +552,8 @@ export type Database = {
           id?: string
           is_shared_with_all_clients?: boolean | null
           organization_id?: string
+          reminder_24h_sent?: boolean | null
+          reminder_24h_sent_at?: string | null
           signature_fields?: Json | null
           signed_at?: string | null
           status?: string
@@ -605,6 +611,94 @@ export type Database = {
         }
         Relationships: []
       }
+      email_queue: {
+        Row: {
+          body_html: string
+          body_text: string | null
+          client_id: string | null
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          organization_id: string
+          priority: number | null
+          recipient_email: string
+          recipient_name: string | null
+          retry_count: number | null
+          sent_at: string | null
+          status: string | null
+          subject: string
+          template_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          body_html: string
+          body_text?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id: string
+          priority?: number | null
+          recipient_email: string
+          recipient_name?: string | null
+          retry_count?: number | null
+          sent_at?: string | null
+          status?: string | null
+          subject: string
+          template_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          body_html?: string
+          body_text?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string
+          priority?: number | null
+          recipient_email?: string
+          recipient_name?: string | null
+          retry_count?: number | null
+          sent_at?: string | null
+          status?: string | null
+          subject?: string
+          template_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_queue_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_queue_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_queue_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_templates: {
         Row: {
           available_variables: Json
@@ -614,9 +708,11 @@ export type Database = {
           created_at: string
           created_by: string | null
           deleted_at: string | null
+          entity_type: string | null
           id: string
           is_default: boolean
           name: string
+          notification_type: string | null
           organization_id: string
           subject: string
           updated_at: string
@@ -630,9 +726,11 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          entity_type?: string | null
           id?: string
           is_default?: boolean
           name: string
+          notification_type?: string | null
           organization_id: string
           subject: string
           updated_at?: string
@@ -646,9 +744,11 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
+          entity_type?: string | null
           id?: string
           is_default?: boolean
           name?: string
+          notification_type?: string | null
           organization_id?: string
           subject?: string
           updated_at?: string
@@ -669,6 +769,8 @@ export type Database = {
           ip_address: unknown
           organization_id: string
           referrer: string | null
+          reminder_24h_sent: boolean | null
+          reminder_24h_sent_at: string | null
           responses: Json
           review_notes: string | null
           reviewed_at: string | null
@@ -690,6 +792,8 @@ export type Database = {
           ip_address?: unknown
           organization_id: string
           referrer?: string | null
+          reminder_24h_sent?: boolean | null
+          reminder_24h_sent_at?: string | null
           responses?: Json
           review_notes?: string | null
           reviewed_at?: string | null
@@ -711,6 +815,8 @@ export type Database = {
           ip_address?: unknown
           organization_id?: string
           referrer?: string | null
+          reminder_24h_sent?: boolean | null
+          reminder_24h_sent_at?: string | null
           responses?: Json
           review_notes?: string | null
           reviewed_at?: string | null
@@ -817,6 +923,8 @@ export type Database = {
           is_shared_with_all_clients: boolean | null
           organization_id: string
           paid_at: string | null
+          reminder_24h_sent: boolean | null
+          reminder_24h_sent_at: string | null
           status: string
           updated_at: string
         }
@@ -833,6 +941,8 @@ export type Database = {
           is_shared_with_all_clients?: boolean | null
           organization_id: string
           paid_at?: string | null
+          reminder_24h_sent?: boolean | null
+          reminder_24h_sent_at?: string | null
           status?: string
           updated_at?: string
         }
@@ -849,6 +959,8 @@ export type Database = {
           is_shared_with_all_clients?: boolean | null
           organization_id?: string
           paid_at?: string | null
+          reminder_24h_sent?: boolean | null
+          reminder_24h_sent_at?: string | null
           status?: string
           updated_at?: string
         }
@@ -894,6 +1006,8 @@ export type Database = {
           meeting_link: string | null
           notes: string | null
           organization_id: string
+          reminder_24h_sent: boolean | null
+          reminder_24h_sent_at: string | null
           scheduled_at: string
           status: string
           title: string
@@ -909,6 +1023,8 @@ export type Database = {
           meeting_link?: string | null
           notes?: string | null
           organization_id: string
+          reminder_24h_sent?: boolean | null
+          reminder_24h_sent_at?: string | null
           scheduled_at: string
           status?: string
           title: string
@@ -924,6 +1040,8 @@ export type Database = {
           meeting_link?: string | null
           notes?: string | null
           organization_id?: string
+          reminder_24h_sent?: boolean | null
+          reminder_24h_sent_at?: string | null
           scheduled_at?: string
           status?: string
           title?: string
@@ -1143,40 +1261,58 @@ export type Database = {
           client_id: string
           created_at: string
           email_status: string
+          entity_id: string | null
+          entity_type: string | null
           error_message: string | null
           id: string
           metadata: Json | null
           organization_id: string
+          recipient_email: string | null
+          recipient_name: string | null
           reminder_type: string
           retry_count: number
           sent_at: string
-          submission_id: string
+          status: string | null
+          submission_id: string | null
+          template_id: string | null
         }
         Insert: {
           client_id: string
           created_at?: string
           email_status?: string
+          entity_id?: string | null
+          entity_type?: string | null
           error_message?: string | null
           id?: string
           metadata?: Json | null
           organization_id: string
+          recipient_email?: string | null
+          recipient_name?: string | null
           reminder_type: string
           retry_count?: number
           sent_at?: string
-          submission_id: string
+          status?: string | null
+          submission_id?: string | null
+          template_id?: string | null
         }
         Update: {
           client_id?: string
           created_at?: string
           email_status?: string
+          entity_id?: string | null
+          entity_type?: string | null
           error_message?: string | null
           id?: string
           metadata?: Json | null
           organization_id?: string
+          recipient_email?: string | null
+          recipient_name?: string | null
           reminder_type?: string
           retry_count?: number
           sent_at?: string
-          submission_id?: string
+          status?: string | null
+          submission_id?: string | null
+          template_id?: string | null
         }
         Relationships: [
           {
@@ -1187,10 +1323,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "reminder_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "reminder_logs_submission_id_fkey"
             columns: ["submission_id"]
             isOneToOne: false
             referencedRelation: "form_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminder_logs_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "email_templates"
             referencedColumns: ["id"]
           },
         ]
@@ -1276,6 +1426,8 @@ export type Database = {
           id: string
           is_shared_with_all_clients: boolean | null
           organization_id: string
+          reminder_24h_sent: boolean | null
+          reminder_24h_sent_at: string | null
           status: string | null
           title: string
           updated_at: string | null
@@ -1291,6 +1443,8 @@ export type Database = {
           id?: string
           is_shared_with_all_clients?: boolean | null
           organization_id: string
+          reminder_24h_sent?: boolean | null
+          reminder_24h_sent_at?: string | null
           status?: string | null
           title: string
           updated_at?: string | null
@@ -1306,6 +1460,8 @@ export type Database = {
           id?: string
           is_shared_with_all_clients?: boolean | null
           organization_id?: string
+          reminder_24h_sent?: boolean | null
+          reminder_24h_sent_at?: string | null
           status?: string | null
           title?: string
           updated_at?: string | null
@@ -1494,6 +1650,19 @@ export type Database = {
         Args: { user_id: string }
         Returns: number
       }
+      get_items_needing_reminders: {
+        Args: never
+        Returns: {
+          client_email: string
+          client_id: string
+          client_name: string
+          due_time: string
+          entity_id: string
+          entity_type: string
+          organization_id: string
+          title: string
+        }[]
+      }
       get_submissions_needing_reminders: {
         Args: never
         Returns: {
@@ -1545,6 +1714,19 @@ export type Database = {
       is_organization_owner: {
         Args: { org_id: string; user_id: string }
         Returns: boolean
+      }
+      queue_notification: {
+        Args: {
+          p_client_id: string
+          p_entity_id: string
+          p_entity_type: string
+          p_metadata?: Json
+          p_notification_type: string
+          p_organization_id: string
+          p_recipient_email: string
+          p_recipient_name: string
+        }
+        Returns: string
       }
       use_early_access_invite: { Args: { invite_code: string }; Returns: Json }
       user_can_access_org_data: { Args: { org_id: string }; Returns: boolean }
