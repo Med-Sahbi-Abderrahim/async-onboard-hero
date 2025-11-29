@@ -43,7 +43,7 @@ export function RequestRescheduleModal({
       const { error } = await supabase.from("client_requests").insert({
         client_id: clientId,
         organization_id: organizationId,
-        request_type: "meeting_reschedule",
+        request_type: "change_request",
         title: `Reschedule: ${meetingTitle}`,
         description: formData.reason,
         status: "pending",
