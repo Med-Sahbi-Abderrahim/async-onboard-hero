@@ -10,6 +10,61 @@ import { useClientData } from "@/hooks/useClientData";
 import { RequestMeetingModal } from "@/components/client-portal/RequestMeetingModal";
 import { RequestRescheduleModal } from "@/components/client-portal/RequestRescheduleModal";
 
+import { triggerOrgNotification } from "@/lib/notifications";
+
+export async function handleRequestMeeting({
+  title,
+  description,
+  preferredDate,
+  preferredTime,
+  durationMinutes,
+  clientId,
+  organizationId,
+}: {
+  title: string;
+  description?: string;
+  preferredDate: string;
+  preferredTime: string;
+  durationMinutes: string;
+  clientId: string;
+  organizationId: string;
+}) {
+  try {
+    // 1. Insert into client_requests
+    const { data: request, error: insertError } = await supabase
+      .from("client_requests")
+      .insert({
+        client_id: clientId,
+        organization_id: organizationId,
+        request_type: "meeting",
+        title: `Meeting Request: ${title}`,
+        description: description,
+        status: "pending",
+        metadata: {
+          preferred_date: preferredDate,
+          preferred_time: preferredTime,
+          duration_minutes: durationMinutes,
+        },
+      })
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+
+    // 2. Trigger org notification email
+    await triggerOrgNotification(organizationId, clientId, "meeting", request.id, `Meeting Request: ${title}`, {
+      preferred_date: preferredDate,
+      preferred_time: preferredTime,
+      duration_minutes: durationMinutes,
+      description: description,
+    });
+
+    return { success: true, requestId: request.id };
+  } catch (error) {
+    console.error("Error requesting meeting:", error);
+    throw error;
+  }
+}
 export default function ClientPortalMeetings() {
   const navigate = useNavigate();
   const { orgId } = useParams<{ orgId: string }>();
