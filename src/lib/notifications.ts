@@ -1,364 +1,217 @@
+// lib/notifications.ts
+// Helper functions for triggering edge function notifications
+
 import { supabase } from "@/integrations/supabase/client";
 
-// ============================================
-// HELPER FUNCTION: Queue notification
-// ============================================
-async function queueNotification(
-  entityType: string, // 'meeting', 'task', 'contract', 'invoice'
-  entityId: string, // UUID of the created entity
-  notificationType: string, // 'immediate' or 'reminder'
-  recipientEmail: string,
-  recipientName: string,
+interface OrgNotificationResult {
+  success: boolean;
+  notificationsSent?: number;
+  emailId?: string;
+  error?: string;
+  reason?: string;
+}
+
+interface ClientNotificationResult {
+  success: boolean;
+  emailId?: string;
+  error?: string;
+  reason?: string;
+}
+
+/**
+ * Triggers a notification to organization admins/owners about a client request
+ * 
+ * @param organizationId - ID of the organization
+ * @param clientId - ID of the client who made the request
+ * @param requestType - Type of request (meeting, contract, etc.)
+ * @param requestId - ID of the client request
+ * @param title - Title/subject of the request
+ * @param message - Optional message/description
+ * @param details - Additional structured data
+ * @returns Promise with notification result
+ */
+export async function triggerOrgNotification(
   organizationId: string,
   clientId: string,
-  metadata: Record<string, any>
-) {
+  requestType: string,
+  requestId: string,
+  title: string,
+  message?: string,
+  details: Record<string, any> = {}
+): Promise<OrgNotificationResult> {
   try {
-    const { data, error } = await supabase.rpc("queue_notification", {
-      p_entity_type: entityType,
-      p_entity_id: entityId,
-      p_notification_type: notificationType,
-      p_recipient_email: recipientEmail,
-      p_recipient_name: recipientName,
-      p_organization_id: organizationId,
-      p_client_id: clientId,
-      p_metadata: metadata,
+    const { data, error } = await supabase.functions.invoke("send-org-notification", {
+      body: {
+        organizationId,
+        clientId,
+        requestType,
+        requestId,
+        title,
+        message,
+        details,
+      },
     });
 
     if (error) {
-      console.error("Error queuing notification:", error);
-      return false;
+      console.error("Error invoking org notification function:", error);
+      return {
+        success: false,
+        error: error.message || "Failed to invoke notification function",
+      };
     }
 
-    console.log("✅ Notification queued:", data);
-    return true;
-  } catch (error) {
-    console.error("Unexpected error:", error);
-    return false;
-  }
-}
-
-// ============================================
-// EXAMPLE 1: Create Meeting Modal
-// ============================================
-export async function handleCreateMeeting(formData: {
-  title: string;
-  date: string;
-  time: string;
-  duration: string;
-  meetingLink: string;
-  clientId: string;
-}) {
-  try {
-    // Get current user and organization
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    const { data: organization } = await supabase
-      .from("organizations")
-      .select("id, name")
-      .limit(1)
-      .single();
-
-    if (!user || !organization) {
-      console.error("User or organization not found");
-      return;
+    if (!data.success) {
+      console.warn("Org notification not sent:", data.reason || data.error);
+      return {
+        success: false,
+        reason: data.reason,
+        error: data.error,
+      };
     }
 
-    // Get client details
-    const { data: client, error: clientError } = await supabase
-      .from("clients")
-      .select("full_name, email")
-      .eq("id", formData.clientId)
-      .single();
+    console.log(
+      `Org notification sent successfully to ${data.notificationsSent} member(s), emailId: ${data.emailId}`
+    );
 
-    if (clientError || !client) {
-      console.error("Client not found");
-      return;
+    return {
+      success: true,
+      notificationsSent: data.notificationsSent,
+      emailId: data.emailId,
+    };
+  } catch (error) {
+    console.error("Unexpected error triggering org notification:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Triggers a notification to a client about their request status
+ * 
+ * @param organizationId - ID of the organization
+ * @param clientId - ID of the client receiving the notification
+ * @param requestId - ID of the client request being updated
+ * @param actionType - Type of action (resolved, rejected, seen)
+ * @param title - Title of the original request
+ * @param message - Response message to the client
+ * @param details - Additional structured data
+ * @returns Promise with notification result
+ */
+export async function triggerClientNotification(
+  organizationId: string,
+  clientId: string,
+  requestId: string,
+  actionType: string,
+  title: string,
+  message: string,
+  details: Record<string, any> = {}
+): Promise<ClientNotificationResult> {
+  try {
+    const { data, error } = await supabase.functions.invoke("send-client-notification", {
+      body: {
+        organizationId,
+        clientId,
+        requestId,
+        actionType,
+        title,
+        message,
+        details,
+      },
+    });
+
+    if (error) {
+      console.error("Error invoking client notification function:", error);
+      return {
+        success: false,
+        error: error.message || "Failed to invoke notification function",
+      };
     }
 
-    // 1. Create the meeting in your database
-    const { data: meeting, error: meetingError } = await supabase
-      .from("meetings")
-      .insert([{
-        title: formData.title,
-        scheduled_at: new Date(`${formData.date}T${formData.time}`).toISOString(),
-        duration_minutes: parseInt(formData.duration),
-        meeting_link: formData.meetingLink,
-        client_id: formData.clientId,
-        organization_id: organization.id,
-      }])
-      .select()
-      .single();
-
-    if (meetingError || !meeting) {
-      console.error("Error creating meeting:", meetingError);
-      return;
+    if (!data.success) {
+      console.warn("Client notification not sent:", data.reason || data.error);
+      return {
+        success: false,
+        reason: data.reason,
+        error: data.error,
+      };
     }
 
-    // 2. Queue immediate notification to CLIENT
-    await queueNotification(
-      "meeting",
-      meeting.id,
-      "immediate",
-      client.email,
-      client.full_name,
-      organization.id,
-      formData.clientId,
-      {
-        meeting_title: formData.title,
-        meeting_date: formData.date,
-        meeting_time: formData.time,
-        meeting_duration: formData.duration,
-        meeting_link: formData.meetingLink,
-        organization_name: organization.name,
-        client_name: client.full_name,
-      }
-    );
+    console.log(`Client notification sent successfully, emailId: ${data.emailId}`);
 
-    // 3. Queue reminder notification to BOTH (24h before)
-    // You might store this separately or calculate it based on date/time
-    // For now, we're queueing it - the Edge Function will handle the delay
-
-    console.log("✅ Meeting created and notifications queued");
+    return {
+      success: true,
+      emailId: data.emailId,
+    };
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Unexpected error triggering client notification:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
-// ============================================
-// EXAMPLE 2: Create Task Modal
-// ============================================
-export async function handleCreateTask(formData: {
-  title: string;
-  description: string;
-  dueDate: string;
-  assignedToClientId: string;
-}) {
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    const { data: organization } = await supabase
-      .from("organizations")
-      .select("id")
-      .limit(1)
-      .single();
-
-    const { data: client } = await supabase
-      .from("clients")
-      .select("full_name, email")
-      .eq("id", formData.assignedToClientId)
-      .single();
-
-    if (!user || !organization || !client) return;
-
-    // Create task
-    const { data: task, error: taskError } = await supabase
-      .from("tasks")
-      .insert([{
-        title: formData.title,
-        description: formData.description,
-        due_date: formData.dueDate,
-        client_id: formData.assignedToClientId,
-        organization_id: organization.id,
-      }])
-      .select()
-      .single();
-
-    if (taskError || !task) return;
-
-    // Queue notification to client
-    await queueNotification(
-      "task",
-      task.id,
-      "immediate",
-      client.email,
-      client.full_name,
-      organization.id,
-      formData.assignedToClientId,
-      {
-        task_title: formData.title,
-        task_description: formData.description,
-        task_due_date: formData.dueDate,
-      }
-    );
-
-    console.log("✅ Task created and notification queued");
-  } catch (error) {
-    console.error("Error:", error);
-  }
+/**
+ * Convenience wrapper for sending "seen" notifications to clients
+ */
+export async function notifyClientRequestSeen(
+  organizationId: string,
+  clientId: string,
+  requestId: string,
+  requestTitle: string
+): Promise<ClientNotificationResult> {
+  return triggerClientNotification(
+    organizationId,
+    clientId,
+    requestId,
+    "seen",
+    requestTitle,
+    "Your request has been reviewed by our team. We'll get back to you soon with more details."
+  );
 }
 
-// ============================================
-// EXAMPLE 3: Create Contract Modal
-// ============================================
-export async function handleCreateContract(formData: {
-  name: string;
-  description: string;
-  clientId: string;
-  dueDate: string;
-}) {
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    const { data: organization } = await supabase
-      .from("organizations")
-      .select("id")
-      .limit(1)
-      .single();
-
-    const { data: client } = await supabase
-      .from("clients")
-      .select("full_name, email")
-      .eq("id", formData.clientId)
-      .single();
-
-    if (!user || !organization || !client) return;
-
-    // Create contract
-    const { data: contract, error: contractError } = await supabase
-      .from("contracts")
-      .insert([{
-        title: formData.name,
-        description: formData.description,
-        client_id: formData.clientId,
-        organization_id: organization.id,
-        effective_date: formData.dueDate,
-      }])
-      .select()
-      .single();
-
-    if (contractError || !contract) return;
-
-    // Queue notification to client
-    await queueNotification(
-      "contract",
-      contract.id,
-      "immediate",
-      client.email,
-      client.full_name,
-      organization.id,
-      formData.clientId,
-      {
-        contract_name: formData.name,
-        contract_description: formData.description,
-        contract_due_date: formData.dueDate,
-      }
-    );
-
-    console.log("✅ Contract created and notification queued");
-  } catch (error) {
-    console.error("Error:", error);
-  }
+/**
+ * Convenience wrapper for sending "resolved" notifications to clients
+ */
+export async function notifyClientRequestResolved(
+  organizationId: string,
+  clientId: string,
+  requestId: string,
+  requestTitle: string,
+  resolutionMessage: string,
+  details?: Record<string, any>
+): Promise<ClientNotificationResult> {
+  return triggerClientNotification(
+    organizationId,
+    clientId,
+    requestId,
+    "resolved",
+    requestTitle,
+    resolutionMessage,
+    details
+  );
 }
 
-// ============================================
-// EXAMPLE 4: Create Invoice Modal
-// ============================================
-export async function handleCreateInvoice(formData: {
-  invoiceNumber: string;
-  amount: number;
-  dueDate: string;
-  clientId: string;
-  currency?: string;
-  description?: string | null;
-}) {
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    const { data: organization } = await supabase
-      .from("organizations")
-      .select("id")
-      .limit(1)
-      .single();
-
-    const { data: client } = await supabase
-      .from("clients")
-      .select("full_name, email")
-      .eq("id", formData.clientId)
-      .single();
-
-    if (!user || !organization || !client) return;
-
-    // Create invoice
-    const { data: invoice, error: invoiceError } = await supabase
-      .from("invoices")
-      .insert([{
-        invoice_number: formData.invoiceNumber,
-        amount_cents: formData.amount * 100,
-        due_date: formData.dueDate,
-        client_id: formData.clientId,
-        organization_id: organization.id,
-        currency: formData.currency || "USD",
-        description: formData.description || null,
-      }])
-      .select()
-      .single();
-
-    if (invoiceError || !invoice) return;
-
-    // Queue notification to client
-    await queueNotification(
-      "invoice",
-      invoice.id,
-      "immediate",
-      client.email,
-      client.full_name,
-      organization.id,
-      formData.clientId,
-      {
-        invoice_number: formData.invoiceNumber,
-        invoice_amount: formData.amount,
-        invoice_due_date: formData.dueDate,
-      }
-    );
-
-    console.log("✅ Invoice created and notification queued");
-  } catch (error) {
-    console.error("Error:", error);
-  }
-}
-
-// ============================================
-// EXAMPLE 5: Create File Modal
-// ============================================
-export async function handleCreateFile({
-  clientId,
-  organizationId,
-  fileId,
-  fileName,
-  uploadedBy,
-}) {
-  try {
-    // 1. Get client info
-    const { data: client, error: clientError } = await supabase
-      .from("clients")
-      .select("email, full_name")
-      .eq("id", clientId)
-      .single();
-
-    if (clientError) throw clientError;
-
-    // 2. Queue notification email to client
-    await queueNotification(
-      "file",
-      fileId,
-      "immediate",
-      client.email,
-      client.full_name,
-      organizationId,
-      clientId,
-      {
-        file_name: fileName,
-      }
-    );
-
-    return { success: true };
-  } catch (err) {
-    console.error("Error in handleCreateFile:", err);
-    return { success: false, error: err };
-  }
+/**
+ * Convenience wrapper for sending "rejected" notifications to clients
+ */
+export async function notifyClientRequestRejected(
+  organizationId: string,
+  clientId: string,
+  requestId: string,
+  requestTitle: string,
+  rejectionReason: string,
+  details?: Record<string, any>
+): Promise<ClientNotificationResult> {
+  return triggerClientNotification(
+    organizationId,
+    clientId,
+    requestId,
+    "rejected",
+    requestTitle,
+    `Your request has been declined. Reason: ${rejectionReason}`,
+    details
+  );
 }
