@@ -390,7 +390,7 @@ Clients miss deadlines because they don't know what you need. You push back laun
       </motion.section>
 
       {/* Features Section */}
-      <motion.section id="features" className="py-20 sm:py-32" {...fadeInUp}>
+      <motion.section id="features" className="py-20 mx-0 my-0 sm:py-[75px]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="mx-auto max-w-3xl text-center mb-16" initial={{
           opacity: 0,
@@ -542,107 +542,10 @@ Clients miss deadlines because they don't know what you need. You push back laun
       </motion.section>
 
       {/* Comparison Section */}
-      <motion.section className="gradient-accent py-20 sm:py-32" {...fadeInUp}>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div className="mx-auto max-w-3xl text-center mb-16" initial={{
-          opacity: 0,
-          y: 20
-        }} whileInView={{
-          opacity: 1,
-          y: 0
-        }} viewport={{
-          once: true
-        }} transition={{
-          duration: 0.5
-        }}>
-            <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
-              One portal replaces your entire stack.
-            </h2>
-          </motion.div>
-
-          <motion.div className="mx-auto max-w-5xl grid gap-8 md:grid-cols-2" variants={staggerContainer} initial="initial" whileInView="whileInView" viewport={{
-          once: true
-        }}>
-            {/* Before Kenly */}
-            <motion.div variants={staggerItem}>
-              <Card className="h-full border-2">
-                <CardContent className="p-8">
-                  <h3 className="mb-6 text-xl font-semibold text-center">Before Kenly</h3>
-                  <p className="mb-6 text-center text-muted-foreground">
-                    7 tools. 12 browser tabs. Endless follow-ups.
-                  </p>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-muted-foreground line-through">
-                      <span className="text-sm">Typeform for forms</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-muted-foreground line-through">
-                      <span className="text-sm">Google Drive for files</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-muted-foreground line-through">
-                      <span className="text-sm">Email for reminders</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-muted-foreground line-through">
-                      <span className="text-sm">DocuSign for contracts</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-muted-foreground line-through">
-                      <span className="text-sm">Notion for tasks</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-muted-foreground line-through">
-                      <span className="text-sm">Slack for messaging</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-muted-foreground line-through">
-                      <span className="text-sm">Manual follow-ups</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* With Kenly */}
-            <motion.div variants={staggerItem}>
-              <Card className="h-full border-2 border-primary bg-primary/5">
-                <CardContent className="p-8">
-                  <h3 className="mb-6 text-xl font-semibold text-center">With Kenly</h3>
-                  <p className="mb-6 text-center text-muted-foreground">One portal. One link. Zero chasing.</p>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                      <span className="text-sm font-medium">Smart forms</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                      <span className="text-sm font-medium">Secure file vault</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                      <span className="text-sm font-medium">Automated reminders</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                      <span className="text-sm font-medium">Built-in e-signature</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                      <span className="text-sm font-medium">Task tracking</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                      <span className="text-sm font-medium">Client messaging</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                      <span className="text-sm font-medium">Full automation</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </motion.div>
-        </div>
-      </motion.section>
+      
 
       {/* Social Proof / Testimonials */}
-      <motion.section className="py-20 sm:py-32" {...fadeInUp}>
+      <motion.section className="py-20 sm:py-[75px]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="mx-auto max-w-3xl text-center mb-16" initial={{
           opacity: 0,
@@ -1187,12 +1090,9 @@ Clients miss deadlines because they don't know what you need. You push back laun
             {/* Column 4: Security */}
             <div>
               <h3 className="font-semibold mb-4">Security</h3>
-              <p className="text-sm text-muted-foreground mb-3">Enterprise-grade security</p>
+              
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <Shield className="h-4 w-4 shrink-0 mt-0.5" />
-                  <span>Built on Supabase with full RLS</span>
-                </li>
+                
                 <li className="flex items-start gap-2">
                   <Shield className="h-4 w-4 shrink-0 mt-0.5" />
                   <span>Multi-tenant isolation</span>
@@ -1207,7 +1107,7 @@ Clients miss deadlines because they don't know what you need. You push back laun
                 </li>
                 <li className="flex items-start gap-2">
                   <Shield className="h-4 w-4 shrink-0 mt-0.5" />
-                  <span>SOC2 compliance in progress</span>
+                  <span>GDPR compliance in progress</span>
                 </li>
               </ul>
             </div>
