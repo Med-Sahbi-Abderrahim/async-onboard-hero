@@ -47,17 +47,9 @@ Deno.serve(async (req) => {
     });
 
     // 1. Get organization members (admins and owners)
-    const { data: members, error: membersError } = await supabase
+    const { data: memberRecords, error: membersError } = await supabase
       .from("organization_members")
-      .select(`
-        user_id,
-        role,
-        users!inner(
-          id,
-          email,
-          full_name
-        )
-      `)
+      .select("user_id, role")
       .eq("organization_id", organizationId)
       .in("role", ["owner", "admin"])
       .is("deleted_at", null);
@@ -76,7 +68,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (!members || members.length === 0) {
+    if (!memberRecords || memberRecords.length === 0) {
       console.warn("No admin/owner members found for organization");
       return new Response(
         JSON.stringify({
@@ -90,7 +82,34 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 2. Get client info
+    // 2. Get user details for those members
+    const userIds = memberRecords.map(m => m.user_id);
+    const { data: users, error: usersError } = await supabase
+      .from("users")
+      .select("id, email, full_name")
+      .in("id", userIds);
+
+    if (usersError) {
+      console.error("Error fetching users:", usersError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: `Users query failed: ${usersError.message}`,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Combine member and user data
+    const members = memberRecords.map(member => ({
+      ...member,
+      user: users?.find(u => u.id === member.user_id)
+    })).filter(m => m.user);
+
+    // 3. Get client info
     const { data: client, error: clientError } = await supabase
       .from("clients")
       .select("full_name, email")
@@ -113,7 +132,7 @@ Deno.serve(async (req) => {
 
     const clientName = client?.full_name || client?.email || "A client";
 
-    // 3. Create in-app notifications for each admin/owner
+    // 4. Create in-app notifications for each admin/owner
     let notificationsSent = 0;
     for (const member of members) {
       const { error: notifError } = await supabase
@@ -147,10 +166,10 @@ Deno.serve(async (req) => {
       `Created ${notificationsSent} notifications for org members`
     );
 
-    // 4. Queue email notification (optional - send to first admin/owner)
+    // 5. Queue email notification (optional - send to first admin/owner)
     const firstMember = members[0];
-    const recipientEmail = (firstMember.users as any).email;
-    const recipientName = (firstMember.users as any).full_name || recipientEmail;
+    const recipientEmail = firstMember.user?.email;
+    const recipientName = firstMember.user?.full_name || recipientEmail;
 
     const emailBody = `
       <h2>New Client Request</h2>
