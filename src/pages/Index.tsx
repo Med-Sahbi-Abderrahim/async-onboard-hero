@@ -274,7 +274,8 @@ const Index = () => {
         }}>
             <Card className="border-2 border-destructive/20 bg-destructive/5">
               <CardContent className="p-8">
-                <p className="text-lg leading-relaxed">Your team wastes 8+ hours every week chasing documents across multiple platforms. Clients miss deadlines because they don't know what you need. You push back launch dates because someone forgot to upload a logo.<strong>8+ hours every week</strong> chasing documents across Gmail, Drive, DocuSign,
+                <p className="text-lg leading-relaxed">Your team wastes 8+ hours every week chasing documents across multiple platforms. 
+Clients miss deadlines because they don't know what you need. You push back launch dates because someone forgot to upload a logo.8+ hours every week chasing documents across multiple platforms. Clients miss deadlines because they don't know what you need. You push back launch dates because someone forgot to upload a logo.<strong>8+ hours every week</strong> chasing documents across Gmail, Drive, DocuSign,
                   and Typeform. Clients miss deadlines because they don't know what you need. You push back launch dates
                   because someone forgot to upload a logo.
                 </p>
