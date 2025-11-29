@@ -1,42 +1,16 @@
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { TaskList } from "@/components/tasks/TaskList";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BrandedFooter } from "@/components/BrandedFooter";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { useClientData } from "@/hooks/useClientData";
 
 export default function ClientPortalTasks() {
   const { orgId } = useParams<{ orgId: string }>();
-  const [clientId, setClientId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const getClientId = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        // Get the client record ID using user_id
-        const { data: clientData } = await supabase
-          .from("clients")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("organization_id", orgId)
-          .is("deleted_at", null)
-          .single();
-
-        if (clientData) {
-          setClientId(clientData.id);
-        }
-      }
-      setLoading(false);
-    };
-    getClientId();
-  }, [orgId]);
+  const { client, loading } = useClientData(orgId);
 
   if (loading) {
     return (
@@ -56,7 +30,7 @@ export default function ClientPortalTasks() {
     );
   }
 
-  if (!clientId || !orgId) {
+  if (!client || !orgId) {
     return (
       <div className="container mx-auto p-6">
         <Card>
@@ -88,11 +62,11 @@ export default function ClientPortalTasks() {
         </CardHeader>
 
         <CardContent>
-          <TaskList clientId={clientId} organizationId={orgId} isClient={true} />
+          <TaskList clientId={client.id} organizationId={orgId} isClient={true} />
         </CardContent>
       </Card>
 
-      {orgId && <BrandedFooter organizationId={orgId} />}
+      {client && <BrandedFooter organizationId={client.organization_id} />}
     </div>
   );
 }

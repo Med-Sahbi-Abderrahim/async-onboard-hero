@@ -1,43 +1,21 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, FileQuestion } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { BrandedFooter } from "@/components/BrandedFooter";
 import { useContracts } from "@/hooks/useSharedData";
 import { ContractViewer } from "@/components/contracts/ContractViewer";
 import { ContractRequestModal } from "@/components/contracts/ContractRequestModal";
+import { useClientData } from "@/hooks/useClientData";
 
 export default function ClientPortalContracts() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [clientId, setClientId] = useState<string | null>(null);
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const { orgId } = useParams<{ orgId: string }>();
   const [showRequestModal, setShowRequestModal] = useState(false);
-  const { contracts, loading, refresh } = useContracts(clientId || undefined, organizationId || undefined, true);
-
-  useEffect(() => {
-    loadClientData();
-  }, []);
-
-  const loadClientData = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: clients } = await supabase
-      .from("clients")
-      .select("id, organization_id")
-      .or(`user_id.eq.${user.id},email.ilike.${user.email}`)
-      .is("deleted_at", null);
-
-    if (clients && clients.length > 0) {
-      setClientId(clients[0].id);
-      setOrganizationId(clients[0].organization_id);
-    }
-  };
+  const { client } = useClientData(orgId);
+  const { contracts, loading, refresh } = useContracts(client?.id, client?.organization_id, true);
 
   return (
     <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
@@ -81,14 +59,14 @@ export default function ClientPortalContracts() {
         </div>
       </div>
 
-      {organizationId && <BrandedFooter organizationId={organizationId} />}
+      {client && <BrandedFooter organizationId={client.organization_id} />}
 
-      {showRequestModal && clientId && organizationId && (
+      {showRequestModal && client && (
         <ContractRequestModal
           open={showRequestModal}
           onOpenChange={setShowRequestModal}
-          clientId={clientId}
-          organizationId={organizationId}
+          clientId={client.id}
+          organizationId={client.organization_id}
           onSuccess={() => {
             setShowRequestModal(false);
             toast({

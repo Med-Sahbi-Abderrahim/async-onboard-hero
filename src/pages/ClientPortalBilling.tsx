@@ -1,40 +1,20 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CreditCard, ArrowLeft, CheckCircle, Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { BrandedFooter } from "@/components/BrandedFooter";
 import { AddInvoiceModal } from "@/components/SharedModals";
 import { useInvoices } from "@/hooks/useSharedData";
+import { useClientData } from "@/hooks/useClientData";
 
 export default function ClientPortalBilling() {
   const navigate = useNavigate();
-  const [clientId, setClientId] = useState<string | null>(null);
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const { orgId } = useParams<{ orgId: string }>();
   const [showAddModal, setShowAddModal] = useState(false);
-  const { invoices, loading } = useInvoices(clientId || undefined, organizationId || undefined, true);
-
-  useEffect(() => {
-    loadClient();
-  }, []);
-
-  const loadClient = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data: clients } = await supabase
-      .from("clients")
-      .select("id, organization_id")
-      .or(`user_id.eq.${user.id},email.ilike.${user.email}`)
-      .is("deleted_at", null);
-
-    if (!clients || clients.length === 0) return;
-
-    setClientId(clients[0].id);
-    setOrganizationId(clients[0].organization_id);
-  };
+  const { client } = useClientData(orgId);
+  const { invoices } = useInvoices(client?.id, client?.organization_id, true);
 
   const statusColors: Record<string, string> = {
     pending: "bg-pending",
@@ -138,12 +118,12 @@ export default function ClientPortalBilling() {
         </div>
       </div>
 
-      {organizationId && <BrandedFooter organizationId={organizationId} />}
+      {client && <BrandedFooter organizationId={client.organization_id} />}
 
-      {showAddModal && clientId && organizationId && (
+      {showAddModal && client && (
         <AddInvoiceModal
-          clientId={clientId}
-          organizationId={organizationId}
+          clientId={client.id}
+          organizationId={client.organization_id}
           onClose={() => setShowAddModal(false)}
           onSuccess={() => {
             setShowAddModal(false);
