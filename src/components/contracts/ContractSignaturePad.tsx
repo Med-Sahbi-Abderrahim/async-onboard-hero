@@ -129,7 +129,6 @@ export function EnhancedSignaturePad({
           signature_data: signatureData,
           signed_at: new Date().toISOString(),
           signer_user_id: user?.id,
-          signature_status: "completed",
         })
         .eq("id", signatureRequirementId);
 
@@ -138,17 +137,17 @@ export function EnhancedSignaturePad({
       // Check if all signatures are complete
       const { data: allSignatures } = await supabase
         .from("contract_signatures")
-        .select("signature_status, is_required")
+        .select("signed_at, is_required")
         .eq("contract_id", contractId);
 
-      const allComplete = allSignatures?.every((sig) => !sig.is_required || sig.signature_status === "completed");
+      const allComplete = allSignatures?.every((sig) => !sig.is_required || sig.signed_at);
 
       // If all signatures complete, update contract status
       if (allComplete) {
         await supabase
           .from("contracts")
           .update({
-            workflow_status: "signed",
+            status: "signed",
             signed_at: new Date().toISOString(),
           })
           .eq("id", contractId);

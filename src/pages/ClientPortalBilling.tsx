@@ -1,18 +1,15 @@
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, ArrowLeft, CheckCircle, Plus } from "lucide-react";
+import { CreditCard, ArrowLeft, CheckCircle } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BrandedFooter } from "@/components/BrandedFooter";
-import { AddInvoiceModal } from "@/components/SharedModals";
 import { useInvoices } from "@/hooks/useSharedData";
 import { useClientData } from "@/hooks/useClientData";
 
 export default function ClientPortalBilling() {
   const navigate = useNavigate();
   const { orgId } = useParams<{ orgId: string }>();
-  const [showAddModal, setShowAddModal] = useState(false);
   const { client } = useClientData(orgId);
   const { invoices } = useInvoices(client?.id, client?.organization_id, true);
 
@@ -43,14 +40,10 @@ export default function ClientPortalBilling() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="flex-1">
+          <div>
             <h1 className="text-3xl md:text-4xl font-bold">Billing</h1>
             <p className="text-sm text-muted-foreground">View your invoices and payments</p>
           </div>
-          <Button onClick={() => setShowAddModal(true)} className="hover:scale-105 transition-transform">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Invoice
-          </Button>
         </div>
 
         <div className="space-y-4">
@@ -119,17 +112,6 @@ export default function ClientPortalBilling() {
       </div>
 
       {client && <BrandedFooter organizationId={client.organization_id} />}
-
-      {showAddModal && client && (
-        <AddInvoiceModal
-          clientId={client.id}
-          organizationId={client.organization_id}
-          onClose={() => setShowAddModal(false)}
-          onSuccess={() => {
-            setShowAddModal(false);
-          }}
-        />
-      )}
     </div>
   );
 }

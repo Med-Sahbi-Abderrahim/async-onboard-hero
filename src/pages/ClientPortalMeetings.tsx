@@ -1,18 +1,15 @@
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ArrowLeft, ExternalLink, Plus } from "lucide-react";
+import { Calendar, ArrowLeft, ExternalLink } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BrandedFooter } from "@/components/BrandedFooter";
-import { AddMeetingModal } from "@/components/SharedModals";
 import { useMeetings } from "@/hooks/useSharedData";
 import { useClientData } from "@/hooks/useClientData";
 
 export default function ClientPortalMeetings() {
   const navigate = useNavigate();
   const { orgId } = useParams<{ orgId: string }>();
-  const [showAddModal, setShowAddModal] = useState(false);
   const { client } = useClientData(orgId);
   const { meetings } = useMeetings(client?.id, client?.organization_id, true);
 
@@ -34,14 +31,10 @@ export default function ClientPortalMeetings() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="flex-1">
+          <div>
             <h1 className="text-3xl md:text-4xl font-bold">Meetings</h1>
             <p className="text-sm text-muted-foreground">Your scheduled meetings and calls</p>
           </div>
-          <Button onClick={() => setShowAddModal(true)} className="hover:scale-105 transition-transform">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Meeting
-          </Button>
         </div>
 
         <div className="space-y-4">
@@ -114,15 +107,6 @@ export default function ClientPortalMeetings() {
       </div>
 
       {client && <BrandedFooter organizationId={client.organization_id} />}
-
-      {showAddModal && client && (
-        <AddMeetingModal
-          clientId={client.id}
-          organizationId={client.organization_id}
-          onClose={() => setShowAddModal(false)}
-          onSuccess={() => setShowAddModal(false)}
-        />
-      )}
     </div>
   );
 }
