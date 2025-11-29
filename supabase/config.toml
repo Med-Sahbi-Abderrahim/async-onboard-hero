@@ -38,3 +38,9 @@ verify_jwt = true
 
 [functions.auto-create-client]
 verify_jwt = true
+
+[functions.send-org-notification]
+verify_jwt = false
+
+[functions.send-client-notification]
+verify_jwt = false
