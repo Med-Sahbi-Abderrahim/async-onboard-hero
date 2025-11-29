@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { FileText, Download, CheckCircle, Clock, Users, DollarSign, Calendar, Loader2 } from "lucide-react";
-import { ContractSignaturePad } from "./ContractSignaturePad";
+import { EnhancedSignaturePad } from "./ContractSignaturePad";
 import { useContractSignatures } from "@/hooks/useContractSignatures";
 
 interface Contract {
@@ -118,34 +118,10 @@ export function ContractViewer({ contract, onRefresh }: ContractViewerProps) {
     }
   };
 
-  const handleSign = async (signatureData: string) => {
-    if (!mySignature) {
-      toast.error("No signature requirement found for you");
-      return;
-    }
-
-    const success = await addSignature(signatureData, mySignature.id);
-    if (success) {
-      setShowSignaturePad(false);
-      await refresh();
-      onRefresh?.();
-
-      // Check if all required signatures are complete
-      const allSigned = signatures.every((sig) => !sig.is_required || sig.signed_at || sig.id === mySignature.id);
-
-      if (allSigned) {
-        // Update contract status to signed
-        await supabase
-          .from("contracts")
-          .update({
-            status: "signed",
-            signed_at: new Date().toISOString(),
-          })
-          .eq("id", contract.id);
-
-        onRefresh?.();
-      }
-    }
+  const handleSignComplete = async () => {
+    setShowSignaturePad(false);
+    await refresh();
+    onRefresh?.();
   };
 
   // Determine if user can sign
@@ -251,7 +227,14 @@ export function ContractViewer({ contract, onRefresh }: ContractViewerProps) {
         )}
 
         {/* Signature Pad */}
-        {showSignaturePad && <ContractSignaturePad onSave={handleSign} onCancel={() => setShowSignaturePad(false)} />}
+        {showSignaturePad && mySignature && (
+          <EnhancedSignaturePad
+            contractId={contract.id}
+            signatureRequirementId={mySignature.id}
+            onComplete={handleSignComplete}
+            onCancel={() => setShowSignaturePad(false)}
+          />
+        )}
 
         {/* Actions */}
         <div className="flex flex-wrap gap-2">
