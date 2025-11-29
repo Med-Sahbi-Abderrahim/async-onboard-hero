@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Send } from "lucide-react";
-import { handleRequestContract } from "@/lib/notifications";
 
 interface ClientRequestModalProps {
   open: boolean;
@@ -33,18 +32,6 @@ export function ClientRequestModal({
     metadata: {},
   });
 
-  const handleSubmit = async (e) => {
-    const result = await handleRequestContract({
-      contractType: contractType,
-      description: description,
-      clientId: clientId,
-      organizationId: organizationId,
-    });
-
-    if (result.success) {
-      onSuccess();
-    }
-  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
