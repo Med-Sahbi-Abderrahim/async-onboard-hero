@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, Send } from "lucide-react";
+import { handleRequestContract } from "@/lib/notifications";
 
 interface ClientRequestModalProps {
   open: boolean;
@@ -17,12 +18,12 @@ interface ClientRequestModalProps {
   onSuccess: () => void;
 }
 
-export function ClientRequestModal({ 
-  open, 
-  onOpenChange, 
-  clientId, 
-  organizationId, 
-  onSuccess 
+export function ClientRequestModal({
+  open,
+  onOpenChange,
+  clientId,
+  organizationId,
+  onSuccess,
 }: ClientRequestModalProps) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -32,12 +33,24 @@ export function ClientRequestModal({
     metadata: {},
   });
 
+  const handleSubmit = async (e) => {
+    const result = await handleRequestContract({
+      contractType: contractType,
+      description: description,
+      clientId: clientId,
+      organizationId: organizationId,
+    });
+
+    if (result.success) {
+      onSuccess();
+    }
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await supabase.functions.invoke('handle-client-request', {
+      const { error } = await supabase.functions.invoke("handle-client-request", {
         body: {
           client_id: clientId,
           organization_id: organizationId,
@@ -53,7 +66,7 @@ export function ClientRequestModal({
       toast.success("Request submitted successfully! We'll notify you when it's reviewed.");
       onOpenChange(false);
       onSuccess();
-      
+
       setFormData({
         request_type: "contract",
         title: "",
@@ -119,7 +132,8 @@ export function ClientRequestModal({
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
             <p className="text-blue-800">
-              ℹ️ Your request will be reviewed by the organization team. You'll receive a notification once it's processed.
+              ℹ️ Your request will be reviewed by the organization team. You'll receive a notification once it's
+              processed.
             </p>
           </div>
 
