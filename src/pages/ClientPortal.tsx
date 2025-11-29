@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { BrandedFooter } from "@/components/BrandedFooter";
 import { BrandedHeader } from "@/components/BrandedHeader";
 import { useOrgBranding } from "@/hooks/useOrgBranding";
+import { useClientData } from "@/hooks/useClientData";
 
 export function ClientPortalTracker() {
   const location = useLocation();
@@ -35,105 +35,36 @@ export default function ClientPortal() {
   const navigate = useNavigate();
   const { orgId } = useParams<{ orgId: string }>();
   const { toast } = useToast();
-  const [client, setClient] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
-  const [hasMultipleOrgs, setHasMultipleOrgs] = useState(false);
   const { branding } = useOrgBranding(orgId);
+  const { client, loading, hasMultipleOrgs, updateClientMetadata } = useClientData(orgId);
 
   useEffect(() => {
-    loadClientData();
-  }, []);
-
-  const loadClientData = async () => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      // Try to find client by user_id OR email
-      const { data: allClients } = await supabase
-        .from("clients")
-        .select("organization_id")
-        .or(`user_id.eq.${user.id},email.ilike.${user.email}`)
-        .is("deleted_at", null);
-
-      setHasMultipleOrgs((allClients?.length || 0) > 1);
-
-      // Fetch client for current organization
-      const { data, error } = await supabase
-        .from("clients")
-        .select("*")
-        .eq("organization_id", orgId || "")
-        .or(`user_id.eq.${user.id},email.ilike.${user.email}`)
-        .is("deleted_at", null)
-        .maybeSingle();
-
-      if (error) {
-        console.error("Error loading client:", error);
-        await supabase.auth.signOut();
-        setLoading(false);
-        return;
-      }
-
-      if (!data) {
-        console.error("No client found for this organization");
-        setLoading(false);
-        return;
-      }
-
-      // If client found but user_id not set, update it
-      if (data.user_id !== user.id) {
-        const { error: updateError } = await supabase.from("clients").update({ user_id: user.id }).eq("id", data.id);
-
-        if (!updateError) {
-          data.user_id = user.id;
-        }
-      }
-
-      setClient(data);
-
-      // Check onboarding
-      const metadata = (data.metadata as Record<string, any>) || {};
+    if (client) {
+      const metadata = (client.metadata as Record<string, any>) || {};
       const hasSeenOnboarding = metadata.onboarding_completed === true;
       if (!hasSeenOnboarding) {
         setShowWelcome(true);
       }
-    } catch (error) {
-      console.error("Error loading client:", error);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [client]);
 
   const handleCompleteOnboarding = async () => {
-    try {
-      // Update client metadata to mark onboarding as completed
-      const currentMetadata = (client.metadata as Record<string, any>) || {};
-      const { error } = await supabase
-        .from("clients")
-        .update({
-          metadata: {
-            ...currentMetadata,
-            onboarding_completed: true,
-          },
-        })
-        .eq("id", client.id);
+    if (!client) return;
 
-      if (error) throw error;
+    const currentMetadata = (client.metadata as Record<string, any>) || {};
+    const success = await updateClientMetadata({
+      ...currentMetadata,
+      onboarding_completed: true,
+    });
 
+    if (success) {
       setShowWelcome(false);
       toast({
         title: "Welcome aboard! 🚀",
         description: "You're all set to explore your client portal.",
       });
-    } catch (error) {
-      console.error("Error completing onboarding:", error);
+    } else {
       setShowWelcome(false);
     }
   };

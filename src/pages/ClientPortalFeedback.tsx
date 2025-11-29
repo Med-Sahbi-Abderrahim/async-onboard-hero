@@ -1,20 +1,20 @@
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 import { Star, ArrowLeft, ExternalLink } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { BrandedFooter } from "@/components/BrandedFooter";
+import { useClientData } from "@/hooks/useClientData";
+import { useFeedback } from "@/hooks/useFeedback";
 
 export default function ClientPortalFeedback() {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { orgId } = useParams<{ orgId: string }>();
   const [rating, setRating] = useState(0);
   const [message, setMessage] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
+  const { client } = useClientData(orgId);
+  const { submitFeedback, submitting } = useFeedback();
 
   const smartBack = () => {
     const lastRoute = sessionStorage.getItem("lastClientPortalRoute");
@@ -28,67 +28,12 @@ export default function ClientPortalFeedback() {
   };
 
   const handleSubmit = async () => {
-    if (rating === 0) {
-      toast({
-        title: "Rating required",
-        description: "Please select a rating before submitting",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!client) return;
 
-    if (!message.trim()) {
-      toast({
-        title: "Message required",
-        description: "Please enter your feedback",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSubmitting(true);
-
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      const { data: clients } = await supabase
-        .from("clients")
-        .select("id, organization_id")
-        .or(`user_id.eq.${user.id},email.ilike.${user.email}`)
-        .is("deleted_at", null);
-
-      if (!clients || clients.length === 0) throw new Error("Client record not found");
-
-      const client = clients[0];
-      setOrganizationId(client.organization_id);
-
-      const { error } = await supabase.from("client_feedback").insert({
-        client_id: client.id,
-        organization_id: client.organization_id,
-        rating,
-        message,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Thank you for your feedback!",
-      });
-
+    const success = await submitFeedback(rating, message, client.id, client.organization_id);
+    if (success) {
       setRating(0);
       setMessage("");
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -187,7 +132,7 @@ export default function ClientPortalFeedback() {
         </Card>
       </div>
 
-      {organizationId && <BrandedFooter organizationId={organizationId} />}
+      {client && <BrandedFooter organizationId={client.organization_id} />}
     </div>
   );
 }
