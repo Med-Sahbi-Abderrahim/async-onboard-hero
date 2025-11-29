@@ -41,8 +41,8 @@ export function InvoiceActionsModal({
       const { error } = await supabase.from("client_requests").insert({
         client_id: clientId,
         organization_id: organizationId,
-        request_type: actionType === "question" ? "invoice_question" : "invoice_dispute",
-        title: `${actionType === "question" ? "Question" : "Dispute"} - Invoice #${invoiceNumber}`,
+        request_type: "change_request",
+        title: `${actionType === "question" ? "Question" : "Issue"} - Invoice #${invoiceNumber}`,
         description: message,
         status: "pending",
         metadata: {

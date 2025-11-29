@@ -35,7 +35,7 @@ export function RequestMeetingModal({ open, onOpenChange, clientId, organization
       const { error } = await supabase.from("client_requests").insert({
         client_id: clientId,
         organization_id: organizationId,
-        request_type: "meeting_request",
+        request_type: "meeting",
         title: formData.title,
         description: formData.description,
         status: "pending",
