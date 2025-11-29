@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.handle-client-request]
 verify_jwt = false
+
+[functions.approve-reject-request]
+verify_jwt = true
