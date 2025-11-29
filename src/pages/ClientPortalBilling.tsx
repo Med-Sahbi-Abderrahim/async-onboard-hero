@@ -1,17 +1,21 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, ArrowLeft, CheckCircle } from "lucide-react";
+import { CreditCard, ArrowLeft, CheckCircle, MessageSquare } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BrandedFooter } from "@/components/BrandedFooter";
 import { useInvoices } from "@/hooks/useSharedData";
 import { useClientData } from "@/hooks/useClientData";
+import { InvoiceActionsModal } from "@/components/client-portal/InvoiceActionsModal";
 
 export default function ClientPortalBilling() {
   const navigate = useNavigate();
   const { orgId } = useParams<{ orgId: string }>();
   const { client } = useClientData(orgId);
-  const { invoices } = useInvoices(client?.id, client?.organization_id, true);
+  const { invoices, loading, refresh } = useInvoices(client?.id, client?.organization_id, true);
+  const [actionsModalOpen, setActionsModalOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
   const statusColors: Record<string, string> = {
     pending: "bg-pending",
@@ -104,6 +108,20 @@ export default function ClientPortalBilling() {
                       Paid on: {new Date(invoice.paid_at).toLocaleDateString()}
                     </p>
                   )}
+                  {!invoice.paid_at && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full mt-4"
+                      onClick={() => {
+                        setSelectedInvoice(invoice);
+                        setActionsModalOpen(true);
+                      }}
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Question or Issue?
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ))
@@ -111,7 +129,22 @@ export default function ClientPortalBilling() {
         </div>
       </div>
 
-      {client && <BrandedFooter organizationId={client.organization_id} />}
+      {client && (
+        <>
+          <BrandedFooter organizationId={client.organization_id} />
+          {selectedInvoice && (
+            <InvoiceActionsModal
+              open={actionsModalOpen}
+              onOpenChange={setActionsModalOpen}
+              invoiceId={selectedInvoice.id}
+              invoiceNumber={selectedInvoice.invoice_number}
+              clientId={client.id}
+              organizationId={client.organization_id}
+              onSuccess={refresh}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }
