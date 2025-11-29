@@ -342,6 +342,73 @@ export type Database = {
           },
         ]
       }
+      client_requests: {
+        Row: {
+          client_id: string
+          created_at: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          organization_id: string
+          request_type: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id: string
+          request_type: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          organization_id?: string
+          request_type?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_requests_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           avatar_url: string | null
@@ -417,12 +484,15 @@ export type Database = {
         Row: {
           contract_id: string
           created_at: string | null
+          declined_at: string | null
+          declined_reason: string | null
           id: string
           ip_address: unknown
           is_required: boolean | null
           order_index: number | null
           organization_id: string
           signature_data: string | null
+          signature_status: string | null
           signature_type: string | null
           signed_at: string | null
           signer_email: string
@@ -435,12 +505,15 @@ export type Database = {
         Insert: {
           contract_id: string
           created_at?: string | null
+          declined_at?: string | null
+          declined_reason?: string | null
           id?: string
           ip_address?: unknown
           is_required?: boolean | null
           order_index?: number | null
           organization_id: string
           signature_data?: string | null
+          signature_status?: string | null
           signature_type?: string | null
           signed_at?: string | null
           signer_email: string
@@ -453,12 +526,15 @@ export type Database = {
         Update: {
           contract_id?: string
           created_at?: string | null
+          declined_at?: string | null
+          declined_reason?: string | null
           id?: string
           ip_address?: unknown
           is_required?: boolean | null
           order_index?: number | null
           organization_id?: string
           signature_data?: string | null
+          signature_status?: string | null
           signature_type?: string | null
           signed_at?: string | null
           signer_email?: string
@@ -488,6 +564,8 @@ export type Database = {
       contracts: {
         Row: {
           amount_cents: number | null
+          approved_at: string | null
+          approved_by: string | null
           client_id: string
           contract_type: Database["public"]["Enums"]["contract_type"] | null
           created_at: string
@@ -502,6 +580,9 @@ export type Database = {
           id: string
           is_shared_with_all_clients: boolean | null
           organization_id: string
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
           reminder_24h_sent: boolean | null
           reminder_24h_sent_at: string | null
           signature_fields: Json | null
@@ -510,9 +591,12 @@ export type Database = {
           title: string
           updated_at: string
           uploaded_by: string | null
+          workflow_status: string | null
         }
         Insert: {
           amount_cents?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
           client_id: string
           contract_type?: Database["public"]["Enums"]["contract_type"] | null
           created_at?: string
@@ -527,6 +611,9 @@ export type Database = {
           id?: string
           is_shared_with_all_clients?: boolean | null
           organization_id: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           reminder_24h_sent?: boolean | null
           reminder_24h_sent_at?: string | null
           signature_fields?: Json | null
@@ -535,9 +622,12 @@ export type Database = {
           title: string
           updated_at?: string
           uploaded_by?: string | null
+          workflow_status?: string | null
         }
         Update: {
           amount_cents?: number | null
+          approved_at?: string | null
+          approved_by?: string | null
           client_id?: string
           contract_type?: Database["public"]["Enums"]["contract_type"] | null
           created_at?: string
@@ -552,6 +642,9 @@ export type Database = {
           id?: string
           is_shared_with_all_clients?: boolean | null
           organization_id?: string
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
           reminder_24h_sent?: boolean | null
           reminder_24h_sent_at?: string | null
           signature_fields?: Json | null
@@ -560,8 +653,16 @@ export type Database = {
           title?: string
           updated_at?: string
           uploaded_by?: string | null
+          workflow_status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "contracts_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "contracts_client_id_fkey"
             columns: ["client_id"]
@@ -574,6 +675,13 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_rejected_by_fkey"
+            columns: ["rejected_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -1073,6 +1181,8 @@ export type Database = {
           metadata: Json | null
           organization_id: string
           read_at: string | null
+          related_entity_id: string | null
+          related_entity_type: string | null
           title: string
           type: string
           user_id: string
@@ -1085,6 +1195,8 @@ export type Database = {
           metadata?: Json | null
           organization_id: string
           read_at?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
           title: string
           type: string
           user_id: string
@@ -1097,6 +1209,8 @@ export type Database = {
           metadata?: Json | null
           organization_id?: string
           read_at?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
           title?: string
           type?: string
           user_id?: string
@@ -1153,6 +1267,8 @@ export type Database = {
           active_user_count: number | null
           automation_runs_per_user: number | null
           automation_runs_used: number | null
+          billing_cycle: string | null
+          billing_email: string | null
           brand_color: string | null
           branding_level: string | null
           created_at: string | null
@@ -1170,9 +1286,14 @@ export type Database = {
           max_portals: number
           max_storage_gb: number
           name: string | null
+          next_billing_date: string | null
           organization_owner_id: string | null
+          payment_method_id: string | null
           plan: string
+          plan_price_id: string | null
           price_per_user: number | null
+          seats_purchased: number | null
+          seats_used: number | null
           slug: string | null
           storage_per_user_gb: number | null
           storage_used_bytes: number
@@ -1188,6 +1309,8 @@ export type Database = {
           active_user_count?: number | null
           automation_runs_per_user?: number | null
           automation_runs_used?: number | null
+          billing_cycle?: string | null
+          billing_email?: string | null
           brand_color?: string | null
           branding_level?: string | null
           created_at?: string | null
@@ -1205,9 +1328,14 @@ export type Database = {
           max_portals?: number
           max_storage_gb?: number
           name?: string | null
+          next_billing_date?: string | null
           organization_owner_id?: string | null
+          payment_method_id?: string | null
           plan?: string
+          plan_price_id?: string | null
           price_per_user?: number | null
+          seats_purchased?: number | null
+          seats_used?: number | null
           slug?: string | null
           storage_per_user_gb?: number | null
           storage_used_bytes?: number
@@ -1223,6 +1351,8 @@ export type Database = {
           active_user_count?: number | null
           automation_runs_per_user?: number | null
           automation_runs_used?: number | null
+          billing_cycle?: string | null
+          billing_email?: string | null
           brand_color?: string | null
           branding_level?: string | null
           created_at?: string | null
@@ -1240,9 +1370,14 @@ export type Database = {
           max_portals?: number
           max_storage_gb?: number
           name?: string | null
+          next_billing_date?: string | null
           organization_owner_id?: string | null
+          payment_method_id?: string | null
           plan?: string
+          plan_price_id?: string | null
           price_per_user?: number | null
+          seats_purchased?: number | null
+          seats_used?: number | null
           slug?: string | null
           storage_per_user_gb?: number | null
           storage_used_bytes?: number
@@ -1618,11 +1753,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_active_seats: { Args: { org_id: string }; Returns: number }
       calculate_monthly_cost: { Args: { org_id: string }; Returns: number }
       calculate_submission_completion: {
         Args: { form_fields: Json; submission_responses: Json }
         Returns: number
       }
+      can_add_member: { Args: { org_id: string }; Returns: boolean }
       can_create_client: { Args: { org_id: string }; Returns: boolean }
       can_upload_file: {
         Args: { file_size_bytes: number; org_id: string }
@@ -1645,6 +1782,13 @@ export type Database = {
       delete_user_and_org: {
         Args: { user_id_to_delete: string }
         Returns: string
+      }
+      get_contract_workflow_summary: {
+        Args: { org_id: string }
+        Returns: {
+          count: number
+          workflow_status: string
+        }[]
       }
       get_early_access_days_remaining: {
         Args: { user_id: string }
@@ -1707,6 +1851,7 @@ export type Database = {
         }
         Returns: Json
       }
+      is_org_active: { Args: { org_id: string }; Returns: boolean }
       is_organization_member: {
         Args: { p_org_id: string; p_user_id: string }
         Returns: boolean
