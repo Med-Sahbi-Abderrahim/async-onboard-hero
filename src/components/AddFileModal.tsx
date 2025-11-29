@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Upload } from "lucide-react";
 import { UpgradeModal } from "./UpgradeModal";
 import { useOrgLimits } from "@/hooks/useOrgLimits";
-import { handleCreateFile } from "@/lib/notifications";
 
 interface AddFileModalProps {
   open: boolean;
@@ -90,15 +89,6 @@ export function AddFileModal({ open, onOpenChange, clientId, organizationId, onS
         .single();
 
       if (dbError) throw dbError;
-
-      // 🔥 Trigger email + portal notification
-      await handleCreateFile({
-        clientId,
-        organizationId,
-        fileId: fileRecord.id,
-        fileName: selectedFile.name,
-        uploadedBy: user.id,
-      });
 
       toast({
         title: "✅ File uploaded",

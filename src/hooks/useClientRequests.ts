@@ -3,7 +3,19 @@
 // ============================================
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { ClientRequest } from "@/path/to/types";
+
+interface ClientRequest {
+  id: string;
+  client_id: string;
+  organization_id: string;
+  request_type: string;
+  title: string;
+  description: string | null;
+  status: string;
+  metadata: Record<string, any> | null;
+  created_at: string;
+  updated_at: string;
+}
 
 export function useClientRequests(organizationId?: string) {
   const [requests, setRequests] = useState<ClientRequest[]>([]);
@@ -22,7 +34,7 @@ export function useClientRequests(organizationId?: string) {
 
       if (error) throw error;
 
-      setRequests(data || []);
+      setRequests((data || []) as any);
       setPendingCount((data || []).filter((r) => r.status === "pending").length);
     } catch (error) {
       console.error("Error fetching requests:", error);
