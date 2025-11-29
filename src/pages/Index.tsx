@@ -274,8 +274,7 @@ const Index = () => {
         }}>
             <Card className="border-2 border-destructive/20 bg-destructive/5">
               <CardContent className="p-8">
-                <p className="text-lg leading-relaxed">
-                  Your team wastes <strong>8+ hours every week</strong> chasing documents across Gmail, Drive, DocuSign,
+                <p className="text-lg leading-relaxed">Your team wastes 8+ hours every week chasing documents across multiple platforms. Clients miss deadlines because they don't know what you need. You push back launch dates because someone forgot to upload a logo.<strong>8+ hours every week</strong> chasing documents across Gmail, Drive, DocuSign,
                   and Typeform. Clients miss deadlines because they don't know what you need. You push back launch dates
                   because someone forgot to upload a logo.
                 </p>
@@ -290,44 +289,7 @@ const Index = () => {
           <motion.div className="mx-auto max-w-2xl" variants={staggerContainer} initial="initial" whileInView="whileInView" viewport={{
           once: true
         }}>
-            <div className="relative flex flex-wrap items-center justify-center gap-8 opacity-40">
-              <motion.div variants={staggerItem} className="transform rotate-[-5deg]">
-                <div className="flex items-center gap-2 rounded-lg border-2 border-dashed bg-card p-4">
-                  <Mail className="h-6 w-6" />
-                  <span className="font-medium">Gmail</span>
-                </div>
-              </motion.div>
-              <motion.div variants={staggerItem} className="transform rotate-[3deg]">
-                <div className="flex items-center gap-2 rounded-lg border-2 border-dashed bg-card p-4">
-                  <FileText className="h-6 w-6" />
-                  <span className="font-medium">Typeform</span>
-                </div>
-              </motion.div>
-              <motion.div variants={staggerItem} className="transform rotate-[-3deg]">
-                <div className="flex items-center gap-2 rounded-lg border-2 border-dashed bg-card p-4">
-                  <Database className="h-6 w-6" />
-                  <span className="font-medium">Google Drive</span>
-                </div>
-              </motion.div>
-              <motion.div variants={staggerItem} className="transform rotate-[5deg]">
-                <div className="flex items-center gap-2 rounded-lg border-2 border-dashed bg-card p-4">
-                  <FileSignature className="h-6 w-6" />
-                  <span className="font-medium">DocuSign</span>
-                </div>
-              </motion.div>
-              <motion.div variants={staggerItem} className="transform rotate-[-2deg]">
-                <div className="flex items-center gap-2 rounded-lg border-2 border-dashed bg-card p-4">
-                  <Slack className="h-6 w-6" />
-                  <span className="font-medium">Slack</span>
-                </div>
-              </motion.div>
-              <motion.div variants={staggerItem} className="transform rotate-[4deg]">
-                <div className="flex items-center gap-2 rounded-lg border-2 border-dashed bg-card p-4">
-                  <CheckSquare className="h-6 w-6" />
-                  <span className="font-medium">Trello</span>
-                </div>
-              </motion.div>
-            </div>
+            
           </motion.div>
         </div>
       </motion.section>
