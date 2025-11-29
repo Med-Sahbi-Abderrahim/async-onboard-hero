@@ -9,7 +9,6 @@ import { useMeetings } from "@/hooks/useSharedData";
 import { useClientData } from "@/hooks/useClientData";
 import { RequestMeetingModal } from "@/components/client-portal/RequestMeetingModal";
 import { RequestRescheduleModal } from "@/components/client-portal/RequestRescheduleModal";
-import { handleRequestMeeting } from "@/lib/notifications";
 
 export default function ClientPortalMeetings() {
   const navigate = useNavigate();
@@ -20,21 +19,6 @@ export default function ClientPortalMeetings() {
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState<any>(null);
 
-  const handleSubmit = async (formData) => {
-    const result = await handleRequestMeeting({
-      title: formData.title,
-      description: formData.description,
-      preferredDate: formData.preferred_date,
-      preferredTime: formData.preferred_time,
-      durationMinutes: formData.duration_minutes,
-      clientId: client.id,
-      organizationId: client.organization_id,
-    });
-
-    if (result.success) {
-      toast.success("Meeting request submitted");
-    }
-  };
   const statusColors = {
     scheduled: "bg-blue-500",
     completed: "bg-green-500",

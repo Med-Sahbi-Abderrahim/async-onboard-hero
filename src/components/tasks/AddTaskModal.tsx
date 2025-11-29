@@ -11,7 +11,6 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { handleCreateTask } from "@/lib/notifications";
 
 interface AddTaskModalProps {
   clientId: string;
@@ -55,13 +54,6 @@ export function AddTaskModal({ clientId, organizationId, onClose, onSuccess }: A
         .single();
 
       if (error) throw error;
-
-      await handleCreateTask({
-        title: insertedTask.title,
-        description: insertedTask.description || "",
-        dueDate: insertedTask.due_date || "",
-        assignedToClientId: clientId,
-      });
 
       toast.success("Task created successfully");
       onSuccess();

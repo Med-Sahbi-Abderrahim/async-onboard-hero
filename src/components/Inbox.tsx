@@ -36,7 +36,6 @@ interface ClientRequest {
   request_type: "meeting" | "contract" | "file_access" | "task" | "change_request";
   title: string;
   description: string | null;
-  payload: Record<string, any> | null;
   status: "pending" | "seen" | "resolved";
   metadata: Record<string, any> | null;
   created_at: string;
@@ -88,7 +87,7 @@ export default function Inbox({ organizationId }: { organizationId: string }) {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setRequests(data || []);
+      setRequests((data || []) as any);
     } catch (error) {
       console.error("Error loading requests:", error);
       toast.error("Failed to load inbox");
@@ -154,20 +153,21 @@ export default function Inbox({ organizationId }: { organizationId: string }) {
   const logActivity = async (
     requestId: string,
     action: string,
-    metadata: Record<string, any> = {}
+    activityMetadata: Record<string, any> = {}
   ) => {
     try {
-      await supabase.from("activity_logs").insert({
+      await supabase.from("activity_logs").insert([{
         organization_id: organizationId,
-        action: action,
-        entity_type: "client_request",
+        action: action as any,
+        entity_type: "client" as any,
         entity_id: requestId,
         description: `${action} on client request`,
         metadata: {
-          ...metadata,
+          ...activityMetadata,
           user_email: currentUser?.email,
+          request_type: "client_request",
         },
-      });
+      }]);
     } catch (error) {
       console.error("Error logging activity:", error);
     }
@@ -491,12 +491,12 @@ export default function Inbox({ organizationId }: { organizationId: string }) {
                       </div>
                     )}
 
-                    {/* Show payload details if available */}
-                    {request.payload && Object.keys(request.payload).length > 0 && (
+                    {/* Show metadata details if available */}
+                    {request.metadata && Object.keys(request.metadata).length > 0 && (
                       <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                         <p className="text-sm font-medium mb-2">Request Details:</p>
                         <div className="space-y-1 text-sm">
-                          {Object.entries(request.payload).map(([key, value]) => (
+                          {Object.entries(request.metadata).map(([key, value]) => (
                             <div key={key} className="flex justify-between">
                               <span className="font-medium capitalize">{key.replace(/_/g, ' ')}:</span>
                               <span className="text-right">{String(value)}</span>
@@ -803,11 +803,11 @@ export default function Inbox({ organizationId }: { organizationId: string }) {
               </div>
             )}
 
-            {selectedRequest?.payload && Object.keys(selectedRequest.payload).length > 0 && (
+            {selectedRequest?.metadata && Object.keys(selectedRequest.metadata).length > 0 && (
               <div>
-                <p className="text-sm font-medium mb-2">Request Payload</p>
+                <p className="text-sm font-medium mb-2">Request Details</p>
                 <pre className="bg-muted p-3 rounded text-xs overflow-auto max-h-48">
-                  {JSON.stringify(selectedRequest.payload, null, 2)}
+                  {JSON.stringify(selectedRequest.metadata, null, 2)}
                 </pre>
               </div>
             )}
