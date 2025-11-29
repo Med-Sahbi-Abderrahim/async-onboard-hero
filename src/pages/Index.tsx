@@ -86,7 +86,7 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <motion.section className="gradient-hero py-20 sm:py-32" {...fadeInUp}>
+      <motion.section className="gradient-hero sm:py-32 py-[90px]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-6xl">
             <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
