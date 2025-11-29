@@ -2,52 +2,54 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import {
-  CheckCircle2,
-  FileText,
-  Upload,
-  Zap,
-  Shield,
-  Mail,
-  Slack,
-  Database,
-  CheckSquare,
-  FileSignature,
-  Bell,
-  Star,
-  ArrowRight,
-  Users,
-  Building2,
-  Crown,
-  Lock,
-  Clock,
-} from "lucide-react";
+import { CheckCircle2, FileText, Upload, Zap, Shield, Mail, Slack, Database, CheckSquare, FileSignature, Bell, Star, ArrowRight, Users, Building2, Crown, Lock, Clock } from "lucide-react";
 import kenlyLogo from "@/assets/kenly-logo.png";
 import { motion } from "framer-motion";
-
 const Index = () => {
   // Animation variants
   const fadeInUp = {
-    initial: { opacity: 0, y: 30 },
-    whileInView: { opacity: 1, y: 0 },
-    viewport: { once: true, margin: "-50px" },
-    transition: { duration: 0.5 },
+    initial: {
+      opacity: 0,
+      y: 30
+    },
+    whileInView: {
+      opacity: 1,
+      y: 0
+    },
+    viewport: {
+      once: true,
+      margin: "-50px"
+    },
+    transition: {
+      duration: 0.5
+    }
   };
-
   const staggerContainer = {
     initial: {},
-    whileInView: { transition: { staggerChildren: 0.1 } },
-    viewport: { once: true, margin: "-50px" },
+    whileInView: {
+      transition: {
+        staggerChildren: 0.1
+      }
+    },
+    viewport: {
+      once: true,
+      margin: "-50px"
+    }
   };
-
   const staggerItem = {
-    initial: { opacity: 0, y: 20 },
-    whileInView: { opacity: 1, y: 0 },
-    transition: { duration: 0.4 },
+    initial: {
+      opacity: 0,
+      y: 20
+    },
+    whileInView: {
+      opacity: 1,
+      y: 0
+    },
+    transition: {
+      duration: 0.4
+    }
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,22 +59,13 @@ const Index = () => {
               <span className="text-xl font-bold">Kenly</span>
             </div>
             <div className="hidden items-center gap-8 md:flex">
-              <a
-                href="#features"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-              >
+              <a href="#features" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
                 Features
               </a>
-              <a
-                href="#pricing"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-              >
+              <a href="#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
                 Pricing
               </a>
-              <a
-                href="#roadmap"
-                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-              >
+              <a href="#roadmap" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
                 Roadmap
               </a>
             </div>
@@ -98,12 +91,17 @@ const Index = () => {
           <div className="mx-auto max-w-6xl">
             <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
               {/* Left Column - Copy */}
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-              >
+              <motion.div initial={{
+              opacity: 0,
+              x: -30
+            }} whileInView={{
+              opacity: 1,
+              x: 0
+            }} viewport={{
+              once: true
+            }} transition={{
+              duration: 0.6
+            }}>
                 <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl text-balance">
                   Stop chasing clients. Start closing them faster.
                 </h1>
@@ -122,28 +120,34 @@ const Index = () => {
                 <div className="mt-8 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4" />
-                    <span>Bank-level encryption</span>
+                    <span>Multi-Tenant Isolation
+                  </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4" />
-                    <span>SOC2 compliant</span>
+                    <span>GDPR compliant</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4" />
-                    <span>Enterprise-grade security</span>
+                    <span>Encrypted at Rest & in Transit </span>
                   </div>
                 </div>
                 <p className="mt-4 text-sm text-muted-foreground">No credit card required. Full access in 5 minutes.</p>
               </motion.div>
 
               {/* Right Column - Hero Screenshot */}
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="relative"
-              >
+              <motion.div initial={{
+              opacity: 0,
+              x: 30
+            }} whileInView={{
+              opacity: 1,
+              x: 0
+            }} viewport={{
+              once: true
+            }} transition={{
+              duration: 0.6,
+              delay: 0.2
+            }} className="relative">
                 <div className="rounded-lg border-2 bg-card p-6 shadow-strong">
                   {/* Mock Dashboard */}
                   <div className="space-y-4">
@@ -214,22 +218,22 @@ const Index = () => {
       </motion.section>
 
       {/* Social Proof Stripe */}
-      <motion.section
-        className="border-y bg-muted/30 py-8"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-      >
+      <motion.section className="border-y bg-muted/30 py-8" initial={{
+      opacity: 0
+    }} whileInView={{
+      opacity: 1
+    }} viewport={{
+      once: true
+    }} transition={{
+      duration: 0.5
+    }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center justify-center gap-4">
             <p className="text-center text-sm font-medium text-muted-foreground">
               Join 200+ agencies who've replaced their onboarding chaos
             </p>
             <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-5 w-5 fill-primary text-primary" />
-              ))}
+              {[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 fill-primary text-primary" />)}
               <span className="ml-2 text-sm text-muted-foreground">Loved by early users</span>
             </div>
           </div>
@@ -239,26 +243,35 @@ const Index = () => {
       {/* Problem Section */}
       <motion.section id="problem" className="py-20 sm:py-32" {...fadeInUp}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="mx-auto max-w-3xl text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
+          <motion.div className="mx-auto max-w-3xl text-center mb-16" initial={{
+          opacity: 0,
+          y: 20
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.5
+        }}>
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               Onboarding clients shouldn't feel like chaos.
             </h2>
             <p className="text-lg text-muted-foreground">For most agencies, it still does.</p>
           </motion.div>
 
-          <motion.div
-            className="mx-auto max-w-4xl mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
+          <motion.div className="mx-auto max-w-4xl mb-16" initial={{
+          opacity: 0,
+          y: 20
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.5,
+          delay: 0.2
+        }}>
             <Card className="border-2 border-destructive/20 bg-destructive/5">
               <CardContent className="p-8">
                 <p className="text-lg leading-relaxed">
@@ -274,13 +287,9 @@ const Index = () => {
           </motion.div>
 
           {/* Chaos Grid */}
-          <motion.div
-            className="mx-auto max-w-2xl"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="whileInView"
-            viewport={{ once: true }}
-          >
+          <motion.div className="mx-auto max-w-2xl" variants={staggerContainer} initial="initial" whileInView="whileInView" viewport={{
+          once: true
+        }}>
             <div className="relative flex flex-wrap items-center justify-center gap-8 opacity-40">
               <motion.div variants={staggerItem} className="transform rotate-[-5deg]">
                 <div className="flex items-center gap-2 rounded-lg border-2 border-dashed bg-card p-4">
@@ -326,13 +335,17 @@ const Index = () => {
       {/* Solution Section */}
       <motion.section id="solution" className="gradient-accent py-20 sm:py-32" {...fadeInUp}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="mx-auto max-w-3xl text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
+          <motion.div className="mx-auto max-w-3xl text-center mb-16" initial={{
+          opacity: 0,
+          y: 20
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.5
+        }}>
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               Your client lands in one branded portal.
             </h2>
@@ -342,13 +355,9 @@ const Index = () => {
           </motion.div>
 
           {/* Before/After Comparison */}
-          <motion.div
-            className="mx-auto max-w-6xl grid gap-8 md:grid-cols-2"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="whileInView"
-            viewport={{ once: true }}
-          >
+          <motion.div className="mx-auto max-w-6xl grid gap-8 md:grid-cols-2" variants={staggerContainer} initial="initial" whileInView="whileInView" viewport={{
+          once: true
+        }}>
             {/* Before */}
             <motion.div variants={staggerItem}>
               <Card className="h-full border-2 border-destructive/20">
@@ -420,25 +429,25 @@ const Index = () => {
       {/* Features Section */}
       <motion.section id="features" className="py-20 sm:py-32" {...fadeInUp}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="mx-auto max-w-3xl text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
+          <motion.div className="mx-auto max-w-3xl text-center mb-16" initial={{
+          opacity: 0,
+          y: 20
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.5
+        }}>
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               Everything you need. Nothing you don't.
             </h2>
           </motion.div>
 
-          <motion.div
-            className="mx-auto max-w-6xl grid gap-12 md:grid-cols-2"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="whileInView"
-            viewport={{ once: true }}
-          >
+          <motion.div className="mx-auto max-w-6xl grid gap-12 md:grid-cols-2" variants={staggerContainer} initial="initial" whileInView="whileInView" viewport={{
+          once: true
+        }}>
             {/* Feature 1 */}
             <motion.div variants={staggerItem}>
               <Card className="h-full hover:shadow-lg transition-shadow">
@@ -572,25 +581,25 @@ const Index = () => {
       {/* Comparison Section */}
       <motion.section className="gradient-accent py-20 sm:py-32" {...fadeInUp}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="mx-auto max-w-3xl text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
+          <motion.div className="mx-auto max-w-3xl text-center mb-16" initial={{
+          opacity: 0,
+          y: 20
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.5
+        }}>
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               One portal replaces your entire stack.
             </h2>
           </motion.div>
 
-          <motion.div
-            className="mx-auto max-w-5xl grid gap-8 md:grid-cols-2"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="whileInView"
-            viewport={{ once: true }}
-          >
+          <motion.div className="mx-auto max-w-5xl grid gap-8 md:grid-cols-2" variants={staggerContainer} initial="initial" whileInView="whileInView" viewport={{
+          once: true
+        }}>
             {/* Before Kenly */}
             <motion.div variants={staggerItem}>
               <Card className="h-full border-2">
@@ -672,35 +681,33 @@ const Index = () => {
       {/* Social Proof / Testimonials */}
       <motion.section className="py-20 sm:py-32" {...fadeInUp}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="mx-auto max-w-3xl text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
+          <motion.div className="mx-auto max-w-3xl text-center mb-16" initial={{
+          opacity: 0,
+          y: 20
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.5
+        }}>
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               Don't take our word for it.
             </h2>
           </motion.div>
 
-          <motion.div
-            className="mx-auto max-w-6xl grid gap-8 md:grid-cols-3"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="whileInView"
-            viewport={{ once: true }}
-          >
+          <motion.div className="mx-auto max-w-6xl grid gap-8 md:grid-cols-3" variants={staggerContainer} initial="initial" whileInView="whileInView" viewport={{
+          once: true
+        }}>
             {/* Testimonial 1 */}
             <motion.div variants={staggerItem}>
               <Card className="h-full">
                 <CardContent className="p-8">
                   <div className="mb-4 flex gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} className="h-5 w-5 fill-primary text-primary" viewBox="0 0 20 20">
+                    {[...Array(5)].map((_, i) => <svg key={i} className="h-5 w-5 fill-primary text-primary" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
+                      </svg>)}
                   </div>
                   <p className="mb-6 text-muted-foreground">
                     "Kenly cut our onboarding time in half. Clients finally complete everything on time."
@@ -723,11 +730,9 @@ const Index = () => {
               <Card className="h-full">
                 <CardContent className="p-8">
                   <div className="mb-4 flex gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} className="h-5 w-5 fill-primary text-primary" viewBox="0 0 20 20">
+                    {[...Array(5)].map((_, i) => <svg key={i} className="h-5 w-5 fill-primary text-primary" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
+                      </svg>)}
                   </div>
                   <p className="mb-6 text-muted-foreground">
                     "We replaced 7 tools with one portal. It feels like an OS built specifically for agencies."
@@ -773,26 +778,26 @@ const Index = () => {
       {/* Pricing Section */}
       <motion.section id="pricing" className="gradient-accent py-20 sm:py-32" {...fadeInUp}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="mx-auto max-w-3xl text-center mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
+          <motion.div className="mx-auto max-w-3xl text-center mb-4" initial={{
+          opacity: 0,
+          y: 20
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.5
+        }}>
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               Simple pricing. No surprises.
             </h2>
             <p className="text-lg text-muted-foreground">Most agencies start free and upgrade in week two.</p>
           </motion.div>
 
-          <motion.div
-            className="mx-auto max-w-6xl grid gap-8 md:grid-cols-3 mt-16"
-            variants={staggerContainer}
-            initial="initial"
-            whileInView="whileInView"
-            viewport={{ once: true }}
-          >
+          <motion.div className="mx-auto max-w-6xl grid gap-8 md:grid-cols-3 mt-16" variants={staggerContainer} initial="initial" whileInView="whileInView" viewport={{
+          once: true
+        }}>
             {/* STARTER Plan - FREE */}
             <motion.div variants={staggerItem}>
               <Card className="h-full border-2 hover:shadow-lg transition-all">
@@ -990,25 +995,34 @@ const Index = () => {
       {/* FAQ Section */}
       <motion.section id="faq" className="py-20 sm:py-32" {...fadeInUp}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="mx-auto max-w-3xl text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
+          <motion.div className="mx-auto max-w-3xl text-center mb-16" initial={{
+          opacity: 0,
+          y: 20
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.5
+        }}>
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               Frequently Asked Questions
             </h2>
           </motion.div>
 
-          <motion.div
-            className="mx-auto max-w-3xl"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
+          <motion.div className="mx-auto max-w-3xl" initial={{
+          opacity: 0,
+          y: 20
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.5,
+          delay: 0.2
+        }}>
             <Accordion type="single" collapsible className="w-full space-y-4">
               <AccordionItem value="item-1" className="border rounded-lg px-6 bg-card">
                 <AccordionTrigger className="text-left hover:no-underline">
@@ -1079,13 +1093,17 @@ const Index = () => {
       {/* Final CTA Section */}
       <motion.section className="gradient-hero py-20 sm:py-32" {...fadeInUp}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="mx-auto max-w-3xl text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
+          <motion.div className="mx-auto max-w-3xl text-center" initial={{
+          opacity: 0,
+          y: 20
+        }} whileInView={{
+          opacity: 1,
+          y: 0
+        }} viewport={{
+          once: true
+        }} transition={{
+          duration: 0.5
+        }}>
             <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-balance">
               Ready to stop chasing clients?
             </h2>
@@ -1111,13 +1129,15 @@ const Index = () => {
       </motion.section>
 
       {/* Footer */}
-      <motion.footer
-        className="border-t bg-muted/30 py-12"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-      >
+      <motion.footer className="border-t bg-muted/30 py-12" initial={{
+      opacity: 0
+    }} whileInView={{
+      opacity: 1
+    }} viewport={{
+      once: true
+    }} transition={{
+      duration: 0.6
+    }}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 md:grid-cols-4">
             {/* Column 1: Product */}
@@ -1241,8 +1261,6 @@ const Index = () => {
           </div>
         </div>
       </motion.footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
