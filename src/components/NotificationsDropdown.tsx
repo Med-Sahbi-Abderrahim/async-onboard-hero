@@ -157,19 +157,90 @@ export function NotificationsDropdown() {
       return;
     }
 
-    // Navigate based on notification type with orgId
-    // FIXED: Routes should be /clients/:orgId/:id NOT /:orgId/clients/:id
-    const { metadata } = notification;
+    // Determine user's role in this organization
+    try {
+      const { data: memberData, error: memberError } = await supabase
+        .from("organization_members")
+        .select("role")
+        .eq("user_id", user?.id)
+        .eq("organization_id", orgId)
+        .single();
 
-    if (metadata.client_id) {
-      navigate(`/clients/${orgId}/${metadata.client_id}`);
-    } else if (metadata.submission_id) {
-      navigate(`/submissions/${orgId}`);
-    } else if (metadata.form_id) {
-      navigate(`/forms/${orgId}/${metadata.form_id}`);
-    } else {
-      // Default to dashboard if no specific target
-      navigate(`/dashboard/${orgId}`);
+      if (memberError) throw memberError;
+
+      const isAgencyUser =
+        memberData?.role === "owner" || memberData?.role === "admin" || memberData?.role === "member";
+      const { metadata } = notification;
+
+      // Route based on user role and notification type
+      if (isAgencyUser) {
+        // Agency user routes
+        switch (notification.type) {
+          case "client_added":
+            if (metadata?.client_id) {
+              navigate(`/clients/${orgId}/${metadata.client_id}`);
+            } else {
+              navigate(`/clients/${orgId}`);
+            }
+            break;
+
+          case "form_submitted":
+          case "submission_incomplete":
+            if (metadata?.submission_id) {
+              navigate(`/submissions/${orgId}`);
+            } else {
+              navigate(`/submissions/${orgId}`);
+            }
+            break;
+
+          case "reminder_sent":
+            navigate(`/reminders/${orgId}`);
+            break;
+
+          default:
+            // Default to dashboard for agency users
+            navigate(`/dashboard/${orgId}`);
+        }
+      } else {
+        // Client user routes - go to client portal
+        switch (notification.type) {
+          case "form_submitted":
+          case "submission_incomplete":
+            navigate(`/client-portal/${orgId}`);
+            break;
+
+          case "reminder_sent":
+            navigate(`/client-portal/${orgId}/tasks`);
+            break;
+
+          case "file_uploaded":
+            navigate(`/client-portal/${orgId}/files`);
+            break;
+
+          case "contract_added":
+            navigate(`/client-portal/${orgId}/contracts`);
+            break;
+
+          case "invoice_sent":
+            navigate(`/client-portal/${orgId}/billing`);
+            break;
+
+          case "meeting_scheduled":
+            navigate(`/client-portal/${orgId}/meetings`);
+            break;
+
+          default:
+            // Default to client portal home
+            navigate(`/client-portal/${orgId}`);
+        }
+      }
+    } catch (error: any) {
+      console.error("Error determining user role:", error);
+      toast({
+        title: "Navigation Error",
+        description: "Unable to determine user role",
+        variant: "destructive",
+      });
     }
 
     setOpen(false);
