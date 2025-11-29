@@ -11,7 +11,7 @@ import { ImportSubmissionsModal } from "@/components/submissions/ImportSubmissio
 import { useToast } from "@/hooks/use-toast";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useOrgId } from "@/hooks/useOrgId";
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 
 export default function Submissions() {
   const { toast } = useToast();
@@ -23,7 +23,13 @@ export default function Submissions() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
 
-  const { submissions, loading: submissionsLoading, totalCount: submissionsCount, totalPages: submissionPages, refresh: refreshSubmissions } = useSubmissions({
+  const {
+    submissions,
+    loading: submissionsLoading,
+    totalCount: submissionsCount,
+    totalPages: submissionPages,
+    refresh: refreshSubmissions,
+  } = useSubmissions({
     searchQuery,
     statusFilter,
     page,
@@ -42,7 +48,7 @@ export default function Submissions() {
   useEffect(() => {
     // Transform client requests to match submission structure
     const transformedRequests = requests
-      .filter(req => {
+      .filter((req) => {
         // Apply status filter
         if (statusFilter !== "all" && req.status !== statusFilter) return false;
         // Apply search filter
@@ -56,23 +62,23 @@ export default function Submissions() {
         }
         return true;
       })
-      .map(req => ({
+      .map((req) => ({
         ...req,
-        type: 'client_request',
-        completion_percentage: req.status === 'approved' ? 100 : req.status === 'pending' ? 0 : 50,
+        type: "client_request",
+        completion_percentage: req.status === "approved" ? 100 : req.status === "pending" ? 0 : 50,
         created_at: req.created_at,
         submitted_at: req.created_at,
       }));
 
     // Mark submissions with type
-    const markedSubmissions = submissions.map(sub => ({
+    const markedSubmissions = submissions.map((sub) => ({
       ...sub,
-      type: 'form_submission'
+      type: "form_submission",
     }));
 
     // Combine and sort by creation date
     const combined = [...markedSubmissions, ...transformedRequests].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     );
 
     setCombinedItems(combined);
@@ -97,9 +103,9 @@ export default function Submissions() {
   const handleExportToExcel = () => {
     if (combinedItems.length === 0) {
       toast({
-        title: 'No data to export',
-        description: 'There are no submissions to export',
-        variant: 'destructive',
+        title: "No data to export",
+        description: "There are no submissions to export",
+        variant: "destructive",
       });
       return;
     }
@@ -107,30 +113,28 @@ export default function Submissions() {
     try {
       // Prepare data for export
       const exportData = combinedItems.map((item) => {
-        if (item.type === 'client_request') {
+        if (item.type === "client_request") {
           return {
-            'Type': 'Client Request',
-            'ID': item.id,
-            'Request Type': item.request_type,
-            'Title': item.title,
-            'Description': item.description || '',
-            'Status': item.status,
-            'Created': new Date(item.created_at).toLocaleDateString(),
+            Type: "Client Request",
+            ID: item.id,
+            "Request Type": item.request_type,
+            Title: item.title,
+            Description: item.description || "",
+            Status: item.status,
+            Created: new Date(item.created_at).toLocaleDateString(),
           };
         } else {
           return {
-            'Type': 'Form Submission',
-            'Submission ID': item.id,
-            'Client Name': item.client?.full_name || '',
-            'Client Email': item.client?.email || '',
-            'Company': item.client?.company_name || '',
-            'Form': item.intake_form?.title || '',
-            'Status': item.status,
-            'Completion': `${item.completion_percentage}%`,
-            'Submitted': item.submitted_at
-              ? new Date(item.submitted_at).toLocaleDateString()
-              : 'Not submitted',
-            'Created': new Date(item.created_at).toLocaleDateString(),
+            Type: "Form Submission",
+            "Submission ID": item.id,
+            "Client Name": item.client?.full_name || "",
+            "Client Email": item.client?.email || "",
+            Company: item.client?.company_name || "",
+            Form: item.intake_form?.title || "",
+            Status: item.status,
+            Completion: `${item.completion_percentage}%`,
+            Submitted: item.submitted_at ? new Date(item.submitted_at).toLocaleDateString() : "Not submitted",
+            Created: new Date(item.created_at).toLocaleDateString(),
             // Add response fields
             ...item.responses,
           };
@@ -140,37 +144,34 @@ export default function Submissions() {
       // Create workbook and worksheet
       const worksheet = XLSX.utils.json_to_sheet(exportData);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Submissions');
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Submissions");
 
       // Auto-size columns
       const maxWidth = 50;
       const columnWidths = Object.keys(exportData[0] || {}).map((key) => ({
         wch: Math.min(
           maxWidth,
-          Math.max(
-            key.length,
-            ...exportData.map((row) => String(row[key as keyof typeof row] || '').length)
-          )
+          Math.max(key.length, ...exportData.map((row) => String(row[key as keyof typeof row] || "").length)),
         ),
       }));
-      worksheet['!cols'] = columnWidths;
+      worksheet["!cols"] = columnWidths;
 
       // Generate filename with timestamp
-      const timestamp = new Date().toISOString().split('T')[0];
+      const timestamp = new Date().toISOString().split("T")[0];
       const filename = `submissions-export-${timestamp}.xlsx`;
 
       // Download file
       XLSX.writeFile(workbook, filename);
 
       toast({
-        title: 'Export successful',
+        title: "Export successful",
         description: `Exported ${combinedItems.length} items to ${filename}`,
       });
     } catch (error: any) {
       toast({
-        title: 'Export failed',
+        title: "Export failed",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
     }
   };
@@ -186,7 +187,7 @@ export default function Submissions() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold">Submissions</h2>
-          <p className="text-muted-foreground mt-2">View and manage form submissions.</p>
+          <p className="text-muted-foreground mt-2">View and manage clients submissions.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setImportModalOpen(true)}>
@@ -245,11 +246,7 @@ export default function Submissions() {
           }
         />
       ) : (
-        <SubmissionsTable
-          submissions={combinedItems}
-          loading={loading}
-          onViewDetails={handleViewDetails}
-        />
+        <SubmissionsTable submissions={combinedItems} loading={loading} onViewDetails={handleViewDetails} />
       )}
 
       {/* Pagination */}
@@ -282,11 +279,7 @@ export default function Submissions() {
       )}
 
       {/* Details Drawer */}
-      <SubmissionDetails
-        submission={selectedSubmission}
-        open={detailsOpen}
-        onClose={handleCloseDetails}
-      />
+      <SubmissionDetails submission={selectedSubmission} open={detailsOpen} onClose={handleCloseDetails} />
 
       {/* Import Modal */}
       <ImportSubmissionsModal
