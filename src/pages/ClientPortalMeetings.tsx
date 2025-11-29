@@ -9,11 +9,13 @@ import { useMeetings } from "@/hooks/useSharedData";
 import { useClientData } from "@/hooks/useClientData";
 import { RequestMeetingModal } from "@/components/client-portal/RequestMeetingModal";
 import { RequestRescheduleModal } from "@/components/client-portal/RequestRescheduleModal";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ClientPortalMeetings() {
   const navigate = useNavigate();
   const { orgId } = useParams<{ orgId: string }>();
-  const { client } = useClientData(orgId);
+  const { toast } = useToast();
+  const { client, loading: clientLoading } = useClientData(orgId);
   const { meetings, loading, refresh } = useMeetings(client?.id, client?.organization_id, true);
   const [requestMeetingOpen, setRequestMeetingOpen] = useState(false);
   const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
@@ -25,124 +27,184 @@ export default function ClientPortalMeetings() {
     cancelled: "bg-red-500",
   };
 
-  return (
-    <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between gap-4 animate-slide-up">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="hover:scale-110 transition-transform"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold">Meetings</h1>
-              <p className="text-sm text-muted-foreground">Your scheduled meetings and calls</p>
-            </div>
-          </div>
-          <Button onClick={() => setRequestMeetingOpen(true)} className="shadow-soft">
-            <Plus className="h-4 w-4 mr-2" />
-            Request Meeting
-          </Button>
-        </div>
+  const handleMeetingRequestSuccess = () => {
+    setRequestMeetingOpen(false);
+    refresh();
+    toast({
+      title: "✅ Meeting request submitted",
+      description: "Your request has been sent to the team",
+    });
+  };
 
-        <div className="space-y-4">
-          {meetings.length === 0 ? (
-            <Card
-              className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10"
-              style={{ animationDelay: "0.1s" }}
-            >
-              <CardContent className="text-center py-12 text-muted-foreground">
-                <div className="rounded-full bg-primary/10 w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="h-10 w-10 text-primary/50" />
-                </div>
-                <p className="text-lg font-medium mb-1">No meetings scheduled</p>
-                <p className="text-sm">Upcoming meetings will appear here</p>
-              </CardContent>
-            </Card>
-          ) : (
-            meetings.map((meeting, index) => (
-              <Card
-                key={meeting.id}
-                className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10 hover:shadow-medium transition-all"
-                style={{ animationDelay: `${0.1 + index * 0.05}s` }}
+  const handleRescheduleSuccess = () => {
+    setRescheduleModalOpen(false);
+    setSelectedMeeting(null);
+    refresh();
+    toast({
+      title: "✅ Reschedule request submitted",
+      description: "Your request has been sent to the team",
+    });
+  };
+
+  if (clientLoading) {
+    return (
+      <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!client) {
+    return (
+      <div className="min-h-screen gradient-hero p-4 md:p-8">
+        <Card className="bg-card/80 backdrop-blur-sm border-primary/10">
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">Unable to load client information</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in flex flex-col">
+      <div className="flex-1">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex items-center justify-between gap-4 animate-slide-up">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+                className="hover:scale-110 transition-transform"
               >
-                <CardHeader>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="rounded-lg bg-primary/10 p-2">
-                          <Calendar className="h-5 w-5 text-primary" />
-                        </div>
-                        <CardTitle className="text-xl">{meeting.title}</CardTitle>
-                      </div>
-                      {meeting.notes && (
-                        <p className="text-sm text-muted-foreground leading-relaxed">{meeting.notes}</p>
-                      )}
-                    </div>
-                    <Badge className={`${statusColors[meeting.status as keyof typeof statusColors]} shadow-soft`}>
-                      {meeting.status.toUpperCase()}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
-                      <Calendar className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="text-sm font-semibold">{new Date(meeting.scheduled_at).toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">Duration: {meeting.duration_minutes} minutes</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      {meeting.meeting_link && (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          asChild
-                          className="flex-1 hover:scale-105 transition-transform shadow-soft"
-                        >
-                          <a href={meeting.meeting_link} target="_blank" rel="noopener noreferrer">
-                            Join Meeting
-                            <ExternalLink className="h-4 w-4 ml-2" />
-                          </a>
-                        </Button>
-                      )}
-                      {meeting.status === "scheduled" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedMeeting(meeting);
-                            setRescheduleModalOpen(true);
-                          }}
-                          className="flex-1"
-                        >
-                          <CalendarClock className="h-4 w-4 mr-2" />
-                          Request Reschedule
-                        </Button>
-                      )}
-                    </div>
-                  </div>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-bold">Meetings</h1>
+                <p className="text-sm text-muted-foreground">Your scheduled meetings and calls</p>
+              </div>
+            </div>
+            <Button
+              onClick={() => setRequestMeetingOpen(true)}
+              className="shadow-soft hover:scale-105 transition-transform"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Request Meeting
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            {loading ? (
+              <Card className="bg-card/80 backdrop-blur-sm border-primary/10">
+                <CardContent className="py-12 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                 </CardContent>
               </Card>
-            ))
-          )}
+            ) : meetings.length === 0 ? (
+              <Card
+                className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10"
+                style={{ animationDelay: "0.1s" }}
+              >
+                <CardContent className="text-center py-12 text-muted-foreground">
+                  <div className="rounded-full bg-primary/10 w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                    <Calendar className="h-10 w-10 text-primary/50" />
+                  </div>
+                  <p className="text-lg font-medium mb-1">No meetings scheduled</p>
+                  <p className="text-sm">Upcoming meetings will appear here</p>
+                </CardContent>
+              </Card>
+            ) : (
+              meetings.map((meeting, index) => (
+                <Card
+                  key={meeting.id}
+                  className="animate-slide-up bg-card/80 backdrop-blur-sm border-primary/10 hover:shadow-medium transition-all"
+                  style={{ animationDelay: `${0.1 + index * 0.05}s` }}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="rounded-lg bg-primary/10 p-2">
+                            <Calendar className="h-5 w-5 text-primary" />
+                          </div>
+                          <CardTitle className="text-xl">{meeting.title}</CardTitle>
+                        </div>
+                        {meeting.notes && (
+                          <p className="text-sm text-muted-foreground leading-relaxed">{meeting.notes}</p>
+                        )}
+                      </div>
+                      <Badge
+                        className={`${statusColors[meeting.status as keyof typeof statusColors]} shadow-soft text-white`}
+                      >
+                        {meeting.status.toUpperCase()}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                        <Calendar className="h-5 w-5 text-primary flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-semibold">{new Date(meeting.scheduled_at).toLocaleString()}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Duration: {meeting.duration_minutes || 60} minutes
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {meeting.meeting_link && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            asChild
+                            className="flex-1 hover:scale-105 transition-transform shadow-soft"
+                          >
+                            <a
+                              href={meeting.meeting_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-center"
+                            >
+                              Join Meeting
+                              <ExternalLink className="h-4 w-4 ml-2" />
+                            </a>
+                          </Button>
+                        )}
+                        {meeting.status === "scheduled" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedMeeting(meeting);
+                              setRescheduleModalOpen(true);
+                            }}
+                            className="flex-1 hover:scale-105 transition-transform"
+                          >
+                            <CalendarClock className="h-4 w-4 mr-2" />
+                            Request Reschedule
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
+      {client && <BrandedFooter organizationId={client.organization_id} />}
+
       {client && (
         <>
-          <BrandedFooter organizationId={client.organization_id} />
           <RequestMeetingModal
             open={requestMeetingOpen}
             onOpenChange={setRequestMeetingOpen}
             clientId={client.id}
             organizationId={client.organization_id}
-            onSuccess={refresh}
+            onSuccess={handleMeetingRequestSuccess}
           />
           {selectedMeeting && (
             <RequestRescheduleModal
@@ -152,7 +214,7 @@ export default function ClientPortalMeetings() {
               meetingTitle={selectedMeeting.title}
               clientId={client.id}
               organizationId={client.organization_id}
-              onSuccess={refresh}
+              onSuccess={handleRescheduleSuccess}
             />
           )}
         </>
