@@ -45,21 +45,52 @@ export function ContractRequestModal({
     setLoading(true);
 
     try {
-      // Create a notification for the organization
-      const { error } = await supabase.from("notifications").insert({
-        organization_id: organizationId,
-        user_id: clientId,
-        type: "contract_request",
-        title: "New Contract Request",
-        message: `A client has requested a ${contractTypes.find((t) => t.value === contractType)?.label || contractType} contract.`,
-        metadata: {
-          client_id: clientId,
-          contract_type: contractType,
-          description: description,
-        },
-      });
+      const contractTypeLabel = contractTypes.find((t) => t.value === contractType)?.label || contractType;
 
-      if (error) throw error;
+      // Insert into client_requests table
+      const { data: request, error: requestError } = await supabase
+        .from("client_requests")
+        .insert({
+          client_id: clientId,
+          organization_id: organizationId,
+          request_type: "contract",
+          title: `${contractTypeLabel} Contract Request`,
+          description: description || `Client has requested a ${contractTypeLabel} contract.`,
+          metadata: {
+            contract_type: contractType,
+          },
+        })
+        .select()
+        .single();
+
+      if (requestError) throw requestError;
+
+      // Get all organization members to notify them
+      const { data: members } = await supabase
+        .from("organization_members")
+        .select("user_id")
+        .eq("organization_id", organizationId)
+        .is("deleted_at", null);
+
+      // Create notifications for all organization members
+      if (members && members.length > 0) {
+        const notifications = members.map((member) => ({
+          organization_id: organizationId,
+          user_id: member.user_id,
+          type: "contract_request",
+          title: "New Contract Request",
+          message: `A client has requested a ${contractTypeLabel} contract.`,
+          related_entity_type: "client_request",
+          related_entity_id: request.id,
+          metadata: {
+            client_id: clientId,
+            contract_type: contractType,
+            request_id: request.id,
+          },
+        }));
+
+        await supabase.from("notifications").insert(notifications);
+      }
 
       toast({
         title: "Request submitted",
