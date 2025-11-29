@@ -17,16 +17,13 @@ export default function ClientPortalBilling() {
   const { invoices, loading } = useInvoices(clientId || undefined, organizationId || undefined, true);
 
   useEffect(() => {
-    loadInvoices();
+    loadClient();
   }, []);
 
-  const loadInvoices = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+  const loadClient = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // First get the client records for this user
     const { data: clients } = await supabase
       .from("clients")
       .select("id, organization_id")
@@ -150,7 +147,6 @@ export default function ClientPortalBilling() {
           onClose={() => setShowAddModal(false)}
           onSuccess={() => {
             setShowAddModal(false);
-            loadInvoices();
           }}
         />
       )}

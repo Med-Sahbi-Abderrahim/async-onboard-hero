@@ -3,187 +3,61 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, Download, ArrowLeft, Loader2 } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { useFileDownload } from "@/hooks/useFileDownload";
 import { BrandedFooter } from "@/components/BrandedFooter";
+import { useClientData } from "@/hooks/useClientData";
+import { useClientFiles } from "@/hooks/useSharedData";
+import { useFileUpload } from "@/hooks/useFileUpload";
 
 export default function ClientPortalFiles() {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { orgId } = useParams<{ orgId: string }>();
   const { downloadFile: downloadFileSecure, downloading } = useFileDownload();
-  const [files, setFiles] = useState<any[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [clientId, setClientId] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [client, setClient] = useState<any>(null);
+  const { client } = useClientData(orgId);
+  const { files, refresh } = useClientFiles(client?.id, client?.organization_id, true);
+  const { uploading, selectedFile, handleFileSelect, uploadFile, clearFile } = useFileUpload();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [currentPlan, setCurrentPlan] = useState<"free" | "starter" | "pro">("free");
-  const [organizationId, setOrganizationId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadClientAndFiles();
-  }, []);
-
-  const loadClientAndFiles = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to access your files",
-        variant: "destructive",
-      });
-      navigate("/");
-      return;
+    if (client) {
+      loadOrgPlan();
     }
+  }, [client]);
 
-    // Fetch client by user_id OR email
-    const { data: clients, error } = await supabase
-      .from("clients")
-      .select("id, organization_id, full_name")
-      .or(`user_id.eq.${user.id},email.ilike.${user.email}`)
-      .is("deleted_at", null);
+  const loadOrgPlan = async () => {
+    if (!client) return;
+    
+    const { data: orgData } = await supabase
+      .from("organizations")
+      .select("plan")
+      .eq("id", client.organization_id)
+      .single();
 
-    if (error || !clients || clients.length === 0) {
-      toast({
-        title: "Access denied",
-        description: "Client account not found",
-        variant: "destructive",
-      });
-      navigate("/");
-      return;
+    if (orgData) {
+      setCurrentPlan(orgData.plan as "free" | "starter" | "pro");
     }
-
-    const clientData = clients[0];
-
-    // Update user_id if not set
-    if (clientData.id && user.id) {
-      const { data: checkClient } = await supabase.from("clients").select("user_id").eq("id", clientData.id).single();
-
-      if (checkClient && !checkClient.user_id) {
-        await supabase.from("clients").update({ user_id: user.id }).eq("id", clientData.id);
-      }
-    }
-
-    setClient(clientData);
-    setClientId(clientData.id);
-    setOrganizationId(clientData.organization_id);
-    loadFiles(clientData.id);
   };
 
-  const loadFiles = async (cId: string) => {
-    const { data, error } = await supabase
-      .from("client_files")
-      .select("*")
-      .eq("client_id", cId)
-      .is("deleted_at", null)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error loading files:", error);
-      return;
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFileSelect(e.target.files[0]);
     }
-    setFiles(data || []);
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || !e.target.files[0]) return;
-
-    const file = e.target.files[0];
-    const allowedTypes = [
-      "application/pdf",
-      "image/jpeg",
-      "image/png",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ];
-
-    if (!allowedTypes.includes(file.type)) {
-      toast({
-        title: "Invalid file type",
-        description: "Only PDF, JPG, PNG, and DOCX files are allowed",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSelectedFile(file);
   };
 
   const handleSubmit = async () => {
-    if (!selectedFile || !clientId || !client) return;
+    if (!client || !selectedFile) return;
 
-    setUploading(true);
-
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      // Get organization plan and check storage
-      const { data: orgData } = await supabase
-        .from("organizations")
-        .select("plan")
-        .eq("id", client.organization_id)
-        .single();
-
-      if (orgData) {
-        setCurrentPlan(orgData.plan as "free" | "starter" | "pro");
-      }
-
-      // Check storage limit
-      const { data: canUpload, error: limitError } = await supabase.rpc("can_upload_file", {
-        org_id: organizationId,
-        file_size_bytes: selectedFile.size,
-      });
-
-      if (limitError) throw limitError;
-
-      if (!canUpload) {
-        setUploading(false);
-        setShowUpgradeModal(true);
-        return;
-      }
-
-      const filePath = `${user.id}/${Date.now()}_${selectedFile.name}`;
-
-      const { error: uploadError } = await supabase.storage.from("client-uploads").upload(filePath, selectedFile);
-
-      if (uploadError) throw uploadError;
-
-      const { error: dbError } = await supabase.from("client_files").insert({
-        client_id: clientId,
-        organization_id: organizationId,
-        file_name: selectedFile.name,
-        file_type: selectedFile.type,
-        file_size: selectedFile.size,
-        storage_path: filePath,
-        uploaded_by: user.id,
-      });
-
-      if (dbError) throw dbError;
-
-      toast({
-        title: "✅ File uploaded successfully",
-        description: `${selectedFile.name} has been uploaded`,
-      });
-
-      setSelectedFile(null);
-      loadFiles(clientId);
-    } catch (error: any) {
-      console.error("Upload error:", error);
-      toast({
-        title: "⚠️ Upload failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setUploading(false);
+    const success = await uploadFile(client.id, client.organization_id);
+    
+    if (!success && selectedFile) {
+      // Upload limit reached, show upgrade modal
+      setShowUpgradeModal(true);
+    } else if (success) {
+      refresh();
     }
   };
 
@@ -233,7 +107,7 @@ export default function ClientPortalFiles() {
                 id="file-upload"
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png,.docx"
-                onChange={handleFileSelect}
+                onChange={handleFileChange}
                 disabled={uploading}
                 className="border-primary/20 focus:border-primary transition-colors"
               />
@@ -330,10 +204,10 @@ export default function ClientPortalFiles() {
         onOpenChange={setShowUpgradeModal}
         limitType="storage"
         currentPlan={currentPlan}
-        organizationId={organizationId || ""}
+        organizationId={client?.organization_id || ""}
       />
 
-      {organizationId && <BrandedFooter organizationId={organizationId} />}
+      {client && <BrandedFooter organizationId={client.organization_id} />}
     </div>
   );
 }
