@@ -159,17 +159,36 @@ export function NotificationsDropdown() {
 
     // Determine user's role in this organization
     try {
+      // First, try to check if user is an agency member
       const { data: memberData, error: memberError } = await supabase
         .from("organization_members")
         .select("role")
         .eq("user_id", user?.id)
         .eq("organization_id", orgId)
-        .single();
+        .maybeSingle();
 
-      if (memberError) throw memberError;
+      console.log("Member data:", memberData, "Error:", memberError);
 
-      const isAgencyUser =
-        memberData?.role === "owner" || memberData?.role === "admin" || memberData?.role === "member";
+      let isAgencyUser = false;
+
+      if (memberData) {
+        // User is an agency member
+        isAgencyUser = ["owner", "admin", "member"].includes(memberData.role);
+      } else {
+        // Check if user is a client instead
+        const { data: clientData, error: clientError } = await supabase
+          .from("clients")
+          .select("id")
+          .eq("user_id", user?.id)
+          .eq("organization_id", orgId)
+          .maybeSingle();
+
+        console.log("Client data:", clientData, "Error:", clientError);
+
+        // If not found in either table, default to agency view (safest option)
+        isAgencyUser = !clientData;
+      }
+
       const { metadata } = notification;
 
       // Route based on user role and notification type
@@ -186,11 +205,7 @@ export function NotificationsDropdown() {
 
           case "form_submitted":
           case "submission_incomplete":
-            if (metadata?.submission_id) {
-              navigate(`/submissions/${orgId}`);
-            } else {
-              navigate(`/submissions/${orgId}`);
-            }
+            navigate(`/submissions/${orgId}`);
             break;
 
           case "reminder_sent":
@@ -236,11 +251,8 @@ export function NotificationsDropdown() {
       }
     } catch (error: any) {
       console.error("Error determining user role:", error);
-      toast({
-        title: "Navigation Error",
-        description: "Unable to determine user role",
-        variant: "destructive",
-      });
+      // Fallback: try to navigate to dashboard as a safe default
+      navigate(`/dashboard/${orgId}`);
     }
 
     setOpen(false);
