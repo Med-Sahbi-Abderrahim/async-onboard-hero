@@ -19,6 +19,8 @@ import {
   Users,
   Building2,
   Crown,
+  Lock,
+  Clock,
 } from "lucide-react";
 import kenlyLogo from "@/assets/kenly-logo.png";
 import { motion } from "framer-motion";
@@ -555,7 +557,7 @@ const Index = () => {
                         <span className="text-sm">Reminder scheduled (2 days)</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle className="h-4 w-4 text-success" />
+                        <CheckCircle2 className="h-4 w-4 text-success" />
                         <span className="text-sm">Notification on completion</span>
                       </div>
                     </div>
