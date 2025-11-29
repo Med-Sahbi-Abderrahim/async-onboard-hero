@@ -241,7 +241,7 @@ const Index = () => {
       </motion.section>
 
       {/* Problem Section */}
-      <motion.section id="problem" className="py-20 sm:py-32" {...fadeInUp}>
+      <motion.section id="problem" className="py-20 sm:py-[40px]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="mx-auto max-w-3xl text-center mb-16" initial={{
           opacity: 0,
@@ -296,7 +296,7 @@ Clients miss deadlines because they don't know what you need. You push back laun
       </motion.section>
 
       {/* Solution Section */}
-      <motion.section id="solution" className="gradient-accent py-20 sm:py-32" {...fadeInUp}>
+      <motion.section id="solution" className="gradient-accent sm:py-32 py-[90px]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div className="mx-auto max-w-3xl text-center mb-16" initial={{
           opacity: 0,
