@@ -1,3 +1,5 @@
+import { useClientRequests } from "@/hooks/useClientRequests";
+
 export function InboxSidebarBadge({ organizationId }) {
   const { pendingCount } = useClientRequests(organizationId);
   
