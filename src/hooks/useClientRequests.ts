@@ -28,7 +28,10 @@ export function useClientRequests(organizationId?: string) {
     try {
       const { data, error } = await supabase
         .from("client_requests")
-        .select("*")
+        .select(`
+          *,
+          client:clients(id, full_name, email, company_name)
+        `)
         .eq("organization_id", organizationId)
         .order("created_at", { ascending: false });
 

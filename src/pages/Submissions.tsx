@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Search, ChevronLeft, ChevronRight, FileDown, FileUp, Inbox } from "lucide-react";
 import { useSubmissions, Submission } from "@/hooks/useSubmissions";
+import { useClientRequests } from "@/hooks/useClientRequests";
 import { SubmissionsTable } from "@/components/submissions/SubmissionsTable";
 import { SubmissionDetails } from "@/components/submissions/SubmissionDetails";
 import { ImportSubmissionsModal } from "@/components/submissions/ImportSubmissionsModal";
@@ -22,13 +23,66 @@ export default function Submissions() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
 
-  const { submissions, loading, totalCount, totalPages, refresh } = useSubmissions({
+  const { submissions, loading: submissionsLoading, totalCount: submissionsCount, totalPages: submissionPages, refresh: refreshSubmissions } = useSubmissions({
     searchQuery,
     statusFilter,
     page,
     pageSize: 20,
     orgId,
   });
+
+  const { requests, loading: requestsLoading } = useClientRequests(orgId);
+
+  // Combine submissions and client requests into a unified list
+  const [combinedItems, setCombinedItems] = useState<any[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const loading = submissionsLoading || requestsLoading;
+
+  useEffect(() => {
+    // Transform client requests to match submission structure
+    const transformedRequests = requests
+      .filter(req => {
+        // Apply status filter
+        if (statusFilter !== "all" && req.status !== statusFilter) return false;
+        // Apply search filter
+        if (searchQuery) {
+          const search = searchQuery.toLowerCase();
+          return (
+            req.title.toLowerCase().includes(search) ||
+            req.description?.toLowerCase().includes(search) ||
+            req.request_type.toLowerCase().includes(search)
+          );
+        }
+        return true;
+      })
+      .map(req => ({
+        ...req,
+        type: 'client_request',
+        completion_percentage: req.status === 'approved' ? 100 : req.status === 'pending' ? 0 : 50,
+        created_at: req.created_at,
+        submitted_at: req.created_at,
+      }));
+
+    // Mark submissions with type
+    const markedSubmissions = submissions.map(sub => ({
+      ...sub,
+      type: 'form_submission'
+    }));
+
+    // Combine and sort by creation date
+    const combined = [...markedSubmissions, ...transformedRequests].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    setCombinedItems(combined);
+    setTotalCount(submissionsCount + transformedRequests.length);
+    setTotalPages(Math.ceil((submissionsCount + transformedRequests.length) / 20));
+  }, [submissions, requests, searchQuery, statusFilter, submissionsCount]);
+
+  const refresh = () => {
+    refreshSubmissions();
+  };
 
   const handleViewDetails = (submission: Submission) => {
     setSelectedSubmission(submission);
@@ -41,7 +95,7 @@ export default function Submissions() {
   };
 
   const handleExportToExcel = () => {
-    if (submissions.length === 0) {
+    if (combinedItems.length === 0) {
       toast({
         title: 'No data to export',
         description: 'There are no submissions to export',
@@ -52,21 +106,36 @@ export default function Submissions() {
 
     try {
       // Prepare data for export
-      const exportData = submissions.map((submission) => ({
-        'Submission ID': submission.id,
-        'Client Name': submission.client?.full_name || '',
-        'Client Email': submission.client?.email || '',
-        'Company': submission.client?.company_name || '',
-        'Form': submission.intake_form?.title || '',
-        'Status': submission.status,
-        'Completion': `${submission.completion_percentage}%`,
-        'Submitted': submission.submitted_at
-          ? new Date(submission.submitted_at).toLocaleDateString()
-          : 'Not submitted',
-        'Created': new Date(submission.created_at).toLocaleDateString(),
-        // Add response fields
-        ...submission.responses,
-      }));
+      const exportData = combinedItems.map((item) => {
+        if (item.type === 'client_request') {
+          return {
+            'Type': 'Client Request',
+            'ID': item.id,
+            'Request Type': item.request_type,
+            'Title': item.title,
+            'Description': item.description || '',
+            'Status': item.status,
+            'Created': new Date(item.created_at).toLocaleDateString(),
+          };
+        } else {
+          return {
+            'Type': 'Form Submission',
+            'Submission ID': item.id,
+            'Client Name': item.client?.full_name || '',
+            'Client Email': item.client?.email || '',
+            'Company': item.client?.company_name || '',
+            'Form': item.intake_form?.title || '',
+            'Status': item.status,
+            'Completion': `${item.completion_percentage}%`,
+            'Submitted': item.submitted_at
+              ? new Date(item.submitted_at).toLocaleDateString()
+              : 'Not submitted',
+            'Created': new Date(item.created_at).toLocaleDateString(),
+            // Add response fields
+            ...item.responses,
+          };
+        }
+      });
 
       // Create workbook and worksheet
       const worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -95,7 +164,7 @@ export default function Submissions() {
 
       toast({
         title: 'Export successful',
-        description: `Exported ${submissions.length} submissions to ${filename}`,
+        description: `Exported ${combinedItems.length} items to ${filename}`,
       });
     } catch (error: any) {
       toast({
@@ -124,7 +193,7 @@ export default function Submissions() {
             <FileUp className="mr-2 h-4 w-4" />
             Import
           </Button>
-          <Button variant="outline" onClick={handleExportToExcel} disabled={loading || submissions.length === 0}>
+          <Button variant="outline" onClick={handleExportToExcel} disabled={loading || combinedItems.length === 0}>
             <FileDown className="mr-2 h-4 w-4" />
             Export to Excel
           </Button>
@@ -158,26 +227,26 @@ export default function Submissions() {
       </div>
 
       {/* Results count */}
-      {!loading && submissions.length > 0 && (
+      {!loading && combinedItems.length > 0 && (
         <div className="text-sm text-muted-foreground animate-fade-in">
-          Showing {submissions.length} of {totalCount} submissions
+          Showing {combinedItems.length} of {totalCount} submissions
         </div>
       )}
 
       {/* Table or Empty State */}
-      {!loading && submissions.length === 0 ? (
+      {!loading && combinedItems.length === 0 ? (
         <EmptyState
           icon={Inbox}
           title={searchQuery || statusFilter !== "all" ? "No submissions found" : "No submissions yet"}
           description={
             searchQuery || statusFilter !== "all"
               ? "Try adjusting your filters or search query."
-              : "Form submissions will appear here once clients start filling them out."
+              : "Form submissions and client requests will appear here once clients start submitting them."
           }
         />
       ) : (
         <SubmissionsTable
-          submissions={submissions}
+          submissions={combinedItems}
           loading={loading}
           onViewDetails={handleViewDetails}
         />

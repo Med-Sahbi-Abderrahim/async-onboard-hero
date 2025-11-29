@@ -51,18 +51,32 @@ export function SubmissionsTable({ submissions, loading, onViewDetails }: Submis
         </TableRow>
       </TableHeader>
       <TableBody>
-        {submissions.map((submission) => (
-          <TableRow key={submission.id}>
-            <TableCell>
-              <div>
-                <div className="font-medium">{submission.client.full_name || "Unknown"}</div>
-                <div className="text-sm text-muted-foreground">{submission.client.email}</div>
-                {submission.client.company_name && (
-                  <div className="text-xs text-muted-foreground">{submission.client.company_name}</div>
-                )}
-              </div>
-            </TableCell>
-            <TableCell>{submission.intake_form.title}</TableCell>
+        {submissions.map((submission) => {
+          const isClientRequest = (submission as any).type === 'client_request';
+          return (
+            <TableRow key={submission.id}>
+              <TableCell>
+                <div>
+                  <div className="font-medium">
+                    {isClientRequest 
+                      ? 'Client Request'
+                      : submission.client?.full_name || "Unknown"}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {isClientRequest
+                      ? (submission as any).request_type?.replace(/_/g, ' ')
+                      : submission.client?.email}
+                  </div>
+                  {!isClientRequest && submission.client?.company_name && (
+                    <div className="text-xs text-muted-foreground">{submission.client.company_name}</div>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell>
+                {isClientRequest 
+                  ? (submission as any).title 
+                  : submission.intake_form?.title}
+              </TableCell>
             <TableCell>
               <Badge className={statusColors[submission.status]}>
                 {statusLabels[submission.status]}
@@ -95,8 +109,9 @@ export function SubmissionsTable({ submissions, loading, onViewDetails }: Submis
                 View
               </Button>
             </TableCell>
-          </TableRow>
-        ))}
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );
