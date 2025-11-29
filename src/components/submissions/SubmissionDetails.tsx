@@ -35,6 +35,8 @@ const statusLabels: Record<string, string> = {
 export function SubmissionDetails({ submission, open, onClose }: SubmissionDetailsProps) {
   if (!submission) return null;
 
+  const isClientRequest = (submission as any).type === 'client_request';
+
   const renderFieldValue = (value: any): string => {
     if (value === null || value === undefined) return "-";
     if (typeof value === "boolean") return value ? "Yes" : "No";
@@ -47,93 +49,140 @@ export function SubmissionDetails({ submission, open, onClose }: SubmissionDetai
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>Submission Details</SheetTitle>
+          <SheetTitle>{isClientRequest ? 'Request Details' : 'Submission Details'}</SheetTitle>
           <SheetDescription>
-            View complete submission information and responses
+            {isClientRequest 
+              ? 'View complete request information'
+              : 'View complete submission information and responses'}
           </SheetDescription>
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
-          {/* Client Info */}
-          <div>
-            <h3 className="text-sm font-semibold mb-3">Client Information</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Name:</span>
-                <span className="font-medium">{submission.client.full_name || "Unknown"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Email:</span>
-                <span className="font-medium">{submission.client.email}</span>
-              </div>
-              {submission.client.company_name && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Company:</span>
-                  <span className="font-medium">{submission.client.company_name}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Form Info */}
-          <div>
-            <h3 className="text-sm font-semibold mb-3">Form Information</h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Form:</span>
-                <span className="font-medium">{submission.intake_form.title}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Status:</span>
-                <Badge className={statusColors[submission.status]}>
-                  {statusLabels[submission.status]}
-                </Badge>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Progress:</span>
-                <span className="font-medium">{submission.completion_percentage}%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Created:</span>
-                <span className="font-medium">
-                  {format(new Date(submission.created_at), "MMM d, yyyy 'at' h:mm a")}
-                </span>
-              </div>
-              {submission.submitted_at && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Submitted:</span>
-                  <span className="font-medium">
-                    {format(new Date(submission.submitted_at), "MMM d, yyyy 'at' h:mm a")}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Responses */}
-          <div>
-            <h3 className="text-sm font-semibold mb-3">Form Responses</h3>
-            {Object.keys(submission.responses).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No responses yet.</p>
-            ) : (
-              <div className="space-y-4">
-                {Object.entries(submission.responses).map(([fieldId, value]) => (
-                  <div key={fieldId} className="space-y-1">
-                    <label className="text-sm font-medium capitalize">
-                      {fieldId.replace(/_/g, " ")}
-                    </label>
-                    <div className="p-3 bg-muted rounded-md text-sm">
-                      {renderFieldValue(value)}
-                    </div>
+          {isClientRequest ? (
+            <>
+              {/* Request Info */}
+              <div>
+                <h3 className="text-sm font-semibold mb-3">Request Information</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Type:</span>
+                    <span className="font-medium capitalize">
+                      {(submission as any).request_type?.replace(/_/g, ' ')}
+                    </span>
                   </div>
-                ))}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Title:</span>
+                    <span className="font-medium">{(submission as any).title}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Status:</span>
+                    <Badge className={statusColors[submission.status]}>
+                      {statusLabels[submission.status]}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Created:</span>
+                    <span className="font-medium">
+                      {format(new Date(submission.created_at), "MMM d, yyyy 'at' h:mm a")}
+                    </span>
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
+
+              <Separator />
+
+              {/* Request Description */}
+              <div>
+                <h3 className="text-sm font-semibold mb-3">Description</h3>
+                <div className="p-3 bg-muted rounded-md text-sm">
+                  {(submission as any).description || "No description provided."}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Client Info */}
+              <div>
+                <h3 className="text-sm font-semibold mb-3">Client Information</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Name:</span>
+                    <span className="font-medium">{submission.client.full_name || "Unknown"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Email:</span>
+                    <span className="font-medium">{submission.client.email}</span>
+                  </div>
+                  {submission.client.company_name && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Company:</span>
+                      <span className="font-medium">{submission.client.company_name}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Form Info */}
+              <div>
+                <h3 className="text-sm font-semibold mb-3">Form Information</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Form:</span>
+                    <span className="font-medium">{submission.intake_form.title}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Status:</span>
+                    <Badge className={statusColors[submission.status]}>
+                      {statusLabels[submission.status]}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Progress:</span>
+                    <span className="font-medium">{submission.completion_percentage}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Created:</span>
+                    <span className="font-medium">
+                      {format(new Date(submission.created_at), "MMM d, yyyy 'at' h:mm a")}
+                    </span>
+                  </div>
+                  {submission.submitted_at && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Submitted:</span>
+                      <span className="font-medium">
+                        {format(new Date(submission.submitted_at), "MMM d, yyyy 'at' h:mm a")}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Responses */}
+              <div>
+                <h3 className="text-sm font-semibold mb-3">Form Responses</h3>
+                {Object.keys(submission.responses).length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No responses yet.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {Object.entries(submission.responses).map(([fieldId, value]) => (
+                      <div key={fieldId} className="space-y-1">
+                        <label className="text-sm font-medium capitalize">
+                          {fieldId.replace(/_/g, " ")}
+                        </label>
+                        <div className="p-3 bg-muted rounded-md text-sm">
+                          {renderFieldValue(value)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </SheetContent>
     </Sheet>
