@@ -1,17 +1,23 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ArrowLeft, ExternalLink } from "lucide-react";
+import { Calendar, ArrowLeft, ExternalLink, Plus, CalendarClock } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { BrandedFooter } from "@/components/BrandedFooter";
 import { useMeetings } from "@/hooks/useSharedData";
 import { useClientData } from "@/hooks/useClientData";
+import { RequestMeetingModal } from "@/components/client-portal/RequestMeetingModal";
+import { RequestRescheduleModal } from "@/components/client-portal/RequestRescheduleModal";
 
 export default function ClientPortalMeetings() {
   const navigate = useNavigate();
   const { orgId } = useParams<{ orgId: string }>();
   const { client } = useClientData(orgId);
-  const { meetings } = useMeetings(client?.id, client?.organization_id, true);
+  const { meetings, loading, refresh } = useMeetings(client?.id, client?.organization_id, true);
+  const [requestMeetingOpen, setRequestMeetingOpen] = useState(false);
+  const [rescheduleModalOpen, setRescheduleModalOpen] = useState(false);
+  const [selectedMeeting, setSelectedMeeting] = useState<any>(null);
 
   const statusColors = {
     scheduled: "bg-blue-500",
@@ -22,19 +28,25 @@ export default function ClientPortalMeetings() {
   return (
     <div className="min-h-screen gradient-hero p-4 md:p-8 animate-fade-in">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-4 animate-slide-up">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="hover:scale-110 transition-transform"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl md:text-4xl font-bold">Meetings</h1>
-            <p className="text-sm text-muted-foreground">Your scheduled meetings and calls</p>
+        <div className="flex items-center justify-between gap-4 animate-slide-up">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="hover:scale-110 transition-transform"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold">Meetings</h1>
+              <p className="text-sm text-muted-foreground">Your scheduled meetings and calls</p>
+            </div>
           </div>
+          <Button onClick={() => setRequestMeetingOpen(true)} className="shadow-soft">
+            <Plus className="h-4 w-4 mr-2" />
+            Request Meeting
+          </Button>
         </div>
 
         <div className="space-y-4">
@@ -85,19 +97,35 @@ export default function ClientPortalMeetings() {
                         <p className="text-xs text-muted-foreground">Duration: {meeting.duration_minutes} minutes</p>
                       </div>
                     </div>
-                    {meeting.meeting_link && (
-                      <Button
-                        variant="default"
-                        size="sm"
-                        asChild
-                        className="w-full hover:scale-105 transition-transform shadow-soft"
-                      >
-                        <a href={meeting.meeting_link} target="_blank" rel="noopener noreferrer">
-                          Join Meeting
-                          <ExternalLink className="h-4 w-4 ml-2" />
-                        </a>
-                      </Button>
-                    )}
+                    <div className="flex gap-2">
+                      {meeting.meeting_link && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          asChild
+                          className="flex-1 hover:scale-105 transition-transform shadow-soft"
+                        >
+                          <a href={meeting.meeting_link} target="_blank" rel="noopener noreferrer">
+                            Join Meeting
+                            <ExternalLink className="h-4 w-4 ml-2" />
+                          </a>
+                        </Button>
+                      )}
+                      {meeting.status === "scheduled" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedMeeting(meeting);
+                            setRescheduleModalOpen(true);
+                          }}
+                          className="flex-1"
+                        >
+                          <CalendarClock className="h-4 w-4 mr-2" />
+                          Request Reschedule
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -106,7 +134,29 @@ export default function ClientPortalMeetings() {
         </div>
       </div>
 
-      {client && <BrandedFooter organizationId={client.organization_id} />}
+      {client && (
+        <>
+          <BrandedFooter organizationId={client.organization_id} />
+          <RequestMeetingModal
+            open={requestMeetingOpen}
+            onOpenChange={setRequestMeetingOpen}
+            clientId={client.id}
+            organizationId={client.organization_id}
+            onSuccess={refresh}
+          />
+          {selectedMeeting && (
+            <RequestRescheduleModal
+              open={rescheduleModalOpen}
+              onOpenChange={setRescheduleModalOpen}
+              meetingId={selectedMeeting.id}
+              meetingTitle={selectedMeeting.title}
+              clientId={client.id}
+              organizationId={client.organization_id}
+              onSuccess={refresh}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }

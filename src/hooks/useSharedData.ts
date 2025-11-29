@@ -90,38 +90,38 @@ export function useMeetings(clientId?: string, organizationId?: string, isClient
   const [meetings, setMeetings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchMeetings = async () => {
     if (!organizationId) return;
 
-    const fetchMeetings = async () => {
-      try {
-        let query = supabase
-          .from("meetings")
-          .select("*")
-          .eq("organization_id", organizationId)
-          .is("deleted_at", null)
-          .order("scheduled_at", { ascending: true });
+    try {
+      let query = supabase
+        .from("meetings")
+        .select("*")
+        .eq("organization_id", organizationId)
+        .is("deleted_at", null)
+        .order("scheduled_at", { ascending: true });
 
-        // For clients: fetch their meetings OR shared meetings
-        if (isClient && clientId) {
-          query = query.or(`client_id.eq.${clientId},is_shared_with_all_clients.eq.true`);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-        setMeetings(data || []);
-      } catch (error) {
-        console.error("Error fetching meetings:", error);
-      } finally {
-        setLoading(false);
+      // For clients: fetch their meetings OR shared meetings
+      if (isClient && clientId) {
+        query = query.or(`client_id.eq.${clientId},is_shared_with_all_clients.eq.true`);
       }
-    };
 
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setMeetings(data || []);
+    } catch (error) {
+      console.error("Error fetching meetings:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchMeetings();
   }, [clientId, organizationId, isClient]);
 
-  return { meetings, loading };
+  return { meetings, loading, refresh: fetchMeetings };
 }
 
 // ============================================
@@ -131,38 +131,38 @@ export function useInvoices(clientId?: string, organizationId?: string, isClient
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchInvoices = async () => {
     if (!organizationId) return;
 
-    const fetchInvoices = async () => {
-      try {
-        let query = supabase
-          .from("invoices")
-          .select("*")
-          .eq("organization_id", organizationId)
-          .is("deleted_at", null)
-          .order("created_at", { ascending: false });
+    try {
+      let query = supabase
+        .from("invoices")
+        .select("*")
+        .eq("organization_id", organizationId)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
 
-        // For clients: fetch their invoices OR shared invoices
-        if (isClient && clientId) {
-          query = query.or(`client_id.eq.${clientId},is_shared_with_all_clients.eq.true`);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-        setInvoices(data || []);
-      } catch (error) {
-        console.error("Error fetching invoices:", error);
-      } finally {
-        setLoading(false);
+      // For clients: fetch their invoices OR shared invoices
+      if (isClient && clientId) {
+        query = query.or(`client_id.eq.${clientId},is_shared_with_all_clients.eq.true`);
       }
-    };
 
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setInvoices(data || []);
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchInvoices();
   }, [clientId, organizationId, isClient]);
 
-  return { invoices, loading };
+  return { invoices, loading, refresh: fetchInvoices };
 }
 
 // ============================================
