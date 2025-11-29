@@ -1,7 +1,20 @@
-import { LayoutDashboard, Users, FileText, Inbox, Settings, Bell, Sparkles, Building2, ChevronDown, CheckSquare } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  FileText,
+  Inbox,
+  Settings,
+  Bell,
+  Sparkles,
+  Building2,
+  ChevronDown,
+  CheckSquare,
+} from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import kenlyLogo from "@/assets/kenly-logo.png";
+
+// Import Sidebar UI Components, including SidebarMenuBadge
 import {
   Sidebar,
   SidebarContent,
@@ -12,20 +25,19 @@ import {
   SidebarMenuButton,
   SidebarHeader,
   SidebarFooter,
+  SidebarMenuBadge, // <-- ADDED: for absolute positioning of the badge
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+// Import new hooks and badge component
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useOrgId } from "@/hooks/useOrgId";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
+import { useClientRequests } from "@/hooks/useClientRequests"; // <-- ADDED
+import { InboxSidebarBadge } from "@/components/InboxSidebarBadge"; // <-- ADDED
 
 const baseItems = [
   { title: "Dashboard", path: "dashboard", icon: LayoutDashboard },
@@ -54,6 +66,9 @@ export function AppSidebar() {
 
   const isCollapsed = state === "collapsed";
 
+  // You can use useClientRequests here if needed for sidebar-level logic
+  // const { data: clientRequests, isLoading: requestsLoading } = useClientRequests(orgId);
+
   // Fetch user organizations
   useEffect(() => {
     if (user) {
@@ -72,11 +87,8 @@ export function AppSidebar() {
       if (!memberships) return;
 
       // Fetch organization details separately
-      const orgIds = memberships.map(m => m.organization_id);
-      const { data: orgsData } = await supabase
-        .from("organizations")
-        .select("id, name")
-        .in("id", orgIds);
+      const orgIds = memberships.map((m) => m.organization_id);
+      const { data: orgsData } = await supabase.from("organizations").select("id, name").in("id", orgIds);
 
       if (orgsData) {
         const orgs = orgsData.map((org: any) => ({
@@ -93,14 +105,17 @@ export function AppSidebar() {
   };
 
   const handleOrgChange = (newOrgId: string) => {
+    // This logic navigates to the same path but with the new organization ID
     const currentPath = location.pathname.split("/")[1];
     navigate(`/${currentPath}/${newOrgId}`);
   };
 
   // Build items with orgId
-  const items = baseItems.map(item => ({
+  const items = baseItems.map((item) => ({
     ...item,
-    url: orgId ? `/${item.path}/${orgId}` : `/${item.path}`
+    // Note: If you want the Inbox link to be /app/organization/:orgId/inbox as in your snippet,
+    // you would adjust the path logic here, but I am keeping it consistent with your current file's logic.
+    url: orgId ? `/${item.path}/${orgId}` : `/${item.path}`,
   }));
 
   const handleNavClick = () => {
@@ -120,7 +135,7 @@ export function AppSidebar() {
                 <img src={kenlyLogo} alt="Kenly" className="h-8 w-8 object-contain" />
                 <h1 className="text-xl font-bold text-primary">Kenly</h1>
               </div>
-              
+
               {/* Organization Switcher */}
               {organizations.length > 1 && orgId && !loading && (
                 <Select value={orgId} onValueChange={handleOrgChange}>
@@ -158,14 +173,15 @@ export function AppSidebar() {
             <SidebarMenu className="space-y-1">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  {/* Added tooltip for collapsed mode UX */}
+                  <SidebarMenuButton asChild tooltip={isCollapsed ? item.title : undefined}>
                     <NavLink
                       to={item.url}
                       onClick={handleNavClick}
                       className={({ isActive }) =>
                         `flex items-center gap-3 px-3 py-2 rounded-lg transition-smooth ${
-                          isActive 
-                            ? "bg-primary/10 text-primary font-medium border-l-2 border-primary" 
+                          isActive
+                            ? "bg-primary/10 text-primary font-medium border-l-2 border-primary"
                             : "hover:bg-muted text-muted-foreground hover:text-foreground"
                         }`
                       }
@@ -174,6 +190,13 @@ export function AppSidebar() {
                       {!isCollapsed && <span className="truncate">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
+
+                  {/* Conditionally render the InboxSidebarBadge using SidebarMenuBadge wrapper */}
+                  {item.title === "Submissions" && orgId && !isCollapsed && (
+                    <SidebarMenuBadge>
+                      <InboxSidebarBadge organizationId={orgId} />
+                    </SidebarMenuBadge>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
